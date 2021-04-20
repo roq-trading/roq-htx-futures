@@ -1,0 +1,17 @@
+{
+"name": "AggTrade",
+"type": "item",
+"values": [
+	{ "raw": "e", "name": "event_type", "type": "EventType" },
+	{ "raw": "E", "name": "event_time", "type": "std::chrono::milliseconds" },
+	{ "raw": "s", "name": "symbol", "type": "std::string_view" },
+	{ "raw": "a", "name": "agg_trade_id", "type": "uint64_t" },
+	{ "raw": "p", "name": "price", "type": "double" },
+	{ "raw": "q", "name": "quantity", "type": "double" },
+	{ "raw": "f", "name": "first_trade_id", "type": "uint64_t" },
+	{ "raw": "l", "name": "last_trade_id", "type": "uint64_t" },
+	{ "raw": "T", "name": "trade_time", "type": "std::chrono::milliseconds" },
+	{ "raw": "m", "name": "buyer_is_maker", "type": "bool" },
+	{ "raw": "M", "name": "ignore" }
+]
+}

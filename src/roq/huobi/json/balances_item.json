@@ -1,0 +1,9 @@
+{
+"name": "BalancesItem",
+"type": "array_item",
+"values": [
+	{ "raw": "a", "name": "asset", "type": "std::string_view" },
+	{ "raw": "f", "name": "free_amount", "type": "double" },
+	{ "raw": "l", "name": "locked_amount", "type": "double" }
+]
+}

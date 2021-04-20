@@ -1,0 +1,13 @@
+{
+"name": "SymbolStatus",
+"type": "enum",
+"values": [
+	{ "name": "PRE_TRADING" },
+	{ "name": "TRADING" },
+	{ "name": "POST_TRADING" },
+	{ "name": "END_OF_DAY" },
+	{ "name": "HALT" },
+	{ "name": "AUCTION_MATCH" },
+	{ "name": "BREAK" }
+]
+}

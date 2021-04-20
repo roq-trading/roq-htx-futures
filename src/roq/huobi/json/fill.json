@@ -1,0 +1,10 @@
+{
+"name": "Fill",
+"type": "array_item",
+"values": [
+	{ "name": "price", "type": "double" },
+	{ "name": "qty", "type": "double"},
+	{ "name": "commission", "type": "double"},
+	{ "name": "commissionAsset", "type": "std::string_view"}
+]
+}

@@ -1,0 +1,12 @@
+{
+"name": "OrderStatus",
+"type": "enum",
+"values": [
+	{ "name": "NEW" },
+	{ "name": "PARTIALLY_FILLED" },
+	{ "name": "CANCELED" },
+	{ "name": "PENDING_CANCEL" },
+	{ "name": "REJECTED" },
+	{ "name": "EXPIRED" }
+]
+}

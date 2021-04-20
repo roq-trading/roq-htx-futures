@@ -1,0 +1,8 @@
+{
+"name": "MarketDataState",
+"type": "enum",
+"values": [
+	{ "name": "subscribe" },
+	{ "name": "done" }
+]
+}

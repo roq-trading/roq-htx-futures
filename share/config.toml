@@ -1,0 +1,23 @@
+symbols = ".*"
+
+[accounts]
+
+  [accounts.A1]
+  master = true
+  login = "YOUR_BINANCE_API_KEY_GOES_HERE"
+  secret = "YOUR_BINANCE_SECRET_GOES_HERE"
+  symbols = ".*"
+
+[users]
+
+  [users.test]
+  password = "1234"
+  symbols = ".*"
+
+  [users.trader]
+  password = "secret"
+  accounts = [ "A1" ]
+  symbols = [ "BTCUSDT" ]
+  monitor_period_secs = 60
+  ban_period_secs = 300
+  request_limit = 10

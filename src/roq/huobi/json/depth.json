@@ -1,0 +1,9 @@
+{
+"name": "Depth",
+"type": "comp",
+"values": [
+	{ "name": "lastUpdateId", "type": "int64_t" },
+	{ "name": "bids", "type": "roq::span<DepthItem>" },
+	{ "name": "asks", "type": "roq::span<DepthItem>" }
+]
+}

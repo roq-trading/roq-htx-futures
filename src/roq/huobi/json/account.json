@@ -1,0 +1,17 @@
+{
+"name": "Account",
+"type": "comp",
+"values": [
+	{ "name": "makerCommission", "type": "double" },
+	{ "name": "takerCommission", "type": "double" },
+	{ "name": "buyerCommission", "type": "double" },
+	{ "name": "sellerCommission", "type": "double" },
+	{ "name": "canTrade", "type": "bool" },
+	{ "name": "canWithdraw", "type": "bool" },
+	{ "name": "canDeposit", "type": "bool" },
+	{ "name": "updateTime", "type": "std::chrono::milliseconds" },
+	{ "name": "accountType", "type": "std::string_view" },
+	{ "name": "balances", "type": "roq::span<Balance>" },
+	{ "name": "permissions" }
+]
+}

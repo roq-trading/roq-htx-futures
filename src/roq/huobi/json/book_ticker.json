@@ -1,0 +1,12 @@
+{
+"name": "BookTicker",
+"type": "item",
+"values": [
+	{ "raw": "u", "name": "order_book_update_id", "type": "uint64_t" },
+	{ "raw": "s", "name": "symbol", "type": "std::string_view" },
+	{ "raw": "b", "name": "best_bid_price", "type": "double" },
+	{ "raw": "B", "name": "best_bid_qty", "type": "double" },
+	{ "raw": "a", "name": "best_ask_price", "type": "double" },
+	{ "raw": "A", "name": "best_ask_qty", "type": "double" }
+]
+}

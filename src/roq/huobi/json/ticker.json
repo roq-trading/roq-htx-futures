@@ -1,0 +1,29 @@
+{
+"name": "Ticker",
+"type": "item",
+"values": [
+	{ "raw": "e", "name": "event_type", "type": "std::string_view" },
+	{ "raw": "E", "name": "event_time", "type": "std::string_view" },
+	{ "raw": "s", "name": "symbol", "type": "std::string_view" },
+	{ "raw": "p", "name": "price_change", "type": "double" },
+	{ "raw": "P", "name": "price_change_pct", "type": "double" },
+	{ "raw": "w", "name": "weighted_average_price", "type": "double" },
+	{ "raw": "x", "name": "first_trade_price", "type": "double" },
+	{ "raw": "c", "name": "last_price", "type": "double" },
+	{ "raw": "Q", "name": "last_quantity", "type": "double" },
+	{ "raw": "b", "name": "best_bid_price", "type": "double" },
+	{ "raw": "B", "name": "best_bid_quantity", "type": "double" },
+	{ "raw": "a", "name": "best_ask_price", "type": "double" },
+	{ "raw": "A", "name": "best_ask_quantity", "type": "double" },
+	{ "raw": "o", "name": "open_price", "type": "double" },
+	{ "raw": "h", "name": "high_price", "type": "double" },
+	{ "raw": "l", "name": "low_price", "type": "double" },
+	{ "raw": "v", "name": "total_traded_base_asset_volume", "type": "double" },
+	{ "raw": "q", "name": "total_traded_quote_asset_volume", "type": "double" },
+	{ "raw": "O", "name": "statistics_open_time", "type": "std::chrono::milliseconds" },
+	{ "raw": "C", "name": "statistics_close_time", "type": "std::chrono::milliseconds" },
+	{ "raw": "F", "name": "first_trade_id", "type": "uint64_t" },
+	{ "raw": "L", "name": "last_trade_id", "type": "uint64_t" },
+	{ "raw": "n", "name": "total_number_of_trades", "type": "uint32_t" }
+]
+}

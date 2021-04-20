@@ -1,0 +1,12 @@
+roq-huobi
+
+# debug
+????-W??/
+
+# auto-generated
+drop_copy_state.cpp
+drop_copy_state.h
+market_data_state.cpp
+market_data_state.h
+order_entry_state.cpp
+order_entry_state.h

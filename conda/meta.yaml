@@ -1,0 +1,35 @@
+package:
+  name: roq-huobi
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  git_url: ..
+
+build:
+  skip: True  # [win]
+  number: {{ GIT_DESCRIBE_NUMBER }}
+  run_exports:
+    - {{ pin_subpackage('roq-huobi', max_pin='x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - clangdev
+    - cmake
+    - make
+  host:
+    - benchmark
+    - roq-api
+    - roq-core
+    - roq-oss-date
+    - roq-oss-http-parser
+    - roq-server
+
+about:
+  home: https://roq-trading.com
+  doc_url: https://roq-trading.com/docs
+  dev_url: https://github.com/roq-trading
+  license: Commercial
+  license_family: PROPRIETARY
+  license_file: LICENSE
+  summary: Roq Huobi Gateway

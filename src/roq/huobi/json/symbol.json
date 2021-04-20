@@ -1,0 +1,23 @@
+{
+"name": "Symbol",
+"type": "item",
+"values": [
+	{ "name": "symbol", "type": "std::string_view" },
+	{ "name": "status", "type": "SymbolStatus" },
+	{ "name": "baseAsset", "type": "std::string_view" },
+	{ "name": "baseAssetPrecision", "type": "uint32_t" },
+	{ "name": "quoteAsset", "type": "std::string_view" },
+	{ "name": "quotePrecision", "type": "uint32_t" },
+	{ "name": "quoteAssetPrecision", "type": "uint32_t" },
+	{ "name": "baseCommissionPrecision", "type": "uint32_t" },
+	{ "name": "quoteCommissionPrecision", "type": "uint32_t" },
+	{ "name": "orderTypes" },
+	{ "name": "icebergAllowed", "type": "bool" },
+	{ "name": "ocoAllowed", "type": "bool" },
+	{ "name": "quoteOrderQtyMarketAllowed", "type": "bool" },
+	{ "name": "isSpotTradingAllowed", "type": "bool" },
+	{ "name": "isMarginTradingAllowed", "type": "bool" },
+	{ "name": "filters" },
+	{ "name": "permissions" }
+]
+}

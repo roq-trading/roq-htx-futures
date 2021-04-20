@@ -1,0 +1,17 @@
+{
+"name": "FilterType",
+"type": "enum",
+"values": [
+	{ "name": "PRICE_FILTER" },
+	{ "name": "PERCENT_PRICE" },
+	{ "name": "LOT_SIZE" },
+	{ "name": "MIN_NOTIONAL" },
+	{ "name": "ICEBERG_PARTS" },
+	{ "name": "MARKET_LOT_SIZE" },
+	{ "name": "MAX_NUM_ORDERS" },
+	{ "name": "MAX_NUM_ICEBERG_ORDERS" },
+	{ "name": "MAX_POSITION" },
+	{ "name": "EXCHANGE_MAX_NUM_ORDERS" },
+	{ "name": "EXCHANGE_MAX_NUM_ALGO_ORDERS" }
+]
+}

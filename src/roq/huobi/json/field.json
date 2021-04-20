@@ -1,0 +1,11 @@
+{
+"name": "Field",
+"type": "enum",
+"values": [
+	{ "name": "error" },
+	{ "name": "result" },
+	{ "name": "id" },
+	{ "name": "stream" },
+	{ "name": "data" }
+]
+}
