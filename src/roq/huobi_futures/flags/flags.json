@@ -19,7 +19,7 @@
       "name": "rest_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
-      "default": "https://testnet.binance.com/api/v1",
+      "default": "https://api.hbdm.com",
       "description": "REST end-point (URI)"
     },
     {
@@ -83,11 +83,18 @@
       "description": "cancel orders on disconnect? (bool)"
     },
     {
-      "name": "ws_uri",
+      "name": "ws_market_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
-      "default": "wss://testnet.binance.com/realtime",
-      "description": "WebSocket end-point (URI)"
+      "default": "wss://api.hbdm.com/ws",
+      "description": "WebSocket end-point (URI) for market data"
+    },
+    {
+      "name": "ws_order_uri",
+      "type": "roq::core::URI",
+      "validator": "roq::core::flags::URI<std::string>",
+      "default": "wss://api.hbdm.com/notification",
+      "description": "WebSocket end-point (URI) for order management"
     },
     {
       "name": "ws_ping_freq",

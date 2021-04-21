@@ -52,8 +52,8 @@ MarketData::MarketData(
       connection_(
           *this,
           context,
-          core::URI(Flags::ws_uri()),
-          std::string_view{},  // query
+          core::URI(Flags::ws_market_uri()),
+          {},  // query
           Flags::ws_ping_freq(),
           Flags::decode_buffer_size(),
           Flags::encode_buffer_size(),

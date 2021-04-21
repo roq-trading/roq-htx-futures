@@ -44,7 +44,7 @@ DropCopy::DropCopy(
       connection_(
           *this,
           context,
-          core::URI(Flags::ws_uri()),
+          core::URI(Flags::ws_order_uri()),
           create_query(listen_key),
           Flags::ws_ping_freq(),
           Flags::decode_buffer_size(),
