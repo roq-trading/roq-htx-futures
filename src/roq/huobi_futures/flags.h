@@ -1,0 +1,13 @@
+/* Copyright (c) 2017-2021, Hans Erik Thrane */
+
+#pragma once
+
+#include "roq/huobi_futures/flags/flags.h"
+
+namespace roq {
+namespace huobi_futures {
+
+using flags::Flags;
+
+}  // namespace huobi_futures
+}  // namespace roq

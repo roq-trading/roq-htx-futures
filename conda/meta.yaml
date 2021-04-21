@@ -1,5 +1,5 @@
 package:
-  name: roq-huobi
+  name: roq-huobi-futures
   version: {{ GIT_DESCRIBE_TAG }}
 
 source:
@@ -9,7 +9,7 @@ build:
   skip: True  # [win]
   number: {{ GIT_DESCRIBE_NUMBER }}
   run_exports:
-    - {{ pin_subpackage('roq-huobi', max_pin='x.x') }}
+    - {{ pin_subpackage('roq-huobi-futures', max_pin='x.x') }}
 
 requirements:
   build:
@@ -32,4 +32,4 @@ about:
   license: Commercial
   license_family: PROPRIETARY
   license_file: LICENSE
-  summary: Roq Huobi Gateway
+  summary: Roq Huobi Futures Gateway

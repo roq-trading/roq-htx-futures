@@ -1,1 +1,1 @@
-Huobi
+Huobi Futures

@@ -13,7 +13,7 @@ message("Using GIT_REPO_VERSION=${GIT_REPO_VERSION}")
 
 # project
 
-project(roq-huobi VERSION ${GIT_REPO_VERSION})
+project(roq-huobi-futures VERSION ${GIT_REPO_VERSION})
 
 # conda
 
@@ -62,7 +62,7 @@ include_directories(
 
 # sub-projects
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/roq/huobi")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/roq/huobi_futures")
 
 # test
 
@@ -87,7 +87,7 @@ endif(BUILD_BENCHMARK)
 
 # install
 
-install(FILES "share/config.toml" DESTINATION "${CMAKE_INSTALL_DATADIR}/roq-huobi")
+install(FILES "share/config.toml" DESTINATION "${CMAKE_INSTALL_DATADIR}/roq-huobi-futures")
 
 install(FILES "${CMAKE_SOURCE_DIR}/CHANGELOG.md"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/${PROJECT_NAME}")
