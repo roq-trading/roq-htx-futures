@@ -193,8 +193,9 @@ void OrderEntry::operator()(ConnectionStatus status) {
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> &)> &&callback) {
-  constexpr auto method = core::http::Method::GET;
-  constexpr std::string_view path = "/api/v3/exchangeInfo"_sv;
+  auto method = core::http::Method::GET;
+  auto path = "/api/v3/exchangeInfo"_sv;
+  auto rate_limit_weight = 1;
   connection_.request(
       method,
       path,
@@ -204,6 +205,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> 
       {},  // headers
       {},  // body
       {},  // QoS
+      rate_limit_weight,
       [this, callback{std::move(callback)}](auto &response) {
         profile_.exchange_info([&]() {
           try {
@@ -225,12 +227,13 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> 
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &&callback) {
-  constexpr auto method = core::http::Method::GET;
-  constexpr std::string_view path = "/api/v3/account"_sv;
+  auto method = core::http::Method::GET;
+  auto path = "/api/v3/account"_sv;
   auto now = core::get_realtime_clock();
   auto [timestamp, signature] = security_.create_signature(now);
   auto query = roq::format("?{}&signature={}"_fmt, timestamp, signature);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  auto rate_limit_weight = 1;
   connection_.request(
       method,
       path,
@@ -240,6 +243,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &
       headers,
       {},  // body
       {},  // QoS
+      rate_limit_weight,
       [this, callback{std::move(callback)}](auto &response) {
         profile_.account([&]() {
           try {
@@ -260,9 +264,10 @@ void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::ListenKey> &)> &&callback) {
-  constexpr auto method = core::http::Method::POST;
-  constexpr std::string_view path = "/api/v3/userDataStream"_sv;
+  auto method = core::http::Method::POST;
+  auto path = "/api/v3/userDataStream"_sv;
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  auto rate_limit_weight = 1;
   connection_.request(
       method,
       path,
@@ -272,6 +277,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ListenKey> &)>
       headers,
       {},  // body
       {},  // QoS
+      rate_limit_weight,
       [this, callback{std::move(callback)}](auto &response) {
         profile_.listen_key([&]() {
           try {
@@ -388,7 +394,7 @@ void OrderEntry::create_order(
   auto type = json::map(create_order.order_type).as_raw_text();
   auto time_in_force = json::map(create_order.time_in_force).as_raw_text();
   // XXX use encode buffer
-  auto message = roq::format(
+  auto body = roq::format(
       R"({{)"
       R"("symbol":"{}",)"
       R"("side":"{}",)"
@@ -415,8 +421,10 @@ void OrderEntry::create_order(
       0.0,
       Flags::rest_order_recv_window().count(),
       timestamp.count());
-  log::debug(R"(body="{}")"_fmt, message);
+  log::debug(R"(body="{}")"_fmt, body);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  auto quality_of_service = core::web::QualityOfService::IMMEDIATE;
+  auto rate_limit_weight = 1;
   connection_.request(
       method,
       path,
@@ -424,8 +432,9 @@ void OrderEntry::create_order(
       ACCEPT_JSON,
       CONTENT_TYPE_JSON,
       headers,
-      {},  // body
-      core::web::QualityOfService::IMMEDIATE,
+      body,
+      quality_of_service,
+      rate_limit_weight,
       [this, callback{std::move(callback)}](auto &response) {
         profile_.new_order([&]() {
           try {
@@ -453,7 +462,7 @@ void OrderEntry::cancel_order(
   auto path = "/api/v3/order"_sv;
   auto timestamp = core::get_realtime_clock();
   // XXX use encode buffer
-  auto message = roq::format(
+  auto body = roq::format(
       R"({{)"
       R"("symbol":"{}",)"
       R"("origClientOrderId":"{}")"
@@ -466,8 +475,10 @@ void OrderEntry::cancel_order(
       request_id,
       Flags::rest_order_recv_window().count(),
       timestamp.count());
-  log::debug(R"(body="{}")"_fmt, message);
+  log::debug(R"(body="{}")"_fmt, body);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  auto quality_of_service = core::web::QualityOfService::IMMEDIATE;
+  auto rate_limit_weight = 1;
   connection_.request(
       method,
       path,
@@ -475,8 +486,9 @@ void OrderEntry::cancel_order(
       ACCEPT_JSON,
       CONTENT_TYPE_JSON,
       headers,
-      {},  // body
-      core::web::QualityOfService::IMMEDIATE,
+      body,
+      quality_of_service,
+      rate_limit_weight,
       [this, callback{std::move(callback)}](auto &response) {
         profile_.cancel_order([&]() {
           try {
