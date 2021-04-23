@@ -307,13 +307,13 @@ uint32_t OrderEntry::download(OrderEntryState state) {
       break;
     case OrderEntryState::LISTEN_KEY:
       download_listen_key();
-      return 1u;
+      return 1;
     case OrderEntryState::ACCOUNT:
       download_account();
-      return 1u;
+      return 1;
     case OrderEntryState::EXCHANGE_INFO:
       download_exchange_info();
-      return 1u;
+      return 1;
     case OrderEntryState::DONE:
       (*this)(ConnectionStatus::READY);
       assert(!ready_);
