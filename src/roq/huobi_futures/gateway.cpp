@@ -179,12 +179,9 @@ void Gateway::operator()(OrderEntry::SymbolsUpdate &symbols_update) {
   }
 }
 
-void Gateway::operator()(
-    const Event<CreateOrder> &event,
-    const std::string_view &request_id,
-    uint32_t gateway_order_id) {
+void Gateway::operator()(const Event<CreateOrder> &event, const std::string_view &request_id) {
   assert(!event.value.account.empty());
-  get_order_entry(event.value.account)(event, request_id, gateway_order_id);
+  get_order_entry(event.value.account)(event, request_id);
 }
 
 void Gateway::operator()(

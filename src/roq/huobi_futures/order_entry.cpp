@@ -115,10 +115,7 @@ void OrderEntry::operator()(metrics::Writer &writer) {
       .write(latency_.ping, metrics::LATENCY);
 }
 
-void OrderEntry::operator()(
-    const Event<CreateOrder> &event,
-    const std::string_view &request_id,
-    [[maybe_unused]] uint32_t gateway_order_id) {
+void OrderEntry::operator()(const Event<CreateOrder> &event, const std::string_view &request_id) {
   create_order(event.value, request_id, [this](auto &promise) {
     try {
       (*this)(promise.get());

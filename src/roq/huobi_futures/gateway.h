@@ -37,10 +37,7 @@ class Gateway final : public server::Handler,
   void operator()(const Event<Connected> &) override;
   void operator()(const Event<Disconnected> &) override;
 
-  void operator()(
-      const Event<CreateOrder> &,
-      const std::string_view &request_id,
-      uint32_t gateway_order_id) override;
+  void operator()(const Event<CreateOrder> &, const std::string_view &request_id) override;
   void operator()(
       const Event<ModifyOrder> &,
       const std::string_view &request_id,
