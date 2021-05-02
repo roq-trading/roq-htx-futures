@@ -227,22 +227,32 @@ void DropCopy::operator()(
     log::trace_3("execution_report={}"_fmt, execution_report);
     auto side = json::map(execution_report.side);
     auto status = json::map(execution_report.current_order_status);
-    server::OMS_Lookup order_lookup{
+    OrderUpdate order_update{
+        .stream_id = stream_id_,
+        .account = security_.get_account(),
+        .order_id = {},
+        .exchange = Flags::exchange(),
         .symbol = execution_report.symbol,
-        .side = side,
         .status = status,
+        .side = side,
         .price = execution_report.price,
         .remaining_quantity = NaN,
         .traded_quantity = execution_report.cumulative_filled_quantity,
-        .timestamp = execution_report.transaction_time,  // XXX transact_time?
+        .position_effect = {},
+        .order_template = {},
+        .create_time_utc = {},
+        .update_time_utc = execution_report.transaction_time,
+        .gateway_order_id = {},
         .external_account = {},
         .external_order_id = execution_report.client_order_id,
+        .routing_id = {},
     };
     auto found = shared_.find_order(
+        stream_id_,
+        trace_info,
+        order_update,
         execution_report.original_client_order_id,
         execution_report.client_order_id,
-        order_lookup,
-        trace_info,
         [&]([[maybe_unused]] const auto &order, [[maybe_unused]] auto &result) {
           // XXX IMPLEMENT
         });

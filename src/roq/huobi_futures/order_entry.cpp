@@ -115,7 +115,8 @@ void OrderEntry::operator()(metrics::Writer &writer) {
       .write(latency_.ping, metrics::LATENCY);
 }
 
-void OrderEntry::operator()(const Event<CreateOrder> &event, const std::string_view &request_id) {
+uint16_t OrderEntry::operator()(
+    const Event<CreateOrder> &event, const std::string_view &request_id) {
   create_order(event.value, request_id, [this](auto &promise) {
     try {
       (*this)(promise.get());
@@ -124,14 +125,15 @@ void OrderEntry::operator()(const Event<CreateOrder> &event, const std::string_v
       log::fatal(R"(Unexpected what="{}")"_fmt, e.what());
     }
   });
+  return stream_id_;
 }
 
-void OrderEntry::operator()(
+uint16_t OrderEntry::operator()(
     const Event<ModifyOrder> &, const std::string_view &, const server::OMS_Order &order) {
   throw server::OMS_Exception(Error::MODIFY_ORDER_NOT_SUPPORTED, order);
 }
 
-void OrderEntry::operator()(
+uint16_t OrderEntry::operator()(
     const Event<CancelOrder> &event,
     const std::string_view &request_id,
     const server::OMS_Order &order) {
@@ -143,9 +145,10 @@ void OrderEntry::operator()(
       log::fatal(R"(Unexpected what="{}")"_fmt, e.what());
     }
   });
+  return stream_id_;
 }
 
-void OrderEntry::operator()(
+uint16_t OrderEntry::operator()(
     const Event<CancelAllOrders> &event, [[maybe_unused]] const std::string_view &request_id) {
   log::fatal("NOT IMPLEMENTED"_sv);
 }

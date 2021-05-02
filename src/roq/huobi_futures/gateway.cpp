@@ -179,32 +179,33 @@ void Gateway::operator()(OrderEntry::SymbolsUpdate &symbols_update) {
   }
 }
 
-void Gateway::operator()(const Event<CreateOrder> &event, const std::string_view &request_id) {
+uint16_t Gateway::operator()(const Event<CreateOrder> &event, const std::string_view &request_id) {
   assert(!event.value.account.empty());
-  get_order_entry(event.value.account)(event, request_id);
+  return get_order_entry(event.value.account)(event, request_id);
 }
 
-void Gateway::operator()(
+uint16_t Gateway::operator()(
     const Event<ModifyOrder> &event,
     const std::string_view &request_id,
     const server::OMS_Order &order) {
   assert(!event.value.account.empty());
   assert(event.value.account == order.account);
-  get_order_entry(event.value.account)(event, request_id, order);
+  return get_order_entry(event.value.account)(event, request_id, order);
 }
 
-void Gateway::operator()(
+uint16_t Gateway::operator()(
     const Event<CancelOrder> &event,
     const std::string_view &request_id,
     const server::OMS_Order &order) {
   assert(!event.value.account.empty());
   assert(event.value.account == order.account);
-  get_order_entry(event.value.account)(event, request_id, order);
+  return get_order_entry(event.value.account)(event, request_id, order);
 }
 
-void Gateway::operator()(const Event<CancelAllOrders> &event, const std::string_view &request_id) {
+uint16_t Gateway::operator()(
+    const Event<CancelAllOrders> &event, const std::string_view &request_id) {
   assert(!event.value.account.empty());
-  get_order_entry(event.value.account)(event, request_id);
+  return get_order_entry(event.value.account)(event, request_id);
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
