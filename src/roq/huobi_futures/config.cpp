@@ -49,6 +49,18 @@ void Config::dispatch(server::Config::Handler &handler) const {
       .mbp_allow_price_inversion = {},
       .mbp_allow_fractional_tick_size = {},
       .mbp_allow_remove_non_existing = {},
+      .supports{
+          SupportType::REFERENCE_DATA,
+          SupportType::MARKET_STATUS,
+          SupportType::TOP_OF_BOOK,
+          SupportType::MARKET_BY_PRICE,
+          SupportType::TRADE_SUMMARY,
+          SupportType::STATISTICS,
+          SupportType::CREATE_ORDER,
+          SupportType::CANCEL_ORDER,
+          SupportType::ORDER_ACK,
+          SupportType::FUNDS,
+      },
   };
   handler(settings);
 }
