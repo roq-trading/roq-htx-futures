@@ -76,7 +76,7 @@ class OrderEntry final : public core::web::Client::Handler {
       const Event<ModifyOrder> &, const std::string_view &request_id, const server::OMS_Order &);
   uint16_t operator()(
       const Event<CancelOrder> &, const std::string_view &request_id, const server::OMS_Order &);
-  uint16_t operator()(const Event<CancelAllOrders> &, const std::string_view &request_id);
+  uint16_t operator()(const Event<CancelAllOrders> &);
 
  protected:
   void operator()(const core::web::Client::Connected &);
