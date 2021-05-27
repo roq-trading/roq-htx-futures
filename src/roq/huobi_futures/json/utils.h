@@ -101,7 +101,7 @@ inline roq::OrderStatus map(json::OrderStatus side) {
     case json::OrderStatus::CANCELED:
       return roq::OrderStatus::CANCELED;
     case json::OrderStatus::PENDING_CANCEL:
-      return roq::OrderStatus::PENDING;
+      break;
     case json::OrderStatus::REJECTED:
       return roq::OrderStatus::REJECTED;
     case json::OrderStatus::EXPIRED:
@@ -119,8 +119,6 @@ inline json::OrderStatus map(roq::OrderStatus side) {
     case roq::OrderStatus::REJECTED:
       return json::OrderStatus::REJECTED;
     case roq::OrderStatus::ACCEPTED:
-      break;
-    case roq::OrderStatus::PENDING:
       break;
     case roq::OrderStatus::WORKING:
       return json::OrderStatus::NEW;
