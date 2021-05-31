@@ -29,12 +29,7 @@ static const auto SUPPORTS = utils::Mask{
     SupportType::FUNDS,
 };
 
-static const auto KEEP_ALIVE = true;
 static const auto ALLOW_PIPELINING = true;
-
-static const auto ACCEPT_ALL = "*/*"_sv;
-static const auto ACCEPT_JSON = "application/json"_sv;
-static const auto CONTENT_TYPE_JSON = "application/json"_sv;
 
 struct create_metrics final : public core::metrics::Factory {
   explicit create_metrics(const std::string_view &group, const std::string_view &function)
@@ -57,7 +52,7 @@ OrderEntry::OrderEntry(
           Flags::encode_buffer_size(),
           core::URI(Flags::rest_uri()),
           ROQ_PACKAGE_NAME,
-          KEEP_ALIVE,
+          core::http::Connection::KEEP_ALIVE,
           ALLOW_PIPELINING,
           Flags::rest_request_timeout(),
           Flags::rest_rate_limit_interval(),
@@ -197,106 +192,100 @@ void OrderEntry::operator()(ConnectionStatus status) {
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> &)> &&callback) {
-  auto method = core::http::Method::GET;
-  auto path = "/api/v3/exchangeInfo"_sv;
-  auto rate_limit_weight = 1;
-  connection_.request(
-      method,
-      path,
-      {},  // query
-      ACCEPT_ALL,
-      {},  // content_type
-      {},  // headers
-      {},  // body
-      {},  // QoS
-      rate_limit_weight,
-      [this, callback{std::move(callback)}](auto &response) {
-        profile_.exchange_info([&]() {
-          try {
-            response.expect(core::http::Status::OK);
-            core::json::Buffer buffer(decode_buffer_);
-            auto exchange_info =
-                core::json::Parser::create<json::ExchangeInfo>(response.body(), buffer);
-            log::trace_1("exchange_info={}"_fmt, exchange_info);
-            core::Promise<json::ExchangeInfo> promise(exchange_info);
-            callback(promise);
-          } catch (NetworkError &e) {
-            log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
-            core::Promise<json::ExchangeInfo> promise(std::current_exception());
-            callback(promise);
-          }
-        });
-      });
+  core::web::Request request{
+      .method = core::http::Method::GET,
+      .path = "/api/v3/exchangeInfo"_sv,
+      .query = {},
+      .accept = {},
+      .content_type = {},
+      .headers = {},
+      .body = {},
+      .quality_of_service = {},
+      .rate_limit_weight = 1,
+  };
+  connection_(request, [this, callback{std::move(callback)}](auto &response) {
+    profile_.exchange_info([&]() {
+      try {
+        response.expect(core::http::Status::OK);
+        core::json::Buffer buffer(decode_buffer_);
+        auto exchange_info =
+            core::json::Parser::create<json::ExchangeInfo>(response.body(), buffer);
+        log::trace_1("exchange_info={}"_fmt, exchange_info);
+        core::Promise<json::ExchangeInfo> promise(exchange_info);
+        callback(promise);
+      } catch (NetworkError &e) {
+        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        core::Promise<json::ExchangeInfo> promise(std::current_exception());
+        callback(promise);
+      }
+    });
+  });
 }
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &&callback) {
-  auto method = core::http::Method::GET;
-  auto path = "/api/v3/account"_sv;
   auto now = core::get_realtime_clock();
   auto [timestamp, signature] = security_.create_signature(now);
   auto query = roq::format("?{}&signature={}"_fmt, timestamp, signature);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
-  auto rate_limit_weight = 1;
-  connection_.request(
-      method,
-      path,
-      query,
-      ACCEPT_ALL,
-      {},  // content_type
-      headers,
-      {},  // body
-      {},  // QoS
-      rate_limit_weight,
-      [this, callback{std::move(callback)}](auto &response) {
-        profile_.account([&]() {
-          try {
-            response.expect(core::http::Status::OK);
-            core::json::Buffer buffer(decode_buffer_);
-            auto account = core::json::Parser::create<json::Account>(response.body(), buffer);
-            log::trace_1("account={}"_fmt, account);
-            core::Promise<json::Account> promise(account);
-            callback(promise);
-          } catch (NetworkError &e) {
-            log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
-            core::Promise<json::Account> promise(std::current_exception());
-            callback(promise);
-          }
-        });
-      });
+  core::web::Request request{
+      .method = core::http::Method::GET,
+      .path = "/api/v3/account"_sv,
+      .query = query,
+      .accept = {},
+      .content_type = {},
+      .headers = headers,
+      .body = {},
+      .quality_of_service = {},
+      .rate_limit_weight = 1,
+  };
+  connection_(request, [this, callback{std::move(callback)}](auto &response) {
+    profile_.account([&]() {
+      try {
+        response.expect(core::http::Status::OK);
+        core::json::Buffer buffer(decode_buffer_);
+        auto account = core::json::Parser::create<json::Account>(response.body(), buffer);
+        log::trace_1("account={}"_fmt, account);
+        core::Promise<json::Account> promise(account);
+        callback(promise);
+      } catch (NetworkError &e) {
+        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        core::Promise<json::Account> promise(std::current_exception());
+        callback(promise);
+      }
+    });
+  });
 }
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::ListenKey> &)> &&callback) {
-  auto method = core::http::Method::POST;
-  auto path = "/api/v3/userDataStream"_sv;
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
-  auto rate_limit_weight = 1;
-  connection_.request(
-      method,
-      path,
-      {},  // query
-      ACCEPT_ALL,
-      {},  // content_type
-      headers,
-      {},  // body
-      {},  // QoS
-      rate_limit_weight,
-      [this, callback{std::move(callback)}](auto &response) {
-        profile_.listen_key([&]() {
-          try {
-            response.expect(core::http::Status::OK);
-            auto listen_key = core::json::Parser::create<json::ListenKey>(response.body());
-            log::trace_1("listen_key={}"_fmt, listen_key);
-            core::Promise<json::ListenKey> promise(listen_key);
-            callback(promise);
-          } catch (NetworkError &e) {
-            log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
-            core::Promise<json::ListenKey> promise(std::current_exception());
-            callback(promise);
-          }
-        });
-      });
+  core::web::Request request{
+      .method = core::http::Method::POST,
+      .path = "/api/v3/userDataStream"_sv,
+      .query = {},
+      .accept = {},
+      .content_type = {},
+      .headers = headers,
+      .body = {},
+      .quality_of_service = {},
+      .rate_limit_weight = 1,
+  };
+  connection_(request, [this, callback{std::move(callback)}](auto &response) {
+    profile_.listen_key([&]() {
+      try {
+        response.expect(core::http::Status::OK);
+        auto listen_key = core::json::Parser::create<json::ListenKey>(response.body());
+        log::trace_1("listen_key={}"_fmt, listen_key);
+        core::Promise<json::ListenKey> promise(listen_key);
+        callback(promise);
+      } catch (NetworkError &e) {
+        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        core::Promise<json::ListenKey> promise(std::current_exception());
+        callback(promise);
+      }
+    });
+  });
 }
 
 uint32_t OrderEntry::download(OrderEntryState state) {
@@ -391,8 +380,6 @@ void OrderEntry::create_order(
     const CreateOrder &create_order,
     const std::string_view &cl_ord_id,
     std::function<void(const core::Promise<json::NewOrder> &)> &&callback) {
-  auto method = core::http::Method::POST;
-  auto path = "/api/v3/order"_sv;
   auto timestamp = core::get_realtime_clock();
   auto side = json::map(create_order.side).as_raw_text();
   auto type = json::map(create_order.order_type).as_raw_text();
@@ -427,34 +414,33 @@ void OrderEntry::create_order(
       timestamp.count());
   log::debug(R"(body="{}")"_fmt, body);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
-  auto quality_of_service = core::web::QualityOfService::IMMEDIATE;
-  auto rate_limit_weight = 1;
-  connection_.request(
-      method,
-      path,
-      {},  // query
-      ACCEPT_JSON,
-      CONTENT_TYPE_JSON,
-      headers,
-      body,
-      quality_of_service,
-      rate_limit_weight,
-      [this, callback{std::move(callback)}](auto &response) {
-        profile_.new_order([&]() {
-          try {
-            response.expect(core::http::Status::OK);
-            core::json::Buffer buffer(decode_buffer_);
-            auto new_order = core::json::Parser::create<json::NewOrder>(response.body(), buffer);
-            log::trace_1("new_order={}"_fmt, new_order);
-            core::Promise<json::NewOrder> promise(new_order);
-            callback(promise);
-          } catch (NetworkError &e) {
-            log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
-            core::Promise<json::NewOrder> promise(std::current_exception());
-            callback(promise);
-          }
-        });
-      });
+  core::web::Request request{
+      .method = core::http::Method::POST,
+      .path = "/api/v3/order"_sv,
+      .query = {},
+      .accept = core::http::Accept::JSON,
+      .content_type = core::http::ContentType::JSON,
+      .headers = headers,
+      .body = body,
+      .quality_of_service = core::web::QualityOfService::IMMEDIATE,
+      .rate_limit_weight = 1,
+  };
+  connection_(request, [this, callback{std::move(callback)}](auto &response) {
+    profile_.new_order([&]() {
+      try {
+        response.expect(core::http::Status::OK);
+        core::json::Buffer buffer(decode_buffer_);
+        auto new_order = core::json::Parser::create<json::NewOrder>(response.body(), buffer);
+        log::trace_1("new_order={}"_fmt, new_order);
+        core::Promise<json::NewOrder> promise(new_order);
+        callback(promise);
+      } catch (NetworkError &e) {
+        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        core::Promise<json::NewOrder> promise(std::current_exception());
+        callback(promise);
+      }
+    });
+  });
 }
 
 void OrderEntry::cancel_order(
@@ -462,8 +448,6 @@ void OrderEntry::cancel_order(
     const std::string_view &request_id,
     const server::OMS_Order &order,
     std::function<void(const core::Promise<json::CancelOrder> &)> &&callback) {
-  auto method = core::http::Method::DELETE;
-  auto path = "/api/v3/order"_sv;
   auto timestamp = core::get_realtime_clock();
   // XXX use encode buffer
   auto body = roq::format(
@@ -481,33 +465,32 @@ void OrderEntry::cancel_order(
       timestamp.count());
   log::debug(R"(body="{}")"_fmt, body);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
-  auto quality_of_service = core::web::QualityOfService::IMMEDIATE;
-  auto rate_limit_weight = 1;
-  connection_.request(
-      method,
-      path,
-      {},  // query
-      ACCEPT_JSON,
-      CONTENT_TYPE_JSON,
-      headers,
-      body,
-      quality_of_service,
-      rate_limit_weight,
-      [this, callback{std::move(callback)}](auto &response) {
-        profile_.cancel_order([&]() {
-          try {
-            response.expect(core::http::Status::OK);
-            auto cancel_order = core::json::Parser::create<json::CancelOrder>(response.body());
-            log::trace_1("cancel_order={}"_fmt, cancel_order);
-            core::Promise<json::CancelOrder> promise(cancel_order);
-            callback(promise);
-          } catch (NetworkError &e) {
-            log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
-            core::Promise<json::CancelOrder> promise(std::current_exception());
-            callback(promise);
-          }
-        });
-      });
+  core::web::Request request{
+      .method = core::http::Method::DELETE,
+      .path = "/api/v3/order"_sv,
+      .query = {},
+      .accept = core::http::Accept::JSON,
+      .content_type = core::http::ContentType::JSON,
+      .headers = headers,
+      .body = body,
+      .quality_of_service = core::web::QualityOfService::IMMEDIATE,
+      .rate_limit_weight = 1,
+  };
+  connection_(request, [this, callback{std::move(callback)}](auto &response) {
+    profile_.cancel_order([&]() {
+      try {
+        response.expect(core::http::Status::OK);
+        auto cancel_order = core::json::Parser::create<json::CancelOrder>(response.body());
+        log::trace_1("cancel_order={}"_fmt, cancel_order);
+        core::Promise<json::CancelOrder> promise(cancel_order);
+        callback(promise);
+      } catch (NetworkError &e) {
+        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        core::Promise<json::CancelOrder> promise(std::current_exception());
+        callback(promise);
+      }
+    });
+  });
 }
 
 void OrderEntry::operator()(const json::NewOrder &) {
