@@ -124,15 +124,19 @@ uint16_t OrderEntry::operator()(
 }
 
 uint16_t OrderEntry::operator()(
-    const Event<ModifyOrder> &, const std::string_view &, const server::OMS_Order &order) {
+    const Event<ModifyOrder> &,
+    const server::Order &order,
+    [[maybe_unused]] const std::string_view &request_id,
+    [[maybe_unused]] const std::string_view &previous_request_id) {
   throw server::OMS_Exception(Error::MODIFY_ORDER_NOT_SUPPORTED, order);
 }
 
 uint16_t OrderEntry::operator()(
     const Event<CancelOrder> &event,
+    const server::Order &order,
     const std::string_view &request_id,
-    const server::OMS_Order &order) {
-  cancel_order(event.value, request_id, order, [this](auto &promise) {
+    [[maybe_unused]] const std::string_view &previous_request_id) {
+  cancel_order(event.value, order, request_id, [this](auto &promise) {
     try {
       (*this)(promise.get());
     } catch (NetworkError &e) {
@@ -445,8 +449,8 @@ void OrderEntry::create_order(
 
 void OrderEntry::cancel_order(
     [[maybe_unused]] const CancelOrder &cancel_order,
+    const server::Order &order,
     const std::string_view &request_id,
-    const server::OMS_Order &order,
     std::function<void(const core::Promise<json::CancelOrder> &)> &&callback) {
   auto timestamp = core::get_realtime_clock();
   // XXX use encode buffer
