@@ -262,7 +262,7 @@ void DropCopy::operator()(
         order_update,
         execution_report.original_client_order_id,
         execution_report.client_order_id,
-        [&]([[maybe_unused]] const auto &order, [[maybe_unused]] auto &result) {
+        [&]([[maybe_unused]] const auto &order, [[maybe_unused]] auto callback) {
           // XXX IMPLEMENT
         });
     if (!found) {
