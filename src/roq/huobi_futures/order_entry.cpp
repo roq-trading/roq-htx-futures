@@ -128,7 +128,7 @@ uint16_t OrderEntry::operator()(
     const server::Order &order,
     [[maybe_unused]] const std::string_view &request_id,
     [[maybe_unused]] const std::string_view &previous_request_id) {
-  throw server::OMS_Exception(Error::NOT_SUPPORTED, order);
+  throw server::OMS_ErrorException(Error::NOT_SUPPORTED, order);
 }
 
 uint16_t OrderEntry::operator()(
