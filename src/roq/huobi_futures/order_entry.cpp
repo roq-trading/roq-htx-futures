@@ -44,7 +44,7 @@ OrderEntry::OrderEntry(
     Security &security,
     Shared &shared)
     : handler_(handler), stream_id_(stream_id),
-      name_(roq::format("{}:{}:{}"_fmt, stream_id_, NAME, security.get_account())),
+      name_(roq::format("{}:{}:{}"_sv, stream_id_, NAME, security.get_account())),
       connection_(
           *this,
           context,
@@ -117,7 +117,7 @@ uint16_t OrderEntry::operator()(
       (*this)(promise.get());
     } catch (NetworkError &e) {
       // XXX send ack failure
-      log::fatal(R"(Unexpected what="{}")"_fmt, e.what());
+      log::fatal(R"(Unexpected what="{}")"_sv, e.what());
     }
   });
   return stream_id_;
@@ -141,7 +141,7 @@ uint16_t OrderEntry::operator()(
       (*this)(promise.get());
     } catch (NetworkError &e) {
       // XXX send ack failure
-      log::fatal(R"(Unexpected what="{}")"_fmt, e.what());
+      log::fatal(R"(Unexpected what="{}")"_sv, e.what());
     }
   });
   return stream_id_;
@@ -189,7 +189,7 @@ void OrderEntry::operator()(ConnectionStatus status) {
         .type = StreamType::REST,
         .priority = Priority::PRIMARY,
     };
-    log::info("stream_status={}"_fmt, stream_status);
+    log::info("stream_status={}"_sv, stream_status);
     server::create_trace_and_dispatch(trace_info, stream_status, handler_);
   }
 }
@@ -214,11 +214,11 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> 
         core::json::Buffer buffer(decode_buffer_);
         auto exchange_info =
             core::json::Parser::create<json::ExchangeInfo>(response.body(), buffer);
-        log::trace_1("exchange_info={}"_fmt, exchange_info);
+        log::info<1>("exchange_info={}"_sv, exchange_info);
         core::Promise<json::ExchangeInfo> promise(exchange_info);
         callback(promise);
       } catch (NetworkError &e) {
-        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
         core::Promise<json::ExchangeInfo> promise(std::current_exception());
         callback(promise);
       }
@@ -230,8 +230,8 @@ template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &&callback) {
   auto now = core::get_realtime_clock();
   auto [timestamp, signature] = security_.create_signature(now);
-  auto query = roq::format("?{}&signature={}"_fmt, timestamp, signature);
-  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  auto query = roq::format("?{}&signature={}"_sv, timestamp, signature);
+  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_sv, security_.get_api_key());
   core::web::Request request{
       .method = core::http::Method::GET,
       .path = "/api/v3/account"_sv,
@@ -249,11 +249,11 @@ void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &
         response.expect(core::http::Status::OK);
         core::json::Buffer buffer(decode_buffer_);
         auto account = core::json::Parser::create<json::Account>(response.body(), buffer);
-        log::trace_1("account={}"_fmt, account);
+        log::info<1>("account={}"_sv, account);
         core::Promise<json::Account> promise(account);
         callback(promise);
       } catch (NetworkError &e) {
-        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
         core::Promise<json::Account> promise(std::current_exception());
         callback(promise);
       }
@@ -263,7 +263,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &
 
 template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::ListenKey> &)> &&callback) {
-  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_sv, security_.get_api_key());
   core::web::Request request{
       .method = core::http::Method::POST,
       .path = "/api/v3/userDataStream"_sv,
@@ -280,11 +280,11 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ListenKey> &)>
       try {
         response.expect(core::http::Status::OK);
         auto listen_key = core::json::Parser::create<json::ListenKey>(response.body());
-        log::trace_1("listen_key={}"_fmt, listen_key);
+        log::info<1>("listen_key={}"_sv, listen_key);
         core::Promise<json::ListenKey> promise(listen_key);
         callback(promise);
       } catch (NetworkError &e) {
-        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
         core::Promise<json::ListenKey> promise(std::current_exception());
         callback(promise);
       }
@@ -403,7 +403,7 @@ void OrderEntry::create_order(
       R"("icebergQty":{},)"  // XXX ???
       R"("recvWindow":{},)"
       R"("timestamp":{})"
-      R"(}})"_fmt,
+      R"(}})"_sv,
       create_order.symbol,
       side,
       type,
@@ -416,8 +416,8 @@ void OrderEntry::create_order(
       0.0,
       Flags::rest_order_recv_window().count(),
       timestamp.count());
-  log::debug(R"(body="{}")"_fmt, body);
-  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  log::debug(R"(body="{}")"_sv, body);
+  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_sv, security_.get_api_key());
   core::web::Request request{
       .method = core::http::Method::POST,
       .path = "/api/v3/order"_sv,
@@ -435,11 +435,11 @@ void OrderEntry::create_order(
         response.expect(core::http::Status::OK);
         core::json::Buffer buffer(decode_buffer_);
         auto new_order = core::json::Parser::create<json::NewOrder>(response.body(), buffer);
-        log::trace_1("new_order={}"_fmt, new_order);
+        log::info<1>("new_order={}"_sv, new_order);
         core::Promise<json::NewOrder> promise(new_order);
         callback(promise);
       } catch (NetworkError &e) {
-        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
         core::Promise<json::NewOrder> promise(std::current_exception());
         callback(promise);
       }
@@ -461,14 +461,14 @@ void OrderEntry::cancel_order(
       R"("newClientOrderId":"{}")"
       R"("recvWindow":{},)"
       R"("timestamp":{})"
-      R"(}})"_fmt,
+      R"(}})"_sv,
       order.symbol,
       order.external_order_id,
       request_id,
       Flags::rest_order_recv_window().count(),
       timestamp.count());
-  log::debug(R"(body="{}")"_fmt, body);
-  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_fmt, security_.get_api_key());
+  log::debug(R"(body="{}")"_sv, body);
+  auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_sv, security_.get_api_key());
   core::web::Request request{
       .method = core::http::Method::DELETE,
       .path = "/api/v3/order"_sv,
@@ -485,11 +485,11 @@ void OrderEntry::cancel_order(
       try {
         response.expect(core::http::Status::OK);
         auto cancel_order = core::json::Parser::create<json::CancelOrder>(response.body());
-        log::trace_1("cancel_order={}"_fmt, cancel_order);
+        log::info<1>("cancel_order={}"_sv, cancel_order);
         core::Promise<json::CancelOrder> promise(cancel_order);
         callback(promise);
       } catch (NetworkError &e) {
-        log::warn(R"(Exception type={}, what="{}")"_fmt, typeid(e).name(), e.what());
+        log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
         core::Promise<json::CancelOrder> promise(std::current_exception());
         callback(promise);
       }
@@ -510,7 +510,7 @@ void OrderEntry::operator()(const json::ListenKey &listen_key) {
   bool initial = listen_key_.empty();
   if (utils::update(listen_key_, listen_key.listen_key)) {
     if (initial) {
-      log::info(R"(Listen key has been acquired (value="{}"))"_fmt, listen_key_);
+      log::info(R"(Listen key has been acquired (value="{}"))"_sv, listen_key_);
       ListenKeyUpdate listen_key_update{
           .account = security_.get_account(),
           .listen_key = listen_key.listen_key,
@@ -545,9 +545,9 @@ void OrderEntry::operator()(const json::ExchangeInfo &exchange_info) {
   std::vector<std::string> symbols;
   size_t counter = {};
   for (const auto &item : exchange_info.symbols) {
-    log::trace_1("item={}"_fmt, item);
+    log::info<1>("item={}"_sv, item);
     if (shared_.discard_symbol(item.symbol)) {
-      log::trace_1(R"(Drop symbol="{}")"_fmt, item.symbol);
+      log::info<1>(R"(Drop symbol="{}")"_sv, item.symbol);
       continue;
     }
     // note! convert to lowercase
@@ -591,7 +591,7 @@ void OrderEntry::operator()(const json::ExchangeInfo &exchange_info) {
     };
     create_trace_and_dispatch(trace_info, market_status, handler_, true);
   }
-  log::info("Exchange info: including symbols {}/{}"_fmt, counter, exchange_info.symbols.size());
+  log::info("Exchange info: including symbols {}/{}"_sv, counter, exchange_info.symbols.size());
   if (!symbols.empty()) {
     SymbolsUpdate symbols_update{
         .symbols = symbols,

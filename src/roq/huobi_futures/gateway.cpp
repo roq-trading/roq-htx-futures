@@ -151,9 +151,9 @@ void Gateway::operator()(const OrderEntry::ListenKeyUpdate &listen_key_update) {
   assert(!account.empty());
   auto iter = drop_copy_.find(account);
   if (iter == drop_copy_.end()) {
-    log::fatal(R"(Unexpected: account="{}")"_fmt, account);
+    log::fatal(R"(Unexpected: account="{}")"_sv, account);
   } else if (!static_cast<bool>((*iter).second)) {
-    log::info(R"(Create drop-copy (user-stream) for account="{}")"_fmt, account);
+    log::info(R"(Create drop-copy (user-stream) for account="{}")"_sv, account);
     auto drop_copy = std::make_unique<DropCopy>(
         *this, context_, ++stream_id_, *security_[account], shared_, listen_key_update.listen_key);
     MessageInfo message_info;  // XXX something sensible
@@ -227,7 +227,7 @@ OrderEntry &Gateway::get_order_entry(const std::string_view &account) {
   auto iter = order_entry_.find(account);
   if (iter != order_entry_.end())
     return *(*iter).second;
-  throw RuntimeErrorException(R"(Unknown account="{}")"_fmt, account);
+  throw RuntimeErrorException(R"(Unknown account="{}")"_sv, account);
 }
 
 }  // namespace huobi_futures

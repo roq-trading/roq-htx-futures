@@ -67,7 +67,7 @@ struct fmt::formatter<roq::huobi_futures::Config> : public roq::formatter {
         "{{"
         "users=[{}], "
         "accounts=..."
-        "}}"_fmt,
+        "}}"_sv,
         roq::join(value.users, ", "_sv));
     // roq::join(value.accounts, ", "_sv));
   }

@@ -38,7 +38,7 @@ void MarketStreamParser::dispatch(
           break;
         case Field::UNKNOWN:
 #if !defined(NDEBUG)
-          log::fatal(R"(Unknown key="{}")"_fmt, key);
+          log::fatal(R"(Unknown key="{}")"_sv, key);
 #endif
           // XXX CALLBACK ?????????????
           break;
@@ -64,7 +64,7 @@ void MarketStreamParser::dispatch(
           auto full_name = std::get<std::string_view>(value);
           auto idx0 = full_name.find('@');  // <symbol>@<stream>
           if (ROQ_UNLIKELY(idx0 == full_name.npos))
-            log::fatal(R"(Unexpected: name="{}")"_fmt, full_name);
+            log::fatal(R"(Unexpected: name="{}")"_sv, full_name);
           symbol = std::string_view(full_name.begin(), idx0);
           // note! convert to uppercase
           std::transform(
@@ -132,7 +132,7 @@ void MarketStreamParser::dispatch(
   }
   if (dispatched)
     return;
-  log::warn(R"(message="{}")"_fmt, message);
+  log::warn(R"(message="{}")"_sv, message);
   log::fatal("Unexpected"_sv);
 }
 
