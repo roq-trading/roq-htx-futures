@@ -105,7 +105,7 @@ void Gateway::operator()(const Event<Connected> &) {
 
 void Gateway::operator()(const Event<Disconnected> &event) {
   const auto &[message_info, disconnected] = event;
-  if (disconnected.cancel_policy) {
+  if (disconnected.order_cancel_policy) {
     log::warn("*** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"_sv);
   }
 }
