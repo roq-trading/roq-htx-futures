@@ -63,7 +63,7 @@ class OrderEntry final : public core::web::Client::Handler {
   OrderEntry(OrderEntry &&) = delete;
   OrderEntry(const OrderEntry &) = delete;
 
-  bool ready() const;
+  bool ready() const { return status_ == ConnectionStatus::READY; }
 
   void operator()(const Event<Start> &);
   void operator()(const Event<Stop> &);
@@ -147,7 +147,6 @@ class OrderEntry final : public core::web::Client::Handler {
   absl::flat_hash_set<std::string> all_symbols_;
   std::string listen_key_;
   // state
-  bool ready_ = false;
   std::chrono::nanoseconds listen_key_refresh_ = {};
   ConnectionStatus status_ = {};
   server::Download<OrderEntryState> download_;
