@@ -277,7 +277,8 @@ void MarketData::subscribe_depth(const roq::span<std::string> &symbols) {
   auto stream = roq::format(
       R"(@depth{}@{}ms)"_sv,
       Flags::ws_subscribe_depth_levels(),
-      Flags::ws_subscribe_depth_freq().count());
+      std::chrono::duration_cast<std::chrono::milliseconds>(Flags::ws_subscribe_depth_freq())
+          .count());
   auto id = ++request_id_;
   auto separator = roq::format(R"({}",")"_sv, stream);
   auto message = roq::format(

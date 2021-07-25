@@ -409,7 +409,8 @@ void OrderEntry::create_order(
       cl_ord_id,
       0.0,
       0.0,
-      Flags::rest_order_recv_window().count(),
+      std::chrono::duration_cast<std::chrono::milliseconds>(Flags::rest_order_recv_window())
+          .count(),
       timestamp.count());
   log::debug(R"(body="{}")"_sv, body);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_sv, security_.get_api_key());
@@ -462,7 +463,8 @@ void OrderEntry::cancel_order(
       order.symbol,
       order.external_order_id,
       request_id,
-      Flags::rest_order_recv_window().count(),
+      std::chrono::duration_cast<std::chrono::milliseconds>(Flags::rest_order_recv_window())
+          .count(),
       timestamp.count());
   log::debug(R"(body="{}")"_sv, body);
   auto headers = roq::format("X-MBX-APIKEY: {}\r\n"_sv, security_.get_api_key());
