@@ -10,8 +10,6 @@
 
 #include "roq/core/charconv/datetime.h"
 
-#include "roq/huobi_futures/json/event_type.h"
-#include "roq/huobi_futures/json/execution_type.h"
 #include "roq/huobi_futures/json/order_status.h"
 #include "roq/huobi_futures/json/order_type.h"
 #include "roq/huobi_futures/json/side.h"
@@ -25,48 +23,6 @@ namespace json {
 template <typename T>
 inline void update(T &result, const core::json::value_t &value) {
   result = core::json::get<T>(value);
-}
-
-template <>
-inline void update(EventType &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
-}
-
-template <>
-inline void update(ExecutionType &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
-}
-
-template <>
-inline void update(OrderStatus &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
-}
-
-template <>
-inline void update(OrderType &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
-}
-
-template <>
-inline void update(Side &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
-}
-
-template <>
-inline void update(SymbolStatus &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
-}
-
-template <>
-inline void update(TimeInForce &result, const core::json::value_t &value) {
-  using result_type = std::remove_reference<decltype(result)>::type;
-  result = result_type(core::json::get<std::string_view>(value));
 }
 
 template <>
