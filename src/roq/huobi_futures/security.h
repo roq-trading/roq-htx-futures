@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include <fmt/format.h>
+
 #include <chrono>
 #include <string>
 #include <string_view>
 #include <utility>
-
-#include "roq/format.h"
 
 #include "roq/core/crypto/hmac.h"
 

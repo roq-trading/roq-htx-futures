@@ -24,7 +24,7 @@ static const auto SUPPORTS = utils::Mask{
 
 static auto create_query(const std::string_view &listen_key) {
   assert(!listen_key.empty());
-  return roq::format("?streams={}"_sv, listen_key);
+  return fmt::format("?streams={}"_sv, listen_key);
 }
 
 struct create_metrics final : public core::metrics::Factory {
@@ -40,7 +40,7 @@ DropCopy::DropCopy(
     Security &security,
     Shared &shared,
     const std::string_view &listen_key)
-    : handler_(handler), stream_id_(stream_id), name_(roq::format("{}:{}"_sv, stream_id_, NAME)),
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"_sv, stream_id_, NAME)),
       connection_(
           *this,
           context,

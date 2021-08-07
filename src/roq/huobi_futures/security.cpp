@@ -17,7 +17,7 @@ Security::Security(const Config &config, const std::string_view &account)
 
 std::pair<std::string, std::string> Security::create_signature(
     const std::chrono::nanoseconds &now) {
-  auto timestamp = roq::format(
+  auto timestamp = fmt::format(
       "timestamp={}"_sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
   hmac_.clear();
   hmac_.update(timestamp);
