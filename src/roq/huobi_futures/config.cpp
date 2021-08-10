@@ -13,8 +13,9 @@ using namespace roq::literals;
 namespace roq {
 namespace huobi_futures {
 
-Config::Config(const std::string_view &path) {
-  server::ConfigReader::parse(*this, path);
+Config::Config(const std::string_view &config_path, const std::string_view &secrets_path) {
+  server::ConfigReader::parse_file(*this, config_path, secrets_path);
+  assert(!master_account_.empty());
 }
 
 std::string Config::get_master_account() const {
@@ -74,9 +75,9 @@ void Config::operator()(server::Symbols &&symbols) {
 }
 
 void Config::operator()(server::Account &&account) {
-  auto res = accounts.emplace(account.name, std::move(account));
-  if (master_account_.empty())
-    master_account_ = (*res.first).first;
+  if (account.master)
+    master_account_ = account.name;
+  accounts.emplace(account.name, std::move(account));
 }
 
 void Config::operator()(server::User &&user) {
@@ -88,7 +89,7 @@ void Config::operator()(server::RateLimit &&rate_limit) {
 }
 
 void Config::operator()(const std::string_view &key, toml::node &) {
-  log::warn(R"(UNKNOWN KEY="{}")"_sv, key);
+  log::warn(R"(Unexpected: key="{}")"_sv, key);
 }
 
 }  // namespace huobi_futures
