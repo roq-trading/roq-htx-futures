@@ -259,15 +259,15 @@ void DropCopy::operator()(
         .max_response_version = {},
         .max_accepted_version = {},
     };
-    auto found = shared_.find_order(
-        stream_id_,
-        trace_info,
-        order_update,
-        execution_report.client_order_id,
-        [&]([[maybe_unused]] const auto &order, [[maybe_unused]] auto callback) {
-          // XXX IMPLEMENT
-        });
-    if (!found) {
+    if (shared_.update_order(
+            execution_report.client_order_id,
+            stream_id_,
+            trace_info,
+            order_update,
+            [&]([[maybe_unused]] auto &order) {
+              // XXX IMPLEMENT
+            })) {
+    } else {
       log::warn("*** EXTERNAL ORDER ***"_sv);
       log::warn("execution_report={}"_sv, execution_report);
     }
