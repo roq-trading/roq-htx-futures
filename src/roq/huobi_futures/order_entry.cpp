@@ -499,11 +499,11 @@ void OrderEntry::cancel_order(
 }
 
 void OrderEntry::operator()(const json::NewOrder &) {
-  log::fatal("NOT IMPLEMENTED"_sv);
+  throw NotImplementedException();
 }
 
 void OrderEntry::operator()(const json::CancelOrder &) {
-  log::fatal("NOT IMPLEMENTED"_sv);
+  throw NotImplementedException();
 }
 
 void OrderEntry::operator()(const json::ListenKey &listen_key) {
