@@ -227,10 +227,8 @@ void DropCopy::operator()(
     log::info<3>("execution_report={}"_sv, execution_report);
     auto side = json::map(execution_report.side);
     auto status = json::map(execution_report.current_order_status);
-    OrderUpdate order_update{
-        .stream_id = stream_id_,
+    oms::OrderUpdate order_update{
         .account = security_.get_account(),
-        .order_id = {},
         .exchange = Flags::exchange(),
         .symbol = execution_report.symbol,
         .side = side,
@@ -254,10 +252,6 @@ void DropCopy::operator()(
         .last_traded_quantity = NaN,
         .last_traded_price = NaN,
         .last_liquidity = {},
-        .routing_id = {},
-        .max_request_version = {},
-        .max_response_version = {},
-        .max_accepted_version = {},
     };
     if (shared_.update_order(
             execution_report.client_order_id,

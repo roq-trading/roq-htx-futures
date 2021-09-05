@@ -121,15 +121,15 @@ uint16_t OrderEntry::operator()(
 
 uint16_t OrderEntry::operator()(
     const Event<ModifyOrder> &,
-    const server::OMS_Order &,
+    const oms::Order &,
     [[maybe_unused]] const std::string_view &request_id,
     [[maybe_unused]] const std::string_view &previous_request_id) {
-  throw server::OMS_ErrorException(Origin::GATEWAY, RequestStatus::REJECTED, Error::NOT_SUPPORTED);
+  throw oms::NotSupportedException();
 }
 
 uint16_t OrderEntry::operator()(
     const Event<CancelOrder> &event,
-    const server::OMS_Order &order,
+    const oms::Order &order,
     const std::string_view &request_id,
     [[maybe_unused]] const std::string_view &previous_request_id) {
   cancel_order(event.value, order, request_id, [this](auto &promise) {
@@ -378,8 +378,7 @@ void OrderEntry::create_order(
     const std::string_view &cl_ord_id,
     std::function<void(const core::Promise<json::NewOrder> &)> &&callback) {
   if (!ready())
-    throw server::OMS_ErrorException(
-        Origin::GATEWAY, RequestStatus::REJECTED, Error::GATEWAY_NOT_READY);
+    throw oms::NotReadyException();
   auto timestamp = core::get_realtime_clock();
   auto side = json::map(create_order.side).as_raw_text();
   auto type = json::map(create_order.order_type).as_raw_text();
@@ -446,12 +445,11 @@ void OrderEntry::create_order(
 
 void OrderEntry::cancel_order(
     const CancelOrder &,
-    const server::OMS_Order &order,
+    const oms::Order &order,
     const std::string_view &request_id,
     std::function<void(const core::Promise<json::CancelOrder> &)> &&callback) {
   if (!ready())
-    throw server::OMS_ErrorException(
-        Origin::GATEWAY, RequestStatus::REJECTED, Error::GATEWAY_NOT_READY);
+    throw oms::NotReadyException();
   auto timestamp = core::get_realtime_clock();
   // XXX use encode buffer
   auto body = fmt::format(
