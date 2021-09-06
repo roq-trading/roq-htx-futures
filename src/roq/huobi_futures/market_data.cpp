@@ -12,8 +12,6 @@
 
 #include "roq/core/tools/exception.h"
 
-#include "roq/core/string_utils/string_builder.h"
-
 #include "roq/core/metrics/factory.h"
 
 #include "roq/huobi_futures/flags.h"
@@ -324,8 +322,7 @@ void MarketData::operator()(const json::AggTrade &agg_trade, const server::Trace
         .quantity = agg_trade.quantity,
         .trade_id = {},
     };
-    core::charconv::to_string(
-        core::string_utils::string_builder(trade.trade_id), agg_trade.agg_trade_id);
+    core::charconv::to_string(std::back_inserter(trade.trade_id), agg_trade.agg_trade_id);
     TradeSummary trade_summary{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
@@ -347,7 +344,7 @@ void MarketData::operator()(const json::Trade &trade, const server::TraceInfo &t
         .quantity = trade.quantity,
         .trade_id = {},
     };
-    core::charconv::to_string(core::string_utils::string_builder(trade_.trade_id), trade.trade_id);
+    core::charconv::to_string(std::back_inserter(trade_.trade_id), trade.trade_id);
     TradeSummary trade_summary{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),

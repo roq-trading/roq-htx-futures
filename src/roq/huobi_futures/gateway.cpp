@@ -8,8 +8,6 @@
 
 #include "roq/logging.h"
 
-#include "roq/core/string_utils/string_builder.h"
-
 #include "roq/core/charconv.h"
 #include "roq/core/clock.h"
 #include "roq/core/utils.h"
