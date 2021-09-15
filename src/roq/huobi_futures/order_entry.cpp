@@ -111,7 +111,7 @@ uint16_t OrderEntry::operator()(
   create_order(event.value, request_id, [this](auto &promise) {
     try {
       (*this)(promise.get());
-    } catch (NetworkError &e) {
+    } catch (core::NetworkError &e) {
       // XXX send ack failure
       log::fatal(R"(Unexpected what="{}")"_sv, e.what());
     }
@@ -135,7 +135,7 @@ uint16_t OrderEntry::operator()(
   cancel_order(event.value, order, request_id, [this](auto &promise) {
     try {
       (*this)(promise.get());
-    } catch (NetworkError &e) {
+    } catch (core::NetworkError &e) {
       // XXX send ack failure
       log::fatal(R"(Unexpected what="{}")"_sv, e.what());
     }
@@ -216,7 +216,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> 
             log::info<1>("exchange_info={}"_sv, exchange_info);
             core::Promise<json::ExchangeInfo> promise(exchange_info);
             callback(promise);
-          } catch (NetworkError &e) {
+          } catch (core::NetworkError &e) {
             log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
             core::Promise<json::ExchangeInfo> promise(std::current_exception());
             callback(promise);
@@ -254,7 +254,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &
             log::info<1>("account={}"_sv, account);
             core::Promise<json::Account> promise(account);
             callback(promise);
-          } catch (NetworkError &e) {
+          } catch (core::NetworkError &e) {
             log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
             core::Promise<json::Account> promise(std::current_exception());
             callback(promise);
@@ -288,7 +288,7 @@ void OrderEntry::get(std::function<void(const core::Promise<json::ListenKey> &)>
             log::info<1>("listen_key={}"_sv, listen_key);
             core::Promise<json::ListenKey> promise(listen_key);
             callback(promise);
-          } catch (NetworkError &e) {
+          } catch (core::NetworkError &e) {
             log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
             core::Promise<json::ListenKey> promise(std::current_exception());
             callback(promise);
@@ -328,7 +328,7 @@ void OrderEntry::download_listen_key() {
         return;
       (*this)(promise.get());
       download_.check(state);
-    } catch (NetworkError &) {
+    } catch (core::NetworkError &) {
       download_.retry(state);
     }
   });
@@ -343,7 +343,7 @@ void OrderEntry::download_account() {
         return;
       (*this)(promise.get());
       download_.check(state);
-    } catch (NetworkError &) {
+    } catch (core::NetworkError &) {
       download_.retry(state);
     }
   });
@@ -358,7 +358,7 @@ void OrderEntry::download_exchange_info() {
         return;
       (*this)(promise.get());
       download_.check(state);
-    } catch (NetworkError &) {
+    } catch (core::NetworkError &) {
       download_.retry(state);
     }
   });
@@ -375,7 +375,7 @@ void OrderEntry::refresh_listen_key() {
   get<json::ListenKey>([this](auto &promise) {
     try {
       (*this)(promise.get());
-    } catch (NetworkError &) {
+    } catch (core::NetworkError &) {
       log::warn("Rescheduling listen key refresh!"_sv);
       auto now = core::get_system_clock();
       listen_key_refresh_ = now + Flags::rest_listen_key_refresh();
@@ -447,7 +447,7 @@ void OrderEntry::create_order(
             log::info<1>("new_order={}"_sv, new_order);
             core::Promise<json::NewOrder> promise(new_order);
             callback(promise);
-          } catch (NetworkError &e) {
+          } catch (core::NetworkError &e) {
             log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
             core::Promise<json::NewOrder> promise(std::current_exception());
             callback(promise);
@@ -503,7 +503,7 @@ void OrderEntry::cancel_order(
             log::info<1>("cancel_order={}"_sv, cancel_order);
             core::Promise<json::CancelOrder> promise(cancel_order);
             callback(promise);
-          } catch (NetworkError &e) {
+          } catch (core::NetworkError &e) {
             log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
             core::Promise<json::CancelOrder> promise(std::current_exception());
             callback(promise);
