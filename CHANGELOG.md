@@ -4,6 +4,8 @@ All notable changes will be documented in this file.
 
 ## Head
 
+## 0.7.7 &ndash; 2021-09-20
+
 ### Changed
 
 * Added HTTP `request_id` (#55)
