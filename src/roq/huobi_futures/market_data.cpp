@@ -418,7 +418,7 @@ void MarketData::operator()(
           .snapshot = true,
           .exchange_time_utc = {},
       };
-      create_trace_and_dispatch(trace_info, market_by_price_update, handler_, true);
+      create_trace_and_dispatch(trace_info, market_by_price_update, handler_, true, false);
     }
   });
 }
