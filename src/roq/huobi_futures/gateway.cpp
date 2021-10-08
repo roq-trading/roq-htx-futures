@@ -188,9 +188,10 @@ void Gateway::operator()(OrderEntry::SymbolsUpdate &symbols_update) {
   }
 }
 
-uint16_t Gateway::operator()(const Event<CreateOrder> &event, const std::string_view &request_id) {
+uint16_t Gateway::operator()(
+    const Event<CreateOrder> &event, const oms::Order &order, const std::string_view &request_id) {
   assert(!event.value.account.empty());
-  return get_order_entry(event.value.account)(event, request_id);
+  return get_order_entry(event.value.account)(event, order, request_id);
 }
 
 uint16_t Gateway::operator()(

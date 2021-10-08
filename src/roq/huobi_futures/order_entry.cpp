@@ -107,7 +107,7 @@ void OrderEntry::operator()(metrics::Writer &writer) {
 }
 
 uint16_t OrderEntry::operator()(
-    const Event<CreateOrder> &event, const std::string_view &request_id) {
+    const Event<CreateOrder> &event, const oms::Order &, const std::string_view &request_id) {
   create_order(event.value, request_id, [this](auto &promise) {
     try {
       (*this)(promise.get());
