@@ -371,7 +371,7 @@ void MarketData::operator()(
         .exchange = Flags::exchange(),
         .symbol = mini_ticker.symbol,
         .statistics = statistics,
-        .snapshot = false,
+        .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = mini_ticker.event_time,
     };
     create_trace_and_dispatch(trace_info, statistics_update, handler_, true);
@@ -392,7 +392,7 @@ void MarketData::operator()(
             .ask_price = book_ticker.best_ask_price,
             .ask_quantity = book_ticker.best_ask_qty,
         },
-        .snapshot = false,
+        .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = {},
     };
     create_trace_and_dispatch(trace_info, top_of_book, handler_, true);
@@ -415,7 +415,7 @@ void MarketData::operator()(
           .symbol = symbol,
           .bids = bids,
           .asks = asks,
-          .snapshot = true,
+          .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = {},
       };
       create_trace_and_dispatch(trace_info, market_by_price_update, handler_, true, false);

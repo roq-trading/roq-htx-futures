@@ -6,6 +6,7 @@ All notable changes will be documented in this file.
 
 ### Changed
 
+* Replace "snapshot" (bool) with "update_type" (UpdateType) (#97)
 * Moved signature handling to tools library (chore)
 
 ## 0.7.7 &ndash; 2021-09-20
