@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Changed
+
+* Moved signature handling to tools library (chore)
+
 ## 0.7.7 &ndash; 2021-09-20
 
 ### Changed
