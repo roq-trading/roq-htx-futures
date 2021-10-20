@@ -586,6 +586,8 @@ void OrderEntry::operator()(const json::ExchangeInfo &exchange_info) {
         .tick_size = tick_size,
         .multiplier = NaN,
         .min_trade_vol = min_trade_vol,
+        .max_trade_vol = NaN,
+        .trade_vol_step_size = min_trade_vol,
         .option_type = {},
         .strike_currency = {},
         .strike_price = NaN,

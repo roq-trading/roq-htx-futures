@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Added
+
+* Add `max_trade_vol` and `trade_vol_step_size` to ReferenceData (#100)
+
 ### Changed
 
 * ReferenceData currencies should follow FX conventions (#99)
