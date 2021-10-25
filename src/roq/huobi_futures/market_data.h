@@ -60,6 +60,7 @@ class MarketData final : public core::web::Socket::Handler,
   void operator()(const core::web::Socket::Close &) override;
   void operator()(const core::web::Socket::Latency &) override;
   void operator()(const core::web::Socket::Text &) override;
+  void operator()(const core::web::Socket::Binary &) override;
 
  private:
   void operator()(ConnectionStatus);
