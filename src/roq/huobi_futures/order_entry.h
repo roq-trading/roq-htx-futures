@@ -8,8 +8,6 @@
 #include <string_view>
 #include <vector>
 
-#include "roq/core/promise.h"
-
 #include "roq/core/buffer.h"
 
 #include "roq/core/metrics/counter.h"
@@ -93,34 +91,33 @@ class OrderEntry final : public core::web::Client::Handler {
 
   void operator()(ConnectionStatus);
 
-  template <typename T>
-  void get(std::function<void(const core::Promise<T> &)> &&);
-
   uint32_t download(OrderEntryState state);
 
-  void download_listen_key();
-  void download_account();
-  void download_exchange_info();
-
+  void get_listen_key();
+  void get_listen_key_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
+  void operator()(const server::Trace<json::ListenKey> &);
   void refresh_listen_key();
 
-  void create_order(
-      const CreateOrder &,
-      const std::string_view &cl_ord_id,
-      std::function<void(const core::Promise<json::NewOrder> &)> &&);
+  void get_account();
+  void get_account_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
+  void operator()(const server::Trace<json::Account> &);
+
+  void get_exchange_info();
+  void get_exchange_info_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
+  void operator()(const server::Trace<json::ExchangeInfo> &);
+
+  void new_order(
+      const Event<CreateOrder> &, const oms::Order &, const std::string_view &request_id);
+  void new_order_ack(const server::Trace<core::web::Response> &);
+  void operator()(const server::Trace<json::NewOrder> &);
 
   void cancel_order(
-      const CancelOrder &,
+      const Event<CancelOrder> &,
       const oms::Order &,
       const std::string_view &request_id,
-      std::function<void(const core::Promise<json::CancelOrder> &)> &&);
-
-  void operator()(const json::NewOrder &);
-  void operator()(const json::CancelOrder &);
-
-  void operator()(const json::ListenKey &);
-  void operator()(const json::Account &);
-  void operator()(const json::ExchangeInfo &);
+      const std::string_view &previous_request_id);
+  void cancel_order_ack(const server::Trace<core::web::Response> &);
+  void operator()(const server::Trace<json::CancelOrder> &);
 
  private:
   Handler &handler_;
@@ -136,7 +133,11 @@ class OrderEntry final : public core::web::Client::Handler {
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile exchange_info, account, listen_key, depth, new_order, cancel_order;
+    core::metrics::Profile listen_key, listen_key_ack,  //
+        account, account_ack,                           //
+        exchange_info, exchange_info_ack,               //
+        new_order, new_order_ack,                       //
+        cancel_order, cancel_order_ack;
   } profile_;
   struct {
     core::metrics::Latency ping;
