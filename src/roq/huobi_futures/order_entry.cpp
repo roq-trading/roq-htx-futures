@@ -238,14 +238,17 @@ void OrderEntry::get_listen_key() {
 
 void OrderEntry::get_listen_key_ack(
     const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = OrderEntryState::LISTEN_KEY;
   profile_.listen_key_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = OrderEntryState::LISTEN_KEY;
     try {
-      if (download_.skip(sequence, state))
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
         return;
+      }
       response.expect(core::http::Status::OK);
-      auto body = response.body();
       auto listen_key = core::json::Parser::create<json::ListenKey>(body);
       server::Trace event(trace_info, listen_key);
       (*this)(event);
@@ -259,7 +262,7 @@ void OrderEntry::get_listen_key_ack(
 
 void OrderEntry::operator()(const server::Trace<json::ListenKey> &event) {
   auto &[trace_info, listen_key] = event;
-  log::info<1>("listen_key={}"_sv, listen_key);
+  log::info<2>("listen_key={}"_sv, listen_key);
   bool initial = listen_key_.empty();
   if (utils::update(listen_key_, listen_key.listen_key)) {
     if (initial) {
@@ -333,15 +336,19 @@ void OrderEntry::get_account() {
 
 void OrderEntry::get_account_ack(
     const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = OrderEntryState::ACCOUNT;
   profile_.account_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = OrderEntryState::ACCOUNT;
     try {
-      if (download_.skip(sequence, state))
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
         return;
+      }
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
-      auto account = core::json::Parser::create<json::Account>(response.body(), buffer);
+      auto account = core::json::Parser::create<json::Account>(body, buffer);
       server::Trace event(trace_info, account);
       (*this)(event);
       download_.check(state);
@@ -399,14 +406,17 @@ void OrderEntry::get_exchange_info() {
 
 void OrderEntry::get_exchange_info_ack(
     const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = OrderEntryState::EXCHANGE_INFO;
   profile_.exchange_info_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = OrderEntryState::EXCHANGE_INFO;
     try {
-      if (download_.skip(sequence, state))
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
         return;
+      }
       response.expect(core::http::Status::OK);
-      auto body = response.body();
       core::json::Buffer buffer(decode_buffer_);
       auto exchange_info = core::json::Parser::create<json::ExchangeInfo>(body, buffer);
       server::Trace event(trace_info, exchange_info);
@@ -421,11 +431,11 @@ void OrderEntry::get_exchange_info_ack(
 
 void OrderEntry::operator()(const server::Trace<json::ExchangeInfo> &event) {
   auto &[trace_info, exchange_info] = event;
-  log::info<1>("exchange_info={}"_sv, exchange_info);
+  log::info<4>("exchange_info={}"_sv, exchange_info);
   std::vector<std::string> symbols;
   size_t counter = {};
   for (const auto &item : exchange_info.symbols) {
-    log::info<1>("item={}"_sv, item);
+    log::info<2>("item={}"_sv, item);
     if (shared_.discard_symbol(item.symbol)) {
       log::info<1>(R"(Drop symbol="{}")"_sv, item.symbol);
       continue;
@@ -496,7 +506,6 @@ void OrderEntry::new_order(
     auto side = json::map(create_order.side).as_raw_text();
     auto type = json::map(create_order.order_type).as_raw_text();
     auto time_in_force = json::map(create_order.time_in_force).as_raw_text();
-    // XXX use encode buffer
     auto body = fmt::format(
         R"({{)"
         R"("symbol":"{}",)"
@@ -550,8 +559,9 @@ void OrderEntry::new_order_ack(const server::Trace<core::web::Response> &event) 
   profile_.new_order_ack([&]() {
     auto &[trace_info, response] = event;
     try {
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
       response.expect(core::http::Status::OK);
-      auto body = response.body();
       core::json::Buffer buffer(decode_buffer_);
       auto new_order = core::json::Parser::create<json::NewOrder>(body, buffer);
       server::Trace event(trace_info, new_order);
@@ -582,7 +592,6 @@ void OrderEntry::cancel_order(
     auto method = core::http::Method::DELETE;
     auto path = "/api/v3/order"_sv;
     auto timestamp = core::get_realtime_clock();
-    // XXX use encode buffer
     auto body = fmt::format(
         R"({{)"
         R"("symbol":"{}",)"
@@ -622,8 +631,9 @@ void OrderEntry::cancel_order_ack(const server::Trace<core::web::Response> &even
   profile_.cancel_order_ack([&]() {
     auto &[trace_info, response] = event;
     try {
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
       response.expect(core::http::Status::OK);
-      auto body = response.body();
       auto cancel_order = core::json::Parser::create<json::CancelOrder>(body);
       server::Trace event(trace_info, cancel_order);
       (*this)(event);
