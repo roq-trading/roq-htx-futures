@@ -11,20 +11,20 @@
 
 #include "roq/huobi_futures/json/utils.h"
 
-using namespace roq::literals;
+using namespace std::literals;
 
 namespace roq {
 namespace huobi_futures {
 
 namespace {
-static const auto NAME = "ex"_sv;
+static const auto NAME = "ex"sv;
 static const auto SUPPORTS = utils::Mask{
     SupportType::FUNDS,
 };
 
 static auto create_query(const std::string_view &listen_key) {
   assert(!listen_key.empty());
-  return fmt::format("?streams={}"_sv, listen_key);
+  return fmt::format("?streams={}"sv, listen_key);
 }
 
 struct create_metrics final : public core::metrics::Factory {
@@ -40,7 +40,7 @@ DropCopy::DropCopy(
     Security &security,
     Shared &shared,
     const std::string_view &listen_key)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"_sv, stream_id_, NAME)),
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
       connection_(
           *this,
           context,
@@ -52,18 +52,18 @@ DropCopy::DropCopy(
           []() { return std::string(); }),
       decode_buffer_(Flags::decode_buffer_size()),
       counter_{
-          .disconnect = create_metrics(name_, "disconnect"_sv),
+          .disconnect = create_metrics(name_, "disconnect"sv),
       },
       profile_{
-          .parse = create_metrics(name_, "parse"_sv),
-          .outbound_account_info = create_metrics(name_, "outbound_account_info"_sv),
-          .outbound_account_position = create_metrics(name_, "outbound_account_position"_sv),
-          .balance_update = create_metrics(name_, "balance_update"_sv),
-          .execution_report = create_metrics(name_, "execution_report"_sv),
+          .parse = create_metrics(name_, "parse"sv),
+          .outbound_account_info = create_metrics(name_, "outbound_account_info"sv),
+          .outbound_account_position = create_metrics(name_, "outbound_account_position"sv),
+          .balance_update = create_metrics(name_, "balance_update"sv),
+          .execution_report = create_metrics(name_, "execution_report"sv),
       },
       latency_{
-          .ping = create_metrics(name_, "ping"_sv),
-          .heartbeat = create_metrics(name_, "heartbeat"_sv),
+          .ping = create_metrics(name_, "ping"sv),
+          .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
       security_(security), shared_(shared),
       download_({}, [this](auto state) { return download(state); }) {
@@ -133,7 +133,7 @@ void DropCopy::operator()(const core::web::Socket::Text &text) {
 }
 
 void DropCopy::operator()(const core::web::Socket::Binary &) {
-  log::fatal("Unexpected"_sv);
+  log::fatal("Unexpected"sv);
 }
 
 void DropCopy::operator()(ConnectionStatus status) {
@@ -147,7 +147,7 @@ void DropCopy::operator()(ConnectionStatus status) {
         .type = StreamType::WEB_SOCKET,
         .priority = Priority::PRIMARY,
     };
-    log::info("stream_status={}"_sv, stream_status);
+    log::info("stream_status={}"sv, stream_status);
     server::create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
@@ -175,7 +175,7 @@ void DropCopy::parse(const std::string_view &message) {
       core::json::Buffer buffer(decode_buffer_);
       json::UserStreamParser::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
-      log::warn(R"(message="{}")"_sv, message);
+      log::warn(R"(message="{}")"sv, message);
       core::tools::UnhandledException::terminate();
     }
   });
@@ -184,7 +184,7 @@ void DropCopy::parse(const std::string_view &message) {
 void DropCopy::operator()(
     const json::OutboundAccountInfo &outbound_account_info, const server::TraceInfo &trace_info) {
   profile_.outbound_account_info([&]() {
-    log::info<3>("outbound_account_info={}"_sv, outbound_account_info);
+    log::info<3>("outbound_account_info={}"sv, outbound_account_info);
     for (auto &item : outbound_account_info.balances) {
       FundsUpdate funds_update{
           .stream_id = stream_id_,
@@ -203,7 +203,7 @@ void DropCopy::operator()(
     const json::OutboundAccountPosition &outbound_account_position,
     const server::TraceInfo &trace_info) {
   profile_.outbound_account_position([&]() {
-    log::info<3>("outbound_account_position={}"_sv, outbound_account_position);
+    log::info<3>("outbound_account_position={}"sv, outbound_account_position);
     for (auto &item : outbound_account_position.balances) {
       FundsUpdate funds_update{
           .stream_id = stream_id_,
@@ -220,7 +220,7 @@ void DropCopy::operator()(
 
 void DropCopy::operator()(const json::BalanceUpdate &balance_update, const server::TraceInfo &) {
   profile_.balance_update([&]() {
-    log::info<3>("balance_update={}"_sv, balance_update);
+    log::info<3>("balance_update={}"sv, balance_update);
     // note! contains delta (changes) -- we're not going to use here
   });
 }
@@ -228,7 +228,7 @@ void DropCopy::operator()(const json::BalanceUpdate &balance_update, const serve
 void DropCopy::operator()(
     const json::ExecutionReport &execution_report, const server::TraceInfo &trace_info) {
   profile_.execution_report([&]() {
-    log::info<3>("execution_report={}"_sv, execution_report);
+    log::info<3>("execution_report={}"sv, execution_report);
     auto side = json::map(execution_report.side);
     auto status = json::map(execution_report.current_order_status);
     oms::OrderUpdate order_update{
@@ -266,8 +266,8 @@ void DropCopy::operator()(
               // XXX IMPLEMENT
             })) {
     } else {
-      log::warn("*** EXTERNAL ORDER ***"_sv);
-      log::warn("execution_report={}"_sv, execution_report);
+      log::warn("*** EXTERNAL ORDER ***"sv);
+      log::warn("execution_report={}"sv, execution_report);
     }
   });
 }

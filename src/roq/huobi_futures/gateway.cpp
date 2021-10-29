@@ -16,7 +16,7 @@
 
 #include "roq/huobi_futures/json/utils.h"
 
-using namespace roq::literals;
+using namespace std::literals;
 
 namespace roq {
 namespace huobi_futures {
@@ -62,11 +62,11 @@ Gateway::Gateway(server::Dispatcher &dispatcher, const Config &config)
       order_entry_(create_order_entry(*this, context_, stream_id_, security_, shared_)),
       drop_copy_(create_drop_copy(security_)) {
   if (ROQ_UNLIKELY(Flags::rest_cancel_on_disconnect()))
-    log::fatal("Exchange does *NOT* support cancel on disconnect"_sv);
+    log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }
 
 void Gateway::operator()(const Event<Start> &event) {
-  log::info("Starting the gateway..."_sv);
+  log::info("Starting the gateway..."sv);
   for (auto &[_, order_entry] : order_entry_)
     (*order_entry)(event);
   for (auto &[_, drop_copy] : drop_copy_)
@@ -77,7 +77,7 @@ void Gateway::operator()(const Event<Start> &event) {
 }
 
 void Gateway::operator()(const Event<Stop> &event) {
-  log::info("Stopping the gateway..."_sv);
+  log::info("Stopping the gateway..."sv);
   for (auto &iter : market_data_)
     (*iter)(event);
   for (auto &[_, drop_copy] : drop_copy_)
@@ -104,7 +104,7 @@ void Gateway::operator()(const Event<Connected> &) {
 void Gateway::operator()(const Event<Disconnected> &event) {
   const auto &[message_info, disconnected] = event;
   if (disconnected.order_cancel_policy) {
-    log::warn("*** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"_sv);
+    log::warn("*** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"sv);
   }
 }
 
@@ -156,9 +156,9 @@ void Gateway::operator()(const OrderEntry::ListenKeyUpdate &listen_key_update) {
   assert(!account.empty());
   auto iter = drop_copy_.find(account);
   if (iter == drop_copy_.end()) {
-    log::fatal(R"(Unexpected: account="{}")"_sv, account);
+    log::fatal(R"(Unexpected: account="{}")"sv, account);
   } else if (!static_cast<bool>((*iter).second)) {
-    log::info(R"(Create drop-copy (user-stream) for account="{}")"_sv, account);
+    log::info(R"(Create drop-copy (user-stream) for account="{}")"sv, account);
     auto drop_copy = std::make_unique<DropCopy>(
         *this, context_, ++stream_id_, *security_[account], shared_, listen_key_update.listen_key);
     MessageInfo message_info;  // XXX something sensible
@@ -178,7 +178,7 @@ void Gateway::operator()(OrderEntry::SymbolsUpdate &symbols_update) {
   for (;;) {
     if (symbols.empty())
       break;
-    log::info("Create market-data (user-stream)"_sv);
+    log::info("Create market-data (user-stream)"sv);
     auto market_data = std::make_unique<MarketData>(*this, context_, ++stream_id_, shared_);
     (*market_data).update_subscriptions(symbols);
     MessageInfo message_info;  // XXX something sensible
@@ -234,7 +234,7 @@ OrderEntry &Gateway::get_order_entry(const std::string_view &account) {
   auto iter = order_entry_.find(account);
   if (iter != order_entry_.end())
     return *(*iter).second;
-  throw RuntimeErrorException(R"(Unknown account="{}")"_sv, account);
+  throw RuntimeErrorException(R"(Unknown account="{}")"sv, account);
 }
 
 }  // namespace huobi_futures

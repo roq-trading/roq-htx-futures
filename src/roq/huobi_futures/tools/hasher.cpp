@@ -7,13 +7,11 @@
 #include <array>
 #include <cassert>
 
-#include "roq/literals.h"
-
 #include "roq/core/binascii/hex.h"
 
 #include "roq/core/crypto/hmac.h"
 
-using namespace roq::literals;
+using namespace std::literals;
 
 namespace roq {
 namespace huobi_futures {
@@ -24,7 +22,7 @@ Hasher::Hasher(const std::string_view &secret) : hmac_(secret) {
 
 std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanoseconds now) {
   auto timestamp = fmt::format(
-      "timestamp={}"_sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
+      "timestamp={}"sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
   hmac_.clear();
   hmac_.update(timestamp);
   std::array<char, 32> buffer;

@@ -12,7 +12,7 @@
 
 #include "roq/logging.h"
 
-using namespace roq::literals;
+using namespace std::literals;
 
 namespace roq {
 namespace huobi_futures {
@@ -34,11 +34,11 @@ void MarketStreamParser::dispatch(
       auto field = Field(key);
       switch (field) {
         case Field::UNDEFINED:
-          log::fatal("Unexpected"_sv);
+          log::fatal("Unexpected"sv);
           break;
         case Field::UNKNOWN:
 #if !defined(NDEBUG)
-          log::fatal(R"(Unknown key="{}")"_sv, key);
+          log::fatal(R"(Unknown key="{}")"sv, key);
 #endif
           // XXX CALLBACK ?????????????
           break;
@@ -64,7 +64,7 @@ void MarketStreamParser::dispatch(
           auto full_name = std::get<std::string_view>(value);
           auto idx0 = full_name.find('@');  // <symbol>@<stream>
           if (ROQ_UNLIKELY(idx0 == full_name.npos))
-            log::fatal(R"(Unexpected: name="{}")"_sv, full_name);
+            log::fatal(R"(Unexpected: name="{}")"sv, full_name);
           symbol = std::string_view(full_name.begin(), idx0);
           // note! convert to uppercase
           std::transform(
@@ -82,7 +82,7 @@ void MarketStreamParser::dispatch(
               break;  // wait
             case Stream::UNKNOWN:
 #if !defined(NDEBUG)
-              log::fatal("Unexpected (unknown stream)"_sv);
+              log::fatal("Unexpected (unknown stream)"sv);
 #endif
               return;
             case Stream::AGG_TRADE: {
@@ -132,8 +132,8 @@ void MarketStreamParser::dispatch(
   }
   if (dispatched)
     return;
-  log::warn(R"(message="{}")"_sv, message);
-  log::fatal("Unexpected"_sv);
+  log::warn(R"(message="{}")"sv, message);
+  log::fatal("Unexpected"sv);
 }
 
 }  // namespace json

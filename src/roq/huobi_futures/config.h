@@ -66,7 +66,7 @@ struct fmt::formatter<roq::huobi_futures::Config> {
   }
   template <typename C>
   auto format(const roq::huobi_futures::Config &value, C &ctx) {
-    using namespace roq::literals;
+    using namespace std::literals;
     return fmt::format_to(
         ctx.out(),
         R"({{)"
@@ -75,11 +75,11 @@ struct fmt::formatter<roq::huobi_futures::Config> {
         R"(master_account="{}", )"
         R"(users=[{}], )"
         R"(rate_limits=[{}])"
-        R"(}})"_sv,
+        R"(}})"sv,
         value.symbols,
-        fmt::join(value.accounts, ", "_sv),
+        fmt::join(value.accounts, ", "sv),
         value.master_account_,
-        fmt::join(value.users, ", "_sv),
-        fmt::join(value.rate_limits, ", "_sv));
+        fmt::join(value.users, ", "sv),
+        fmt::join(value.rate_limits, ", "sv));
   }
 };

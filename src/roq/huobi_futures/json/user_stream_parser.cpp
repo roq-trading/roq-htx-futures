@@ -6,7 +6,7 @@
 
 #include "roq/core/json/parser.h"
 
-using namespace roq::literals;
+using namespace std::literals;
 
 namespace roq {
 namespace huobi_futures {
@@ -20,15 +20,15 @@ void UserStreamParser::dispatch(
   core::json::Parser parser(message);
   auto root = parser.root();
   for (auto [key, value] : std::get<core::json::object_t>(root)) {
-    if (key.compare("e"_sv) != 0)
+    if (key.compare("e"sv) != 0)
       continue;
     EventType event_type(value);
     if (try_dispatch(handler, message, buffer, event_type, trace_info))
       return;
     break;
   }
-  log::warn(R"(message="{}")"_sv, message);
-  log::fatal("Unexpected"_sv);
+  log::warn(R"(message="{}")"sv, message);
+  log::fatal("Unexpected"sv);
 }
 
 bool UserStreamParser::try_dispatch(
@@ -45,7 +45,7 @@ bool UserStreamParser::try_dispatch(
     case EventType::_24HR_MINI_TICKER:
     case EventType::BOOK_TICKER:
     case EventType::DEPTH_UPDATE:
-      log::fatal("Unexpected"_sv);
+      log::fatal("Unexpected"sv);
       break;
     case EventType::OUTBOUND_ACCOUNT_INFO: {
       auto outbound_account_info = core::json::Parser::create<OutboundAccountInfo>(message, buffer);
