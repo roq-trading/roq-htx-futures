@@ -421,6 +421,9 @@ void MarketData::operator()(
           .asks = asks,
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = {},
+          .exchange_sequence = {},
+          .price_decimals = {},
+          .quantity_decimals = {},
       };
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     }
