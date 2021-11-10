@@ -424,6 +424,7 @@ void MarketData::operator()(
           .exchange_sequence = {},
           .price_decimals = {},
           .quantity_decimals = {},
+          .checksum = {},
       };
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     }
