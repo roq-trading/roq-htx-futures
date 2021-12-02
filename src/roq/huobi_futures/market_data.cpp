@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi_futures/market_data.h"
 
@@ -120,19 +120,19 @@ void MarketData::operator()(metrics::Writer &writer) {
 void MarketData::update_subscriptions(std::vector<std::string> &symbols) {
   assert(&symbols != &symbols_);
   auto max_size = Flags::ws_max_subscriptions_per_stream();
-  auto offset = symbols_.size();
+  auto offset = std::size(symbols_);
   if (max_size <= offset)
     return;
-  if (symbols.empty())
+  if (std::empty(symbols))
     return;
   symbols_.reserve(max_size);
-  auto length = std::min(max_size - offset, symbols.size());
+  auto length = std::min(max_size - offset, std::size(symbols));
   assert(length > 0);
-  for (size_t i = {}; i < length; ++i) {
+  for (size_t i = 0; i < length; ++i) {
     symbols_.emplace_back(symbols.back());
     symbols.pop_back();
   }
-  assert(length == (symbols_.size() - offset));
+  assert(length == (std::size(symbols_) - offset));
   if (ready_)
     subscribe({&symbols_[offset], length});
 }
@@ -219,7 +219,7 @@ void MarketData::subscribe(const roq::span<std::string> &symbols) {
 }
 
 void MarketData::subscribe_agg_trade(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
+  assert(!std::empty(symbols));
   auto id = ++request_id_;
   auto message = fmt::format(
       R"({{)"
@@ -233,7 +233,7 @@ void MarketData::subscribe_agg_trade(const roq::span<std::string> &symbols) {
 }
 
 void MarketData::subscribe_trade(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
+  assert(!std::empty(symbols));
   auto id = ++request_id_;
   auto message = fmt::format(
       R"({{)"
@@ -247,7 +247,7 @@ void MarketData::subscribe_trade(const roq::span<std::string> &symbols) {
 }
 
 void MarketData::subscribe_mini_ticker(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
+  assert(!std::empty(symbols));
   auto id = ++request_id_;
   auto message = fmt::format(
       R"({{)"
@@ -261,7 +261,7 @@ void MarketData::subscribe_mini_ticker(const roq::span<std::string> &symbols) {
 }
 
 void MarketData::subscribe_book_ticker(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
+  assert(!std::empty(symbols));
   auto id = ++request_id_;
   auto message = fmt::format(
       R"({{)"
@@ -275,7 +275,7 @@ void MarketData::subscribe_book_ticker(const roq::span<std::string> &symbols) {
 }
 
 void MarketData::subscribe_depth(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
+  assert(!std::empty(symbols));
   auto stream = fmt::format(
       R"(@depth{}@{}ms)"sv,
       Flags::ws_subscribe_depth_levels(),
@@ -412,7 +412,7 @@ void MarketData::operator()(
       bids.emplace_back([&item](auto &result) { emplace(result, item); });
     for (auto &item : depth.asks)
       asks.emplace_back([&item](auto &result) { emplace(result, item); });
-    if (!(bids.empty() && asks.empty())) {
+    if (!(std::empty(bids) && std::empty(asks))) {
       MarketByPriceUpdate market_by_price_update{
           .stream_id = stream_id_,
           .exchange = Flags::exchange(),

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi_futures/config.h"
 
@@ -15,7 +15,7 @@ namespace huobi_futures {
 
 Config::Config(const std::string_view &config_path, const std::string_view &secrets_path) {
   server::ConfigReader::parse_file(*this, config_path, secrets_path);
-  assert(!master_account_.empty());
+  assert(!std::empty(master_account_));
 }
 
 std::string Config::get_master_account() const {
@@ -24,7 +24,7 @@ std::string Config::get_master_account() const {
 
 std::string Config::get_api_key(const std::string_view &account) const {
   auto iter = accounts.find(account);
-  if (iter == accounts.end()) {
+  if (iter == std::end(accounts)) {
     log::fatal(R"(Unknown account="{}")"sv, account);
   }
   return (*iter).second.login;
@@ -32,7 +32,7 @@ std::string Config::get_api_key(const std::string_view &account) const {
 
 std::string Config::get_secret(const std::string_view &account) const {
   auto iter = accounts.find(account);
-  if (iter == accounts.end()) {
+  if (iter == std::end(accounts)) {
     log::fatal(R"(Unknown account="{}")"sv, account);
   }
   return (*iter).second.secret;

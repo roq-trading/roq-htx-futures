@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi_futures/tools/hasher.h"
 
@@ -27,7 +27,7 @@ std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanose
   hmac_.update(timestamp);
   std::array<char, 32> buffer;
   auto length = hmac_.digest(buffer);
-  assert(length == buffer.size());
+  assert(length == std::size(buffer));
   auto signature = core::binascii::Hex::encode(buffer);
   return std::make_pair(timestamp, signature);
 }

@@ -1,7 +1,8 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi_futures/order_entry.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "roq/utils/mask.h"
@@ -260,7 +261,7 @@ void OrderEntry::get_listen_key_ack(
 void OrderEntry::operator()(const server::Trace<json::ListenKey> &event) {
   auto &[trace_info, listen_key] = event;
   log::info<2>("listen_key={}"sv, listen_key);
-  bool initial = listen_key_.empty();
+  bool initial = std::empty(listen_key_);
   if (utils::update(listen_key_, listen_key.listen_key)) {
     if (initial) {
       log::info(R"(Listen key has been acquired (value="{}"))"sv, listen_key_);
@@ -437,8 +438,9 @@ void OrderEntry::operator()(const server::Trace<json::ExchangeInfo> &event) {
     }
     // note! convert to lowercase
     std::string symbol(item.symbol);
-    std::transform(
-        symbol.begin(), symbol.end(), symbol.begin(), [](auto c) { return std::tolower(c); });
+    std::transform(std::begin(symbol), std::end(symbol), std::begin(symbol), [](auto c) {
+      return std::tolower(c);
+    });
     if (all_symbols_.emplace(symbol).second)  // only include new
       symbols.emplace_back(symbol);
     ++counter;
@@ -478,8 +480,8 @@ void OrderEntry::operator()(const server::Trace<json::ExchangeInfo> &event) {
     };
     create_trace_and_dispatch(handler_, trace_info, market_status, true);
   }
-  log::info("Exchange info: including symbols {}/{}"sv, counter, exchange_info.symbols.size());
-  if (!symbols.empty()) {
+  log::info("Exchange info: including symbols {}/{}"sv, counter, std::size(exchange_info.symbols));
+  if (!std::empty(symbols)) {
     SymbolsUpdate symbols_update{
         .symbols = symbols,
     };

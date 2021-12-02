@@ -1,7 +1,8 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi_futures/json/market_stream_parser.h"
 
+#include <algorithm>
 #include <cctype>
 #include <string>
 
@@ -65,14 +66,15 @@ void MarketStreamParser::dispatch(
           auto idx0 = full_name.find('@');  // <symbol>@<stream>
           if (ROQ_UNLIKELY(idx0 == full_name.npos))
             log::fatal(R"(Unexpected: name="{}")"sv, full_name);
-          symbol = std::string_view(full_name.begin(), idx0);
+          symbol = std::string_view(std::begin(full_name), idx0);
           // note! convert to uppercase
-          std::transform(
-              symbol.begin(), symbol.end(), symbol.begin(), [](auto c) { return std::toupper(c); });
+          std::transform(std::begin(symbol), std::end(symbol), std::begin(symbol), [](auto c) {
+            return std::toupper(c);
+          });
           auto idx1 = full_name.find('@', idx0 + 1);
           auto name = std::string_view(
-              full_name.begin() + idx0 + 1,
-              (idx1 == full_name.npos) ? full_name.size() - idx0 - 1 : idx1 - idx0 - 1);
+              std::begin(full_name) + idx0 + 1,
+              (idx1 == full_name.npos) ? std::size(full_name) - idx0 - 1 : idx1 - idx0 - 1);
           stream = Stream(name);
           break;
         }
@@ -112,14 +114,14 @@ void MarketStreamParser::dispatch(
             case Stream::DEPTH5:
             case Stream::DEPTH10:
             case Stream::DEPTH20: {
-              assert(!symbol.empty());
+              assert(!std::empty(symbol));
               Depth depth(value, buffer);
               dispatched = true;
               handler(symbol, depth, trace_info);
               break;
             }
             case Stream::DEPTH: {
-              assert(!symbol.empty());
+              assert(!std::empty(symbol));
               DepthUpdate depth_update(value, buffer);
               dispatched = true;
               handler(symbol, depth_update, trace_info);
