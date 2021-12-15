@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "roq/utils/mask.h"
+#include "roq/utils/safe_cast.h"
 #include "roq/utils/update.h"
 
 #include "roq/core/back_emplacer.h"
@@ -15,6 +16,8 @@
 #include "roq/core/metrics/factory.h"
 
 #include "roq/huobi_futures/flags.h"
+
+#include "roq/huobi_futures/json/utils.h"
 
 using namespace std::literals;
 
@@ -68,6 +71,7 @@ MarketData::MarketData(
           .parse = create_metrics(name_, "parse"sv),
           .ping = create_metrics(name_, "ping"sv),
           .error = create_metrics(name_, "error"sv),
+          .subbed = create_metrics(name_, "subbed"sv),
           .bbo = create_metrics(name_, "bbo"sv),
       },
       latency_{
@@ -101,6 +105,7 @@ void MarketData::operator()(metrics::Writer &writer) {
       // profile
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.error, metrics::PROFILE)
+      .write(profile_.subbed, metrics::PROFILE)
       // latency
       .write(latency_.ping, metrics::LATENCY)
       .write(latency_.heartbeat, metrics::LATENCY);
@@ -232,14 +237,14 @@ void MarketData::send_pong(std::chrono::milliseconds timestamp) {
       R"("pong":{})"
       R"(}})"sv,
       timestamp.count());
-  log::debug(R"(message="{}")"sv, message);
+  // log::debug(R"(message="{}")"sv, message);
   connection_.send_text(message);
 }
 
 void MarketData::parse(const std::string_view &message) {
   profile_.parse([&]() {
     try {
-      log::debug("HERE {}"sv, message);
+      // log::debug("HERE {}"sv, message);
       auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
       if (json::Parser::dispatch(*this, message, buffer, trace_info)) {
@@ -247,7 +252,7 @@ void MarketData::parse(const std::string_view &message) {
         log::warn(R"(Unable to parse message="{}")"sv, message);
       }
     } catch (...) {
-      log::warn(R"(message="{}")"sv, message);
+      log::fatal(R"(message="{}")"sv, message);
       core::tools::UnhandledException::terminate();
     }
   });
@@ -267,10 +272,31 @@ void MarketData::operator()(const server::Trace<json::Error> &event) {
   });
 }
 
+void MarketData::operator()(const server::Trace<json::Subbed> &event) {
+  profile_.subbed([&]() {
+    auto &[trace_info, subbed] = event;
+    log::info<1>("subbed={}"sv, subbed);
+  });
+}
+
 void MarketData::operator()(const server::Trace<json::BBO> &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
-    log::debug("bbo={}"sv, bbo);
+    auto symbol = json::extract_symbol(bbo.ch);
+    const TopOfBook top_of_book{
+        .stream_id = stream_id_,
+        .exchange = Flags::exchange(),
+        .symbol = symbol,
+        .layer{
+            .bid_price = bbo.bid.price,
+            .bid_quantity = bbo.bid.vol,
+            .ask_price = bbo.ask.price,
+            .ask_quantity = bbo.ask.vol,
+        },
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = utils::safe_cast(bbo.ts),
+    };
+    server::create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
   });
 }
 

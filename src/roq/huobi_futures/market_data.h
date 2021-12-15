@@ -78,6 +78,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
   void operator()(const server::Trace<json::Ping> &) override;
 
   void operator()(const server::Trace<json::Error> &) override;
+  void operator()(const server::Trace<json::Subbed> &) override;
 
   void operator()(const server::Trace<json::BBO> &) override;
 
@@ -97,7 +98,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, error, bbo;
+    core::metrics::Profile parse, ping, error, subbed, bbo;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

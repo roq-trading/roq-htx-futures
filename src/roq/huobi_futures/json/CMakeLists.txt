@@ -14,7 +14,8 @@ set(AUTOGEN_SCHEMAS
     ping.json
     quotation.json
     side.json
-    status.json)
+    status.json
+    subbed.json)
 
 roq_autogen(
   OUTPUT

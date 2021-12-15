@@ -48,6 +48,19 @@ bool Parser::dispatch(
         return false;
       case Status::OK:
         log::debug("OK"sv);
+        if (!std::empty(frame.subbed)) {
+          Subbed subbed{
+              .id = frame.id,
+              .subbed = frame.subbed,
+              .ts = frame.ts,
+              .status = frame.status,
+          };
+          server::create_trace_and_dispatch(handler, trace_info, subbed);
+          return true;
+        } else {
+          // ???
+          return false;
+        }
         break;
       case Status::ERROR:
         Error error{

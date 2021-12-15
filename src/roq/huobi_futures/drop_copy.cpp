@@ -189,6 +189,10 @@ void DropCopy::operator()(const server::Trace<json::Error> &) {
   log::fatal("Unexpected"sv);
 }
 
+void DropCopy::operator()(const server::Trace<json::Subbed> &) {
+  log::fatal("Unexpected"sv);
+}
+
 void DropCopy::operator()(const server::Trace<json::BBO> &) {
   log::fatal("Unexpected"sv);
 }

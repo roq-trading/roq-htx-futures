@@ -40,6 +40,18 @@ inline void update(std::chrono::milliseconds &result, const core::json::value_t 
       value);
 }
 
+inline std::string_view extract_symbol(const std::string_view &channel) {
+  auto sep1 = channel.find_first_of('.');
+  if (sep1 != channel.npos) {
+    auto sep2 = channel.find_first_of('.', sep1 + 1);
+    if (sep2 != channel.npos) {
+      return channel.substr(sep1 + 1, sep2 - sep1 - 1);
+    }
+    return channel.substr(sep1 + 1);
+  }
+  return channel;
+}
+
 inline roq::Side map(json::Side side) {
   switch (side) {
     case json::Side::UNDEFINED:

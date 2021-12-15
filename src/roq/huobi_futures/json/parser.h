@@ -11,6 +11,7 @@
 #include "roq/huobi_futures/json/bbo.h"
 #include "roq/huobi_futures/json/error.h"
 #include "roq/huobi_futures/json/ping.h"
+#include "roq/huobi_futures/json/subbed.h"
 
 namespace roq {
 namespace huobi_futures {
@@ -20,6 +21,7 @@ struct Parser final {
   struct Handler {
     virtual void operator()(const server::Trace<Ping> &) = 0;
     virtual void operator()(const server::Trace<Error> &) = 0;
+    virtual void operator()(const server::Trace<Subbed> &) = 0;
     virtual void operator()(const server::Trace<BBO> &) = 0;
   };
 
