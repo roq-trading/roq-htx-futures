@@ -5,6 +5,8 @@ set(SOURCES market_stream_parser.cpp user_stream_parser.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
+    contract_info.json
+    contract_info_item.json
     account.json
     agg_trade.json
     balance.json

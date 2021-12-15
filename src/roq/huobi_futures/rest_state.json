@@ -1,0 +1,8 @@
+{
+"name": "RestState",
+"type": "enum",
+"values": [
+	{ "name": "contract_info" },
+	{ "name": "done" }
+]
+}

@@ -1,3 +1,7 @@
+contract_info.h
+contract_info.cpp
+contract_info_item.h
+contract_info_item.cpp
 account.h
 account.cpp
 agg_trade.h

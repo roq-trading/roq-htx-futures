@@ -17,6 +17,7 @@
 #include "roq/huobi_futures/drop_copy.h"
 #include "roq/huobi_futures/market_data.h"
 #include "roq/huobi_futures/order_entry.h"
+#include "roq/huobi_futures/rest.h"
 #include "roq/huobi_futures/security.h"
 #include "roq/huobi_futures/shared.h"
 
@@ -24,6 +25,7 @@ namespace roq {
 namespace huobi_futures {
 
 class Gateway final : public server::Handler,
+                      public Rest::Handler,
                       public OrderEntry::Handler,
                       public DropCopy::Handler,
                       public MarketData::Handler {
@@ -66,6 +68,8 @@ class Gateway final : public server::Handler,
   void operator()(const server::Trace<StatisticsUpdate> &, bool is_last) override;
   void operator()(const server::Trace<FundsUpdate> &, bool is_last) override;
 
+  void operator()(Rest::SymbolsUpdate &) override;
+
   void operator()(const OrderEntry::ListenKeyUpdate &) override;
   void operator()(OrderEntry::SymbolsUpdate &) override;
 
@@ -86,6 +90,7 @@ class Gateway final : public server::Handler,
   // seed
   uint16_t stream_id_ = {};
   // streams
+  Rest rest_;
   absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
   absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;

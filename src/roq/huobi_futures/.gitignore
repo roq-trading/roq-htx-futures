@@ -10,3 +10,5 @@ market_data_state.cpp
 market_data_state.h
 order_entry_state.cpp
 order_entry_state.h
+rest_state.cpp
+rest_state.h
