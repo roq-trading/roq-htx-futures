@@ -212,8 +212,8 @@ void Rest::operator()(const server::Trace<json::ContractInfo> &event) {
   for (size_t i = 0; i < std::size(contract_info.data); ++i) {
     auto &item = contract_info.data[i];
     log::info<2>("item={}"sv, item);
-    auto &symbol = item.symbol;
-    if (shared_.discard_symbol(item.symbol))
+    auto symbol = item.contract_code;
+    if (shared_.discard_symbol(symbol))
       continue;
     if (all_symbols_.emplace(symbol).second)  // only include new
       symbols.emplace_back(symbol);
@@ -250,6 +250,8 @@ void Rest::operator()(const server::Trace<json::ContractInfo> &event) {
     };
     handler_(symbols_update);
   }
+  if (ROQ_UNLIKELY(counter > 0))
+    log::info("Symbols {} / {}"sv, counter, std::size(contract_info.data));
 }
 
 }  // namespace huobi_futures

@@ -66,14 +66,9 @@ MarketData::MarketData(
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
+          .ping = create_metrics(name_, "ping"sv),
           .error = create_metrics(name_, "error"sv),
-          .result = create_metrics(name_, "result"sv),
-          .agg_trade = create_metrics(name_, "agg_trade"sv),
-          .trade = create_metrics(name_, "trade"sv),
-          .mini_ticker = create_metrics(name_, "mini_ticker"sv),
-          .book_ticker = create_metrics(name_, "book_ticker"sv),
-          .depth = create_metrics(name_, "depth"sv),
-          .depth_update = create_metrics(name_, "depth_update"sv),
+          .bbo = create_metrics(name_, "bbo"sv),
       },
       latency_{
           .ping = create_metrics(name_, "ping"sv),
@@ -106,13 +101,6 @@ void MarketData::operator()(metrics::Writer &writer) {
       // profile
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.error, metrics::PROFILE)
-      .write(profile_.result, metrics::PROFILE)
-      .write(profile_.agg_trade, metrics::PROFILE)
-      .write(profile_.trade, metrics::PROFILE)
-      .write(profile_.mini_ticker, metrics::PROFILE)
-      .write(profile_.book_ticker, metrics::PROFILE)
-      .write(profile_.depth, metrics::PROFILE)
-      .write(profile_.depth_update, metrics::PROFILE)
       // latency
       .write(latency_.ping, metrics::LATENCY)
       .write(latency_.heartbeat, metrics::LATENCY);
@@ -223,8 +211,8 @@ void MarketData::subscribe(const roq::span<std::string> &symbols) {
 
 void MarketData::subscribe(const roq::span<std::string> &symbols, const std::string_view &theme) {
   assert(!std::empty(symbols));
-  auto id = ++request_id_;
   for (auto &symbol : symbols) {
+    auto id = ++request_id_;
     auto message = fmt::format(
         R"({{)"
         R"("sub":"market.{}.{}",)"
@@ -233,16 +221,31 @@ void MarketData::subscribe(const roq::span<std::string> &symbols, const std::str
         symbol,
         theme,
         id);
+    log::debug(R"(message="{}")"sv, message);
     connection_.send_text(message);
   }
+}
+
+void MarketData::send_pong(std::chrono::milliseconds timestamp) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("pong":{})"
+      R"(}})"sv,
+      timestamp.count());
+  log::debug(R"(message="{}")"sv, message);
+  connection_.send_text(message);
 }
 
 void MarketData::parse(const std::string_view &message) {
   profile_.parse([&]() {
     try {
+      log::debug("HERE {}"sv, message);
       auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
-      json::MarketStreamParser::dispatch(*this, message, buffer, trace_info);
+      if (json::Parser::dispatch(*this, message, buffer, trace_info)) {
+      } else {
+        log::warn(R"(Unable to parse message="{}")"sv, message);
+      }
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
       core::tools::UnhandledException::terminate();
@@ -250,137 +253,24 @@ void MarketData::parse(const std::string_view &message) {
   });
 }
 
-void MarketData::operator()(int32_t id, const json::Error &error) {
-  profile_.error([&]() { log::warn("id={}, error={}"sv, id, error); });
-}
-
-void MarketData::operator()(int32_t id, const json::Result &result) {
-  profile_.result([&]() { log::info("id={}, result={}"sv, id, result); });
-}
-
-void MarketData::operator()(const json::AggTrade &agg_trade, const server::TraceInfo &trace_info) {
-  profile_.agg_trade([&]() {
-    log::info<3>("agg_trade={}"sv, agg_trade);
-    auto side = agg_trade.buyer_is_maker ? Side::BUY : Side::SELL;
-    Trade trade{
-        .side = side,
-        .price = agg_trade.price,
-        .quantity = agg_trade.quantity,
-        .trade_id = {},
-    };
-    core::charconv::to_string(std::back_inserter(trade.trade_id), agg_trade.agg_trade_id);
-    TradeSummary trade_summary{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = agg_trade.symbol,
-        .trades = {&trade, 1},
-        .exchange_time_utc = agg_trade.event_time,
-    };
-    create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
+void MarketData::operator()(const server::Trace<json::Ping> &event) {
+  profile_.ping([&]() {
+    auto &[trace_info, ping] = event;
+    send_pong(ping.timestamp);
   });
 }
 
-void MarketData::operator()(const json::Trade &trade, const server::TraceInfo &trace_info) {
-  profile_.trade([&]() {
-    log::info<3>("trade={}"sv, trade);
-    auto side = trade.buyer_is_maker ? Side::BUY : Side::SELL;
-    Trade trade_{
-        .side = side,
-        .price = trade.price,
-        .quantity = trade.quantity,
-        .trade_id = {},
-    };
-    core::charconv::to_string(std::back_inserter(trade_.trade_id), trade.trade_id);
-    TradeSummary trade_summary{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = trade.symbol,
-        .trades = {&trade_, 1},
-        .exchange_time_utc = trade.event_time,
-    };
-    create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
+void MarketData::operator()(const server::Trace<json::Error> &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::warn("error={}"sv, error);
   });
 }
 
-void MarketData::operator()(
-    const json::MiniTicker &mini_ticker, const server::TraceInfo &trace_info) {
-  profile_.mini_ticker([&]() {
-    log::info<3>("mini_ticker={}"sv, mini_ticker);
-    Statistics statistics[] = {
-        {.type = StatisticsType::HIGHEST_TRADED_PRICE, .value = mini_ticker.high_price},
-        {.type = StatisticsType::LOWEST_TRADED_PRICE, .value = mini_ticker.low_price},
-        {.type = StatisticsType::OPEN_PRICE, .value = mini_ticker.open_price},
-        {.type = StatisticsType::CLOSE_PRICE, .value = mini_ticker.close_price},
-    };
-    StatisticsUpdate statistics_update{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = mini_ticker.symbol,
-        .statistics = statistics,
-        .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = mini_ticker.event_time,
-    };
-    create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-  });
-}
-
-void MarketData::operator()(
-    const json::BookTicker &book_ticker, const server::TraceInfo &trace_info) {
-  profile_.book_ticker([&]() {
-    log::info<3>("book_ticker={}"sv, book_ticker);
-    TopOfBook top_of_book{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = book_ticker.symbol,
-        .layer{
-            .bid_price = book_ticker.best_bid_price,
-            .bid_quantity = book_ticker.best_bid_qty,
-            .ask_price = book_ticker.best_ask_price,
-            .ask_quantity = book_ticker.best_ask_qty,
-        },
-        .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = {},
-    };
-    create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
-  });
-}
-
-void MarketData::operator()(
-    const std::string_view &symbol, const json::Depth &depth, const server::TraceInfo &trace_info) {
-  profile_.depth([&]() {
-    log::info<3>(R"(symbol="{}", depth={})"sv, symbol, depth);
-    core::back_emplacer bids(shared_.bids), asks(shared_.asks);
-    for (auto &item : depth.bids)
-      bids.emplace_back([&item](auto &result) { emplace(result, item); });
-    for (auto &item : depth.asks)
-      asks.emplace_back([&item](auto &result) { emplace(result, item); });
-    if (!(std::empty(bids) && std::empty(asks))) {
-      MarketByPriceUpdate market_by_price_update{
-          .stream_id = stream_id_,
-          .exchange = Flags::exchange(),
-          .symbol = symbol,
-          .bids = bids,
-          .asks = asks,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = {},
-          .exchange_sequence = {},
-          .price_decimals = {},
-          .quantity_decimals = {},
-          .checksum = {},
-      };
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
-    }
-  });
-}
-
-void MarketData::operator()(
-    const std::string_view &symbol,
-    const json::DepthUpdate &depth_update,
-    const server::TraceInfo &) {
-  profile_.depth_update([&]() {
-    log::info<3>(R"(symbol="{}", depth_update={})"sv, symbol, depth_update);
-    // do nothing
-    // XXX why?
+void MarketData::operator()(const server::Trace<json::BBO> &event) {
+  profile_.bbo([&]() {
+    auto &[trace_info, bbo] = event;
+    log::debug("bbo={}"sv, bbo);
   });
 }
 

@@ -22,13 +22,12 @@
 #include "roq/huobi_futures/market_data_state.h"
 #include "roq/huobi_futures/shared.h"
 
-#include "roq/huobi_futures/json/market_stream_parser.h"
+#include "roq/huobi_futures/json/parser.h"
 
 namespace roq {
 namespace huobi_futures {
 
-class MarketData final : public core::web::ClientSocket::Handler,
-                         public json::MarketStreamParser::Handler {
+class MarketData final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
@@ -72,23 +71,15 @@ class MarketData final : public core::web::ClientSocket::Handler,
   void subscribe(const roq::span<std::string> &symbols);
   void subscribe(const roq::span<std::string> &symbols, const std::string_view &theme);
 
+  void send_pong(std::chrono::milliseconds timestamp);
+
   void parse(const std::string_view &message);
 
-  // response
-  void operator()(int32_t, const json::Error &) override;
-  void operator()(int32_t, const json::Result &) override;
+  void operator()(const server::Trace<json::Ping> &) override;
 
-  // update
-  void operator()(const json::AggTrade &, const server::TraceInfo &) override;
-  void operator()(const json::Trade &, const server::TraceInfo &) override;
-  void operator()(const json::MiniTicker &, const server::TraceInfo &) override;
-  void operator()(const json::BookTicker &, const server::TraceInfo &) override;
-  void operator()(
-      const std::string_view &symbol, const json::Depth &depth, const server::TraceInfo &) override;
-  void operator()(
-      const std::string_view &symbol,
-      const json::DepthUpdate &,
-      const server::TraceInfo &) override;
+  void operator()(const server::Trace<json::Error> &) override;
+
+  void operator()(const server::Trace<json::BBO> &) override;
 
  private:
   Handler &handler_;
@@ -106,8 +97,7 @@ class MarketData final : public core::web::ClientSocket::Handler,
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, error, result, agg_trade, trade, mini_ticker, book_ticker, depth,
-        depth_update;
+    core::metrics::Profile parse, ping, error, bbo;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

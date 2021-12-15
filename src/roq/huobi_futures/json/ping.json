@@ -1,0 +1,7 @@
+{
+"name": "Ping",
+"type": "struct",
+"values": [
+	{ "name": "timestamp", "type": "std::chrono::milliseconds" }
+]
+}

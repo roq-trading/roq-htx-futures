@@ -1,7 +1,0 @@
-{
-"name": "ListenKey",
-"type": "item",
-"values": [
-	{ "name": "listenKey", "type": "std::string_view" }
-]
-}

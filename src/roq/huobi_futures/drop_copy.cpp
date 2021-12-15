@@ -173,7 +173,7 @@ void DropCopy::parse(const std::string_view &message) {
     try {
       auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
-      json::UserStreamParser::dispatch(*this, message, buffer, trace_info);
+      json::Parser::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
       core::tools::UnhandledException::terminate();
@@ -181,95 +181,16 @@ void DropCopy::parse(const std::string_view &message) {
   });
 }
 
-void DropCopy::operator()(
-    const json::OutboundAccountInfo &outbound_account_info, const server::TraceInfo &trace_info) {
-  profile_.outbound_account_info([&]() {
-    log::info<3>("outbound_account_info={}"sv, outbound_account_info);
-    for (auto &item : outbound_account_info.balances) {
-      FundsUpdate funds_update{
-          .stream_id = stream_id_,
-          .account = security_.get_account(),
-          .currency = item.asset,
-          .balance = item.free_amount,
-          .hold = item.locked_amount,
-          .external_account = {},
-      };
-      create_trace_and_dispatch(handler_, trace_info, funds_update, true);
-    }
-  });
+void DropCopy::operator()(const server::Trace<json::Ping> &) {
+  log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(
-    const json::OutboundAccountPosition &outbound_account_position,
-    const server::TraceInfo &trace_info) {
-  profile_.outbound_account_position([&]() {
-    log::info<3>("outbound_account_position={}"sv, outbound_account_position);
-    for (auto &item : outbound_account_position.balances) {
-      FundsUpdate funds_update{
-          .stream_id = stream_id_,
-          .account = security_.get_account(),
-          .currency = item.asset,
-          .balance = item.free_amount,
-          .hold = item.locked_amount,
-          .external_account = {},
-      };
-      create_trace_and_dispatch(handler_, trace_info, funds_update, true);
-    }
-  });
+void DropCopy::operator()(const server::Trace<json::Error> &) {
+  log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const json::BalanceUpdate &balance_update, const server::TraceInfo &) {
-  profile_.balance_update([&]() {
-    log::info<3>("balance_update={}"sv, balance_update);
-    // note! contains delta (changes) -- we're not going to use here
-  });
-}
-
-void DropCopy::operator()(
-    const json::ExecutionReport &execution_report, const server::TraceInfo &trace_info) {
-  profile_.execution_report([&]() {
-    log::info<3>("execution_report={}"sv, execution_report);
-    auto side = json::map(execution_report.side);
-    auto status = json::map(execution_report.current_order_status);
-    oms::OrderUpdate order_update{
-        .account = security_.get_account(),
-        .exchange = Flags::exchange(),
-        .symbol = execution_report.symbol,
-        .side = side,
-        .position_effect = {},
-        .max_show_quantity = NaN,
-        .order_type = {},
-        .time_in_force = {},
-        .execution_instruction = {},
-        .order_template = {},
-        .create_time_utc = {},
-        .update_time_utc = execution_report.transaction_time,
-        .external_account = {},
-        .external_order_id = execution_report.client_order_id,
-        .status = status,
-        .quantity = NaN,
-        .price = execution_report.price,
-        .stop_price = NaN,
-        .remaining_quantity = NaN,
-        .traded_quantity = execution_report.cumulative_filled_quantity,
-        .average_traded_price = NaN,
-        .last_traded_quantity = NaN,
-        .last_traded_price = NaN,
-        .last_liquidity = {},
-    };
-    if (shared_.update_order(
-            execution_report.client_order_id,
-            stream_id_,
-            trace_info,
-            order_update,
-            [&]([[maybe_unused]] auto &order) {
-              // XXX IMPLEMENT
-            })) {
-    } else {
-      log::warn("*** EXTERNAL ORDER ***"sv);
-      log::warn("execution_report={}"sv, execution_report);
-    }
-  });
+void DropCopy::operator()(const server::Trace<json::BBO> &) {
+  log::fatal("Unexpected"sv);
 }
 
 }  // namespace huobi_futures

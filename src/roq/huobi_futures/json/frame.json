@@ -1,0 +1,15 @@
+{
+"name": "Frame",
+"type": "comp",
+"values": [
+	{ "name": "id", "type": "int64_t" },
+	{ "name": "status", "type": "Status" },
+	{ "name": "err-code", "type": "std::string_view" },
+	{ "name": "err-msg", "type": "std::string_view" },
+	{ "name": "ts", "type": "std::chrono::milliseconds" },
+	{ "name": "ch", "type": "std::string_view" },
+	{ "name": "tick" },
+	{ "name": "ping", "type": "std::chrono::milliseconds" },
+	{ "name": "subbed", "type": "std::string_view", "comment": "UNDOC" }
+]
+}

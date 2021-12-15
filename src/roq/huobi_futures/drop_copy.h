@@ -20,12 +20,12 @@
 #include "roq/huobi_futures/security.h"
 #include "roq/huobi_futures/shared.h"
 
-#include "roq/huobi_futures/json/user_stream_parser.h"
+#include "roq/huobi_futures/json/parser.h"
 
 namespace roq {
 namespace huobi_futures {
 
-class DropCopy final : public core::web::ClientSocket::Handler, public json::UserStreamParser::Handler {
+class DropCopy final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
@@ -68,10 +68,11 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Use
 
   void parse(const std::string_view &message);
 
-  void operator()(const json::OutboundAccountInfo &, const server::TraceInfo &) override;
-  void operator()(const json::OutboundAccountPosition &, const server::TraceInfo &) override;
-  void operator()(const json::BalanceUpdate &, const server::TraceInfo &) override;
-  void operator()(const json::ExecutionReport &, const server::TraceInfo &) override;
+  void operator()(const server::Trace<json::Ping> &) override;
+
+  void operator()(const server::Trace<json::Error> &) override;
+
+  void operator()(const server::Trace<json::BBO> &) override;
 
  private:
   Handler &handler_;

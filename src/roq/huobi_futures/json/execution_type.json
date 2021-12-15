@@ -1,7 +1,0 @@
-{
-"name": "ExecutionType",
-"type": "enum",
-"values": [
-	{ "name": "NEW" }
-]
-}

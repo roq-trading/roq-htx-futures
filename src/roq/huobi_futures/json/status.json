@@ -1,0 +1,8 @@
+{
+"name": "Status",
+"type": "enum",
+"values": [
+	{ "name": "ok" },
+	{ "name": "error" }
+]
+}
