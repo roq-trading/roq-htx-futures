@@ -25,35 +25,17 @@
 #include "roq/huobi_futures/security.h"
 #include "roq/huobi_futures/shared.h"
 
-#include "roq/huobi_futures/json/account.h"
-#include "roq/huobi_futures/json/cancel_order.h"
-#include "roq/huobi_futures/json/exchange_info.h"
-#include "roq/huobi_futures/json/listen_key.h"
-#include "roq/huobi_futures/json/new_order.h"
-
 namespace roq {
 namespace huobi_futures {
 
 class OrderEntry final : public core::web::Client::Handler {
  public:
-  struct ListenKeyUpdate final {
-    std::string_view account;
-    std::string_view listen_key;
-  };
-
-  struct SymbolsUpdate final {
-    std::vector<std::string> &symbols;
-  };
-
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
     virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
     virtual void operator()(const server::Trace<ReferenceData> &, bool is_last) = 0;
     virtual void operator()(const server::Trace<MarketStatus> &, bool is_last) = 0;
     virtual void operator()(const server::Trace<FundsUpdate> &, bool is_last) = 0;
-    // cross-communication
-    virtual void operator()(const ListenKeyUpdate &) = 0;
-    virtual void operator()(SymbolsUpdate &) = 0;
   };
 
   OrderEntry(Handler &, core::io::Context &, uint16_t stream_id, Security &, Shared &);
@@ -93,32 +75,6 @@ class OrderEntry final : public core::web::Client::Handler {
 
   uint32_t download(OrderEntryState state);
 
-  void get_listen_key();
-  void get_listen_key_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const server::Trace<json::ListenKey> &);
-  void refresh_listen_key();
-
-  void get_account();
-  void get_account_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const server::Trace<json::Account> &);
-
-  void get_exchange_info();
-  void get_exchange_info_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const server::Trace<json::ExchangeInfo> &);
-
-  void new_order(
-      const Event<CreateOrder> &, const oms::Order &, const std::string_view &request_id);
-  void new_order_ack(const server::Trace<core::web::Response> &);
-  void operator()(const server::Trace<json::NewOrder> &);
-
-  void cancel_order(
-      const Event<CancelOrder> &,
-      const oms::Order &,
-      const std::string_view &request_id,
-      const std::string_view &previous_request_id);
-  void cancel_order_ack(const server::Trace<core::web::Response> &);
-  void operator()(const server::Trace<json::CancelOrder> &);
-
  private:
   Handler &handler_;
   // config
@@ -146,10 +102,7 @@ class OrderEntry final : public core::web::Client::Handler {
   Security &security_;
   // cache
   Shared &shared_;
-  absl::flat_hash_set<std::string> all_symbols_;
-  std::string listen_key_;
   // state
-  std::chrono::nanoseconds listen_key_refresh_ = {};
   ConnectionStatus status_ = {};
   server::Download<OrderEntryState> download_;
 };

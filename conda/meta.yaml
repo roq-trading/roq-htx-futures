@@ -29,6 +29,7 @@ requirements:
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
     - roq-server
+    - zlib
 
 about:
   home: https://roq-trading.com

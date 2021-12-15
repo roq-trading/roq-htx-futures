@@ -175,43 +175,6 @@ void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
   }
 }
 
-void Gateway::operator()(const OrderEntry::ListenKeyUpdate &listen_key_update) {
-  auto &account = listen_key_update.account;
-  assert(!std::empty(account));
-  auto iter = drop_copy_.find(account);
-  if (iter == std::end(drop_copy_)) {
-    log::fatal(R"(Unexpected: account="{}")"sv, account);
-  } else if (!static_cast<bool>((*iter).second)) {
-    log::info(R"(Create drop-copy (user-stream) for account="{}")"sv, account);
-    auto drop_copy = std::make_unique<DropCopy>(
-        *this, context_, ++stream_id_, *security_[account], shared_, listen_key_update.listen_key);
-    MessageInfo message_info;  // XXX something sensible
-    Start start;
-    create_event_and_dispatch(*drop_copy, message_info, start);
-    (*iter).second = std::move(drop_copy);
-  }
-}
-
-void Gateway::operator()(OrderEntry::SymbolsUpdate &symbols_update) {
-  auto &symbols = symbols_update.symbols;
-  for (auto &iter : market_data_) {
-    if (std::empty(symbols))
-      break;
-    (*iter).update_subscriptions(symbols);
-  }
-  for (;;) {
-    if (std::empty(symbols))
-      break;
-    log::info("Create market-data (user-stream)"sv);
-    auto market_data = std::make_unique<MarketData>(*this, context_, ++stream_id_, shared_);
-    (*market_data).update_subscriptions(symbols);
-    MessageInfo message_info;  // XXX something sensible
-    Start start;
-    create_event_and_dispatch(*market_data, message_info, start);
-    market_data_.emplace_back(std::move(market_data));
-  }
-}
-
 uint16_t Gateway::operator()(
     const Event<CreateOrder> &event, const oms::Order &order, const std::string_view &request_id) {
   assert(!std::empty(event.value.account));

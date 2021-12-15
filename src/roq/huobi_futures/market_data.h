@@ -14,6 +14,8 @@
 
 #include "roq/core/web/client_socket.h"
 
+#include "roq/core/zlib/inflate.h"
+
 #include "roq/download.h"
 #include "roq/server.h"
 
@@ -68,12 +70,7 @@ class MarketData final : public core::web::ClientSocket::Handler,
   uint32_t download(MarketDataState);
 
   void subscribe(const roq::span<std::string> &symbols);
-
-  void subscribe_agg_trade(const roq::span<std::string> &symbols);
-  void subscribe_trade(const roq::span<std::string> &symbols);
-  void subscribe_mini_ticker(const roq::span<std::string> &symbols);
-  void subscribe_book_ticker(const roq::span<std::string> &symbols);
-  void subscribe_depth(const roq::span<std::string> &symbols);
+  void subscribe(const roq::span<std::string> &symbols, const std::string_view &theme);
 
   void parse(const std::string_view &message);
 
@@ -122,6 +119,9 @@ class MarketData final : public core::web::ClientSocket::Handler,
   bool ready_ = false;
   ConnectionStatus status_ = {};
   server::Download<MarketDataState> download_;
+  // zlib
+  core::zlib::Inflate inflate_;
+  std::vector<std::byte> inflate_buffer_;
 };
 
 }  // namespace huobi_futures

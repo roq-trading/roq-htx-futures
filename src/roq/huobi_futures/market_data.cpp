@@ -79,7 +79,8 @@ MarketData::MarketData(
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      shared_(shared), download_({}, [this](auto state) { return download(state); }) {
+      shared_(shared), download_({}, [this](auto state) { return download(state); }),
+      inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
 }
 
 bool MarketData::ready() const {
@@ -165,12 +166,19 @@ void MarketData::operator()(const core::web::ClientSocket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Text &text) {
-  parse(text.payload);
+void MarketData::operator()(const core::web::ClientSocket::Text &) {
+  log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Binary &) {
-  log::fatal("Unexpected"sv);
+void MarketData::operator()(const core::web::ClientSocket::Binary &binary) {
+  if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
+        std::string_view message{
+            reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        parse(message);
+      })) {
+  } else {
+    log::fatal("Failed to decode message"sv);
+  }
 }
 
 void MarketData::operator()(ConnectionStatus status) {
@@ -208,91 +216,25 @@ uint32_t MarketData::download(MarketDataState state) {
 }
 
 void MarketData::subscribe(const roq::span<std::string> &symbols) {
-  if (Flags::ws_subscribe_trade_details()) {
-    subscribe_trade(symbols);
-  } else {
-    subscribe_agg_trade(symbols);
+  if (std::empty(symbols))
+    return;
+  subscribe(symbols_, "bbo"sv);
+}
+
+void MarketData::subscribe(const roq::span<std::string> &symbols, const std::string_view &theme) {
+  assert(!std::empty(symbols));
+  auto id = ++request_id_;
+  for (auto &symbol : symbols) {
+    auto message = fmt::format(
+        R"({{)"
+        R"("sub":"market.{}.{}",)"
+        R"("id":"{}")"
+        R"(}})"sv,
+        symbol,
+        theme,
+        id);
+    connection_.send_text(message);
   }
-  subscribe_mini_ticker(symbols);
-  subscribe_book_ticker(symbols);
-  subscribe_depth(symbols);
-}
-
-void MarketData::subscribe_agg_trade(const roq::span<std::string> &symbols) {
-  assert(!std::empty(symbols));
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@aggTrade"],)"
-      R"("id":{})"
-      R"(}})"sv,
-      fmt::join(symbols, R"(@aggTrade",")"sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_trade(const roq::span<std::string> &symbols) {
-  assert(!std::empty(symbols));
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@trade"],)"
-      R"("id":{})"
-      R"(}})"sv,
-      fmt::join(symbols, R"(@trade",")"sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_mini_ticker(const roq::span<std::string> &symbols) {
-  assert(!std::empty(symbols));
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@miniTicker"],)"
-      R"("id":{})"
-      R"(}})"sv,
-      fmt::join(symbols, R"(@miniTicker",")"sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_book_ticker(const roq::span<std::string> &symbols) {
-  assert(!std::empty(symbols));
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@bookTicker"],)"
-      R"("id":{})"
-      R"(}})"sv,
-      fmt::join(symbols, R"(@bookTicker",")"sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_depth(const roq::span<std::string> &symbols) {
-  assert(!std::empty(symbols));
-  auto stream = fmt::format(
-      R"(@depth{}@{}ms)"sv,
-      Flags::ws_subscribe_depth_levels(),
-      std::chrono::duration_cast<std::chrono::milliseconds>(Flags::ws_subscribe_depth_freq())
-          .count());
-  auto id = ++request_id_;
-  auto separator = fmt::format(R"({}",")"sv, stream);
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}{}"],)"
-      R"("id":{})"
-      R"(}})"sv,
-      fmt::join(symbols, separator),
-      stream,
-      id);
-  connection_.send_text(message);
 }
 
 void MarketData::parse(const std::string_view &message) {

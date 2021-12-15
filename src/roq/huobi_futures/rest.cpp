@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "roq/utils/mask.h"
+#include "roq/utils/safe_cast.h"
 #include "roq/utils/update.h"
 
 #include "roq/core/back_emplacer.h"
@@ -205,68 +206,50 @@ void Rest::get_contract_info_ack(
 void Rest::operator()(const server::Trace<json::ContractInfo> &event) {
   auto &[trace_info, contract_info] = event;
   log::info<4>("contract_info={}"sv, contract_info);
-  /*
-  // reference data
-  std::vector<std::string> symbols_2;
-  // symbols_2.reserve(std::size(symbols.data));
+  std::vector<std::string> symbols;
+  symbols.reserve(std::size(contract_info.data));
   size_t counter = 0;
-  for (size_t i = 0; i < std::size(symbols.data); ++i) {
-    auto &item = symbols.data[i];
+  for (size_t i = 0; i < std::size(contract_info.data); ++i) {
+    auto &item = contract_info.data[i];
     log::info<2>("item={}"sv, item);
     auto &symbol = item.symbol;
     if (shared_.discard_symbol(item.symbol))
       continue;
     if (all_symbols_.emplace(symbol).second)  // only include new
-      symbols_2.emplace_back(symbol);
+      symbols.emplace_back(symbol);
     ++counter;
     const ReferenceData reference_data{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
-        .description = item.name,
+        .description = item.contract_code,
         .security_type = {},
-        .base_currency = item.base_currency,
-        .quote_currency = item.quote_currency,
+        .base_currency = {},
+        .quote_currency = {},
         .commission_currency = {},
-        .tick_size = item.price_increment,  // XXX check
+        .tick_size = item.price_tick,
         .multiplier = 1.0,
-        .min_trade_vol = item.quote_min_size,         // XXX check
-        .max_trade_vol = item.quote_max_size,         // XXX check
-        .trade_vol_step_size = item.quote_increment,  // XXX check
+        .min_trade_vol = NaN,
+        .max_trade_vol = NaN,
+        .trade_vol_step_size = NaN,
         .option_type = {},
         .strike_currency = {},
         .strike_price = NaN,
         .underlying = {},
         .time_zone = {},
         .issue_date = {},
-        .settlement_date = {},
+        .settlement_date = utils::safe_cast(item.settlement_time),
         .expiry_datetime = {},
         .expiry_datetime_utc = {},
     };
     server::create_trace_and_dispatch(handler_, trace_info, reference_data, true);
   }
-  if (!std::empty(symbols_2)) {
+  if (!std::empty(symbols)) {
     SymbolsUpdate symbols_update{
-        .symbols = symbols_2,
+        .symbols = symbols,
     };
     handler_(symbols_update);
   }
-  if (ROQ_UNLIKELY(counter > 0))
-    log::info("Symbols {} / {}"sv, counter, std::size(symbols.data));
-  // market status
-  for (auto &item : symbols.data) {
-    auto &symbol = item.symbol;
-    if (all_symbols_.find(symbol) == std::end(all_symbols_))
-      continue;
-    const MarketStatus market_status{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = symbol,
-        .trading_status = item.enable_trading ? TradingStatus::OPEN : TradingStatus::CLOSE,
-    };
-    server::create_trace_and_dispatch(handler_, trace_info, market_status, true);
-  }
-  */
 }
 
 }  // namespace huobi_futures
