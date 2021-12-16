@@ -229,21 +229,25 @@ uint32_t MarketData::download(MarketDataState state) {
 void MarketData::subscribe(const roq::span<std::string> &symbols) {
   if (std::empty(symbols))
     return;
-  subscribe(symbols_, "bbo"sv);
-  subscribe(symbols_, "depth.size_150.high_freq"sv, "incremental"sv);
-  subscribe(symbols_, "trade.detail"sv);
-  subscribe(symbols_, "detail"sv);
+  subscribe(symbols_, "market"sv, "bbo"sv);
+  subscribe(symbols_, "market"sv, "depth.size_150.high_freq"sv, "incremental"sv);
+  subscribe(symbols_, "market"sv, "trade.detail"sv);
+  subscribe(symbols_, "market"sv, "detail"sv);
 }
 
-void MarketData::subscribe(const roq::span<std::string> &symbols, const std::string_view &theme) {
+void MarketData::subscribe(
+    const roq::span<std::string> &symbols,
+    const std::string_view &source,
+    const std::string_view &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
     auto id = ++request_id_;
     auto message = fmt::format(
         R"({{)"
-        R"("sub":"market.{}.{}",)"
+        R"("sub":"{}.{}.{}",)"
         R"("id":"{}")"
         R"(}})"sv,
+        source,
         symbol,
         theme,
         id);
@@ -254,6 +258,7 @@ void MarketData::subscribe(const roq::span<std::string> &symbols, const std::str
 
 void MarketData::subscribe(
     const roq::span<std::string> &symbols,
+    const std::string_view &source,
     const std::string_view &theme,
     const std::string_view &data_type) {
   assert(!std::empty(symbols));
@@ -261,10 +266,11 @@ void MarketData::subscribe(
     auto id = ++request_id_;
     auto message = fmt::format(
         R"({{)"
-        R"("sub":"market.{}.{}",)"
+        R"("sub":"{}.{}.{}",)"
         R"("data_type":"{}",)"
         R"("id":"{}")"
         R"(}})"sv,
+        source,
         symbol,
         theme,
         data_type,

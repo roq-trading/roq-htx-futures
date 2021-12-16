@@ -69,9 +69,13 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
   uint32_t download(MarketDataState);
 
   void subscribe(const roq::span<std::string> &symbols);
-  void subscribe(const roq::span<std::string> &symbols, const std::string_view &theme);
   void subscribe(
       const roq::span<std::string> &symbols,
+      const std::string_view &source,
+      const std::string_view &theme);
+  void subscribe(
+      const roq::span<std::string> &symbols,
+      const std::string_view &source,
       const std::string_view &theme,
       const std::string_view &data_type);
 
