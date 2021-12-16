@@ -15,7 +15,6 @@ namespace huobi_futures {
 
 Config::Config(const std::string_view &config_path, const std::string_view &secrets_path) {
   server::ConfigReader::parse_file(*this, config_path, secrets_path);
-  assert(!std::empty(master_account_));
 }
 
 std::string Config::get_master_account() const {

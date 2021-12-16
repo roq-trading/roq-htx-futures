@@ -1,13 +1,13 @@
 symbols = [ ".*" ]
 
-[accounts]
-
-  [accounts.A1]
-  master = true
-  login = "0fd4bd70-beb1-4342-af5d-cea8d4b663d9"
-  password = "W9v83VRUvBNxoyd8dRofJ"
-  secret = "F566CB25FED8C2118B3E0A0FF4145F83"
-  symbols = ".*"
+#[accounts]
+#
+#  [accounts.A1]
+#  master = true
+#  login = "0fd4bd70-beb1-4342-af5d-cea8d4b663d9"
+#  password = "W9v83VRUvBNxoyd8dRofJ"
+#  secret = "F566CB25FED8C2118B3E0A0FF4145F83"
+#  symbols = ".*"
 
 [users]
 
