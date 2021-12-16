@@ -197,5 +197,17 @@ void DropCopy::operator()(const server::Trace<json::BBO> &) {
   log::fatal("Unexpected"sv);
 }
 
+void DropCopy::operator()(const server::Trace<json::Depth> &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(const server::Trace<json::Trade> &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(const server::Trace<json::Detail> &) {
+  log::fatal("Unexpected"sv);
+}
+
 }  // namespace huobi_futures
 }  // namespace roq

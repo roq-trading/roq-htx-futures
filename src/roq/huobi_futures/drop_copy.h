@@ -74,6 +74,9 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
   void operator()(const server::Trace<json::Subbed> &) override;
 
   void operator()(const server::Trace<json::BBO> &) override;
+  void operator()(const server::Trace<json::Depth> &) override;
+  void operator()(const server::Trace<json::Trade> &) override;
+  void operator()(const server::Trace<json::Detail> &) override;
 
  private:
   Handler &handler_;

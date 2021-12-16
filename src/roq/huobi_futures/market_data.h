@@ -70,6 +70,10 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
 
   void subscribe(const roq::span<std::string> &symbols);
   void subscribe(const roq::span<std::string> &symbols, const std::string_view &theme);
+  void subscribe(
+      const roq::span<std::string> &symbols,
+      const std::string_view &theme,
+      const std::string_view &data_type);
 
   void send_pong(std::chrono::milliseconds timestamp);
 
@@ -81,6 +85,9 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
   void operator()(const server::Trace<json::Subbed> &) override;
 
   void operator()(const server::Trace<json::BBO> &) override;
+  void operator()(const server::Trace<json::Depth> &) override;
+  void operator()(const server::Trace<json::Trade> &) override;
+  void operator()(const server::Trace<json::Detail> &) override;
 
  private:
   Handler &handler_;
@@ -98,7 +105,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, error, subbed, bbo;
+    core::metrics::Profile parse, ping, error, subbed, bbo, depth, trade, detail;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

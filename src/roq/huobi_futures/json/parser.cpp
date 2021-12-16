@@ -10,21 +10,15 @@
 
 #include "roq/logging.h"
 
-#include "roq/huobi_futures/json/bbo_frame.h"
 #include "roq/huobi_futures/json/frame.h"
+#include "roq/huobi_futures/json/topic.h"
+#include "roq/huobi_futures/json/utils.h"
 
 using namespace std::literals;
 
 namespace roq {
 namespace huobi_futures {
 namespace json {
-
-namespace {
-std::string_view get_channel(const std::string_view &channel) {
-  auto offset = channel.find('.');
-  return channel.substr(0, offset);
-}
-}  // namespace
 
 bool Parser::dispatch(
     Parser::Handler &handler,
@@ -35,19 +29,36 @@ bool Parser::dispatch(
   if (!frame.ping.count()) {
     switch (frame.status) {
       case Status::UNDEFINED: {
-        auto channel = get_channel(frame.ch);
-        if (channel.compare("market"sv) == 0) {
-          auto bbo_frame = core::json::Parser::create<json::BBOFrame>(message, buffer);
-          server::create_trace_and_dispatch(handler, trace_info, bbo_frame.tick);
-          return true;
+        Topic topic{extract_topic(frame.ch)};
+        switch (topic) {
+          case Topic::BBO: {
+            auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, bbo);
+            return true;
+          }
+          case Topic::DEPTH: {
+            auto depth = core::json::Parser::create<json::Depth>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, depth);
+            return true;
+          }
+          case Topic::TRADE: {
+            auto trade = core::json::Parser::create<json::Trade>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, trade);
+            return true;
+          }
+          case Topic::DETAIL: {
+            auto detail = core::json::Parser::create<json::Detail>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, detail);
+            return true;
+          }
+          default:
+            break;
         }
         break;
       }
       case Status::UNKNOWN:
-        log::warn(R"(Unexpected: message="{}")"sv, message);
-        return false;
+        break;
       case Status::OK:
-        log::debug("OK"sv);
         if (!std::empty(frame.subbed)) {
           Subbed subbed{
               .id = frame.id,
@@ -58,8 +69,7 @@ bool Parser::dispatch(
           server::create_trace_and_dispatch(handler, trace_info, subbed);
           return true;
         } else {
-          // ???
-          return false;
+          log::fatal("DEBUG {}"sv, message);  // ???
         }
         break;
       case Status::ERROR:
@@ -79,6 +89,7 @@ bool Parser::dispatch(
     server::create_trace_and_dispatch(handler, trace_info, ping);
     return true;
   }
+  log::warn(R"(Unexpected: message="{}")"sv, message);
   return false;
 }
 

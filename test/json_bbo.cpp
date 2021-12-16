@@ -4,7 +4,7 @@
 
 #include "roq/core/json/parser.h"
 
-#include "roq/huobi_futures/json/bbo_frame.h"
+#include "roq/huobi_futures/json/bbo.h"
 
 using namespace roq;
 using namespace roq::huobi_futures;
@@ -12,7 +12,6 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-// note! reduced
 TEST(json_bbo, simple) {
   auto message = R"({)"
                  R"("ch":"market.TRX211224.bbo",)"
@@ -29,5 +28,5 @@ TEST(json_bbo, simple) {
                  R"(})";
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::BBOFrame>(message, buffer_);
+  auto obj = core::json::Parser::create<json::BBO>(message, buffer_);
 }

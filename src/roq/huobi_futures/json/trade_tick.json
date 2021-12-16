@@ -1,0 +1,9 @@
+{
+"name": "TradeTick",
+"type": "comp",
+"values": [
+	{ "name": "id", "type": "int64_t" },
+	{ "name": "ts", "type": "std::chrono::milliseconds" },
+	{ "name": "data", "type": "roq::span<TradeTickItem>" }
+]
+}

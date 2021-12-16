@@ -9,9 +9,12 @@
 #include "roq/server.h"
 
 #include "roq/huobi_futures/json/bbo.h"
+#include "roq/huobi_futures/json/depth.h"
+#include "roq/huobi_futures/json/detail.h"
 #include "roq/huobi_futures/json/error.h"
 #include "roq/huobi_futures/json/ping.h"
 #include "roq/huobi_futures/json/subbed.h"
+#include "roq/huobi_futures/json/trade.h"
 
 namespace roq {
 namespace huobi_futures {
@@ -23,6 +26,9 @@ struct Parser final {
     virtual void operator()(const server::Trace<Error> &) = 0;
     virtual void operator()(const server::Trace<Subbed> &) = 0;
     virtual void operator()(const server::Trace<BBO> &) = 0;
+    virtual void operator()(const server::Trace<Depth> &) = 0;
+    virtual void operator()(const server::Trace<Trade> &) = 0;
+    virtual void operator()(const server::Trace<Detail> &) = 0;
   };
 
   static bool dispatch(

@@ -2,7 +2,7 @@
 "name": "Side",
 "type": "enum",
 "values": [
-	{ "name": "BUY" },
-	{ "name": "SELL" }
+	{ "name": "buy" },
+	{ "name": "sell" }
 ]
 }

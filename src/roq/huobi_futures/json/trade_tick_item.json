@@ -1,0 +1,12 @@
+{
+"name": "TradeTickItem",
+"type": "item",
+"values": [
+	{ "name": "amount", "type": "int64_t" },
+	{ "name": "quantity", "type": "double" },
+	{ "name": "ts", "type": "std::chrono::milliseconds" },
+	{ "name": "id", "type": "int64_t" },
+	{ "name": "price", "type": "double" },
+	{ "name": "direction", "type": "Side" }
+]
+}

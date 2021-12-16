@@ -1,0 +1,10 @@
+{
+"name": "Topic",
+"type": "enum",
+"values": [
+	{ "name": "bbo" },
+	{ "name": "depth" },
+	{ "name": "trade" },
+	{ "name": "detail" }
+]
+}

@@ -5,17 +5,26 @@ set(SOURCES parser.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    bbo_frame.json
     bbo.json
+    bbo_tick.json
     contract_info_item.json
     contract_info.json
+    depth.json
+    depth_tick.json
+    detail.json
+    detail_tick.json
     error.json
+    event.json
     frame.json
     ping.json
     quotation.json
     side.json
     status.json
-    subbed.json)
+    subbed.json
+    topic.json
+    trade.json
+    trade_tick_item.json
+    trade_tick.json)
 
 roq_autogen(
   OUTPUT

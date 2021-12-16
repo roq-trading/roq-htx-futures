@@ -39,10 +39,20 @@ struct create_metrics final : public core::metrics::Factory {
 };
 
 template <typename T>
+void emplace(Trade &result, const T &value) {
+  new (&result) Trade{
+      .side = json::map(value.direction),
+      .price = value.price,
+      .quantity = value.quantity,
+      .trade_id = {},
+  };
+}
+
+template <typename T>
 void emplace(MBPUpdate &result, const T &value) {
   new (&result) MBPUpdate{
       .price = value.price,
-      .quantity = value.qty,
+      .quantity = value.vol,
       .implied_quantity = NaN,
       .price_level = {},
       .number_of_orders = {},
@@ -73,6 +83,9 @@ MarketData::MarketData(
           .error = create_metrics(name_, "error"sv),
           .subbed = create_metrics(name_, "subbed"sv),
           .bbo = create_metrics(name_, "bbo"sv),
+          .depth = create_metrics(name_, "depth"sv),
+          .trade = create_metrics(name_, "trade"sv),
+          .detail = create_metrics(name_, "detail"sv),
       },
       latency_{
           .ping = create_metrics(name_, "ping"sv),
@@ -106,6 +119,10 @@ void MarketData::operator()(metrics::Writer &writer) {
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.error, metrics::PROFILE)
       .write(profile_.subbed, metrics::PROFILE)
+      .write(profile_.bbo, metrics::PROFILE)
+      .write(profile_.depth, metrics::PROFILE)
+      .write(profile_.trade, metrics::PROFILE)
+      .write(profile_.detail, metrics::PROFILE)
       // latency
       .write(latency_.ping, metrics::LATENCY)
       .write(latency_.heartbeat, metrics::LATENCY);
@@ -167,6 +184,7 @@ void MarketData::operator()(const core::web::ClientSocket::Binary &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{
             reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        log::info<5>(R"(message="{}")"sv, message);
         parse(message);
       })) {
   } else {
@@ -212,6 +230,9 @@ void MarketData::subscribe(const roq::span<std::string> &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols_, "bbo"sv);
+  subscribe(symbols_, "depth.size_150.high_freq"sv, "incremental"sv);
+  subscribe(symbols_, "trade.detail"sv);
+  subscribe(symbols_, "detail"sv);
 }
 
 void MarketData::subscribe(const roq::span<std::string> &symbols, const std::string_view &theme) {
@@ -225,6 +246,28 @@ void MarketData::subscribe(const roq::span<std::string> &symbols, const std::str
         R"(}})"sv,
         symbol,
         theme,
+        id);
+    log::debug(R"(message="{}")"sv, message);
+    connection_.send_text(message);
+  }
+}
+
+void MarketData::subscribe(
+    const roq::span<std::string> &symbols,
+    const std::string_view &theme,
+    const std::string_view &data_type) {
+  assert(!std::empty(symbols));
+  for (auto &symbol : symbols) {
+    auto id = ++request_id_;
+    auto message = fmt::format(
+        R"({{)"
+        R"("sub":"market.{}.{}",)"
+        R"("data_type":"{}",)"
+        R"("id":"{}")"
+        R"(}})"sv,
+        symbol,
+        theme,
+        data_type,
         id);
     log::debug(R"(message="{}")"sv, message);
     connection_.send_text(message);
@@ -283,20 +326,123 @@ void MarketData::operator()(const server::Trace<json::BBO> &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
     auto symbol = json::extract_symbol(bbo.ch);
+    auto &tick = bbo.tick;
     const TopOfBook top_of_book{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
         .layer{
-            .bid_price = bbo.bid.price,
-            .bid_quantity = bbo.bid.vol,
-            .ask_price = bbo.ask.price,
-            .ask_quantity = bbo.ask.vol,
+            .bid_price = tick.bid.price,
+            .bid_quantity = tick.bid.vol,
+            .ask_price = tick.ask.price,
+            .ask_quantity = tick.ask.vol,
         },
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = utils::safe_cast(bbo.ts),
     };
     server::create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
+  });
+}
+
+void MarketData::operator()(const server::Trace<json::Depth> &event) {
+  profile_.depth([&]() {
+    auto &[trace_info, depth] = event;
+    auto symbol = json::extract_symbol(depth.ch);
+    auto &tick = depth.tick;
+    auto snapshot = tick.event == json::Event::SNAPSHOT;
+    core::back_emplacer bids(shared_.bids), asks(shared_.asks);
+    for (auto &item : tick.bids)
+      bids.emplace_back([&item](auto &result) { emplace(result, item); });
+    for (auto &item : tick.asks)
+      asks.emplace_back([&item](auto &result) { emplace(result, item); });
+    // XXX HANS validate checksum
+    const MarketByPriceUpdate market_by_price_update{
+        .stream_id = stream_id_,
+        .exchange = Flags::exchange(),
+        .symbol = symbol,
+        .bids = bids,
+        .asks = asks,
+        .update_type = snapshot ? UpdateType::SNAPSHOT : UpdateType::INCREMENTAL,
+        .exchange_time_utc = utils::safe_cast(depth.ts),
+        .exchange_sequence = {},
+        .price_decimals = {},
+        .quantity_decimals = {},
+        .checksum = {},
+    };
+    log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+    try {
+      server::create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+    } catch (BadState &) {
+      // resubscribe_order_book_l2(symbol);
+    }
+  });
+}
+
+void MarketData::operator()(const server::Trace<json::Trade> &event) {
+  profile_.trade([&]() {
+    auto &[trace_info, trade] = event;
+    auto symbol = json::extract_symbol(trade.ch);
+    auto &tick = trade.tick;
+    core::back_emplacer trades(shared_.trades);
+    for (auto &item : tick.data)
+      trades.emplace_back([&item](auto &result) { emplace(result, item); });
+    const TradeSummary trade_summary{
+        .stream_id = stream_id_,
+        .exchange = Flags::exchange(),
+        .symbol = symbol,
+        .trades = trades,
+        .exchange_time_utc = utils::safe_cast(trade.ts),
+    };
+    server::create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
+  });
+}
+
+void MarketData::operator()(const server::Trace<json::Detail> &event) {
+  profile_.detail([&]() {
+    auto &[trace_info, detail] = event;
+    auto symbol = json::extract_symbol(detail.ch);
+    auto &tick = detail.tick;
+    Statistics statistics[] = {
+        {
+            .type = StatisticsType::OPEN_PRICE,
+            .value = tick.open,
+            .begin_time_utc = {},
+            .end_time_utc = {},
+        },
+        {
+            .type = StatisticsType::HIGHEST_TRADED_PRICE,
+            .value = tick.high,
+            .begin_time_utc = {},
+            .end_time_utc = {},
+        },
+        {
+            .type = StatisticsType::LOWEST_TRADED_PRICE,
+            .value = tick.low,
+            .begin_time_utc = {},
+            .end_time_utc = {},
+        },
+        {
+            .type = StatisticsType::CLOSE_PRICE,
+            .value = tick.close,
+            .begin_time_utc = {},
+            .end_time_utc = {},
+        },
+        {
+            .type = StatisticsType::TRADE_VOLUME,
+            .value = tick.vol,  // note! not sure...  (amount? count?)
+            .begin_time_utc = {},
+            .end_time_utc = {},
+        },
+    };
+    const StatisticsUpdate statistics_update{
+        .stream_id = stream_id_,
+        .exchange = Flags::exchange(),
+        .symbol = symbol,
+        .statistics = statistics,
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = utils::safe_cast(detail.ts),
+    };
+    server::create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
 }
 

@@ -29,6 +29,7 @@ struct Shared final {
 
  public:
   core::page_aligned_vector<MBPUpdate> bids, asks, final_bids, final_asks;
+  core::page_aligned_vector<Trade> trades;
 
  private:
   server::Dispatcher &dispatcher_;

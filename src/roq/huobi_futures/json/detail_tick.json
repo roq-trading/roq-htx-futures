@@ -1,0 +1,17 @@
+{
+"name": "DetailTick",
+"type": "comp",
+"values": [
+	{ "name": "id", "type": "int64_t" },
+	{ "name": "mrid", "type": "int64_t" },
+	{ "name": "open", "type": "double" },
+	{ "name": "close", "type": "double" },
+	{ "name": "high", "type": "double" },
+	{ "name": "low", "type": "double" },
+	{ "name": "amount", "type": "double" },
+	{ "name": "vol", "type": "double" },
+	{ "name": "count", "type": "double" },
+	{ "name": "ask", "type": "Quotation" },
+	{ "name": "bid", "type": "Quotation" }
+]
+}

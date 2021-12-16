@@ -1,0 +1,13 @@
+{
+"name": "BBOTick",
+"type": "comp",
+"values": [
+	{ "name": "mrid", "type": "int64_t" },
+	{ "name": "id", "type": "int64_t" },
+	{ "name": "bid", "type": "Quotation" },
+	{ "name": "ask", "type": "Quotation" },
+	{ "name": "ts", "type": "std::chrono::milliseconds" },
+	{ "name": "version", "type": "int64_t" },
+	{ "name": "ch", "type": "std::string_view" }
+]
+}

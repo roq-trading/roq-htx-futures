@@ -18,7 +18,7 @@
       "name": "exchange",
       "type": "std::string",
       "validator": "roq::core::flags::NonEmpty<std::string>",
-      "default": "binance",
+      "default": "huobi-futures",
       "description": "exchange identifier (string)"
     },
     {
@@ -94,13 +94,13 @@
       "name": "ws_max_subscriptions_per_stream",
       "type": "uint32_t",
       "validator": "roq::core::flags::NonZero<uint32_t>",
-      "default": 128,
+      "default": 32,
       "description": "max symbols per connection (count)"
     },
     {
       "name": "ws_subscribe_depth_levels",
       "type": "uint32_t",
-      "default": 20,
+      "default": 150,
       "description": "depth levels (count)"
     },
     {
