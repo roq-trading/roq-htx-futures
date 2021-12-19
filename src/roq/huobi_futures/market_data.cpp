@@ -61,17 +61,17 @@ void emplace(MBPUpdate &result, const T &value) {
 }  // namespace
 
 MarketData::MarketData(
-    Handler &handler, core::io::Context &context, uint32_t stream_id, Shared &shared)
+    Handler &handler, core::io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
-      connection_(
-          *this,
-          context,
-          core::URI(Flags::ws_market_uri()),
-          {},  // query
-          Flags::ws_ping_freq(),
-          Flags::decode_buffer_size(),
-          Flags::encode_buffer_size(),
-          []() { return std::string(); }),
+      index_(index), connection_(
+                         *this,
+                         context,
+                         core::URI(Flags::ws_market_uri()),
+                         {},  // query
+                         Flags::ws_ping_freq(),
+                         Flags::decode_buffer_size(),
+                         Flags::encode_buffer_size(),
+                         []() { return std::string(); }),
       decode_buffer_(Flags::decode_buffer_size()),
       request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
       counter_{
@@ -91,12 +91,7 @@ MarketData::MarketData(
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      shared_(shared), download_({}, [this](auto state) { return download(state); }),
-      inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
-}
-
-bool MarketData::ready() const {
-  return connection_.ready();
+      shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
 }
 
 void MarketData::operator()(const Event<Start> &) {
@@ -128,24 +123,9 @@ void MarketData::operator()(metrics::Writer &writer) {
       .write(latency_.heartbeat, metrics::LATENCY);
 }
 
-void MarketData::update_subscriptions(std::vector<std::string> &symbols) {
-  assert(&symbols != &symbols_);
-  auto max_size = Flags::ws_max_subscriptions_per_stream();
-  auto offset = std::size(symbols_);
-  if (max_size <= offset)
-    return;
-  if (std::empty(symbols))
-    return;
-  symbols_.reserve(max_size);
-  auto length = std::min(max_size - offset, std::size(symbols));
-  assert(length > 0);
-  for (size_t i = 0; i < length; ++i) {
-    symbols_.emplace_back(symbols.back());
-    symbols.pop_back();
-  }
-  assert(length == (std::size(symbols_) - offset));
-  if (ready_)
-    subscribe({&symbols_[offset], length});
+void MarketData::subscribe(size_t start_from) {
+  if (ready())
+    subscribe(shared_.symbols.get_slice(index_, start_from));
 }
 
 void MarketData::operator()(const core::web::ClientSocket::Connected &) {
@@ -153,14 +133,12 @@ void MarketData::operator()(const core::web::ClientSocket::Connected &) {
 
 void MarketData::operator()(const core::web::ClientSocket::Disconnected &) {
   ++counter_.disconnect;
-  ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
-  download_.reset();
 }
 
 void MarketData::operator()(const core::web::ClientSocket::Ready &) {
-  (*this)(ConnectionStatus::DOWNLOADING);
-  download_.begin();
+  (*this)(ConnectionStatus::READY);
+  subscribe();
 }
 
 void MarketData::operator()(const core::web::ClientSocket::Close &) {
@@ -208,35 +186,17 @@ void MarketData::operator()(ConnectionStatus status) {
   }
 }
 
-uint32_t MarketData::download(MarketDataState state) {
-  switch (state) {
-    case MarketDataState::UNDEFINED:
-      assert(false);
-      break;
-    case MarketDataState::SUBSCRIBE:
-      subscribe(symbols_);
-      return {};
-    case MarketDataState::DONE:
-      (*this)(ConnectionStatus::READY);
-      assert(!ready_);
-      ready_ = true;
-      return {};
-  }
-  assert(false);
-  return {};
-}
-
-void MarketData::subscribe(const roq::span<std::string> &symbols) {
+void MarketData::subscribe(const roq::span<std::string const> &symbols) {
   if (std::empty(symbols))
     return;
-  subscribe(symbols_, "market"sv, "bbo"sv);
-  subscribe(symbols_, "market"sv, "depth.size_150.high_freq"sv, "incremental"sv);
-  subscribe(symbols_, "market"sv, "trade.detail"sv);
-  subscribe(symbols_, "market"sv, "detail"sv);
+  subscribe(symbols, "market"sv, "bbo"sv);
+  subscribe(symbols, "market"sv, "depth.size_150.high_freq"sv, "incremental"sv);
+  subscribe(symbols, "market"sv, "trade.detail"sv);
+  subscribe(symbols, "market"sv, "detail"sv);
 }
 
 void MarketData::subscribe(
-    const roq::span<std::string> &symbols,
+    const roq::span<std::string const> &symbols,
     const std::string_view &source,
     const std::string_view &theme) {
   assert(!std::empty(symbols));
@@ -257,7 +217,7 @@ void MarketData::subscribe(
 }
 
 void MarketData::subscribe(
-    const roq::span<std::string> &symbols,
+    const roq::span<std::string const> &symbols,
     const std::string_view &source,
     const std::string_view &theme,
     const std::string_view &data_type) {

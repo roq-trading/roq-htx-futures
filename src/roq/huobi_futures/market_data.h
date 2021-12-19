@@ -19,7 +19,6 @@
 #include "roq/download.h"
 #include "roq/server.h"
 
-#include "roq/huobi_futures/market_data_state.h"
 #include "roq/huobi_futures/shared.h"
 
 #include "roq/huobi_futures/json/parser.h"
@@ -39,12 +38,12 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
     virtual void operator()(const server::Trace<StatisticsUpdate> &, bool is_last) = 0;
   };
 
-  MarketData(Handler &, core::io::Context &, uint32_t stream_id, Shared &);
+  MarketData(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
 
   MarketData(MarketData &&) = delete;
   MarketData(const MarketData &) = delete;
 
-  bool ready() const;
+  bool ready() const { return status_ == ConnectionStatus::READY; }
 
   void operator()(const Event<Start> &);
   void operator()(const Event<Stop> &);
@@ -52,7 +51,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
 
   void operator()(metrics::Writer &);
 
-  void update_subscriptions(std::vector<std::string> &symbols);
+  void subscribe(size_t start_from = 0);
 
  protected:
   void operator()(const core::web::ClientSocket::Connected &) override;
@@ -66,15 +65,13 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
  private:
   void operator()(ConnectionStatus);
 
-  uint32_t download(MarketDataState);
-
-  void subscribe(const roq::span<std::string> &symbols);
+  void subscribe(const roq::span<std::string const> &symbols);
   void subscribe(
-      const roq::span<std::string> &symbols,
+      const roq::span<std::string const> &symbols,
       const std::string_view &source,
       const std::string_view &theme);
   void subscribe(
-      const roq::span<std::string> &symbols,
+      const roq::span<std::string const> &symbols,
       const std::string_view &source,
       const std::string_view &theme,
       const std::string_view &data_type);
@@ -98,6 +95,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
   // config
   const uint16_t stream_id_;
   const std::string name_;
+  const size_t index_;
   // web socket
   core::web::ClientSocket connection_;
   // buffers
@@ -116,11 +114,8 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
   } latency_;
   // cache
   Shared &shared_;
-  std::vector<std::string> symbols_;
   // state
-  bool ready_ = false;
   ConnectionStatus status_ = {};
-  server::Download<MarketDataState> download_;
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;

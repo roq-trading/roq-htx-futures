@@ -8,6 +8,7 @@
 #include "roq/server.h"
 
 #include "roq/core/memory.h"
+#include "roq/core/symbols.h"
 
 namespace roq {
 namespace huobi_futures {
@@ -33,6 +34,9 @@ struct Shared final {
 
  private:
   server::Dispatcher &dispatcher_;
+
+ public:
+  core::Symbols symbols;
 };
 
 }  // namespace huobi_futures
