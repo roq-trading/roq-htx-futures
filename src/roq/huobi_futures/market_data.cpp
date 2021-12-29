@@ -38,15 +38,6 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-bool is_inverse() {
-  auto api = Flags::api();
-  if (api.compare("inverse"sv) == 0)
-    return true;
-  if (api.compare("linear"sv) == 0)
-    return false;
-  log::fatal(R"(Unexpected: api="{}")"sv, api);
-}
-
 template <typename T>
 void emplace(Trade &result, const T &value) {
   new (&result) Trade{
@@ -195,21 +186,11 @@ void MarketData::operator()(ConnectionStatus status) {
   }
 }
 
-namespace {
-uint32_t get_levels() {
-  auto levels = Flags::ws_subscribe_depth_levels();
-  if (!levels)
-    levels = is_inverse() ? 150 : 20;
-  return levels;
-}
-}  // namespace
-
 void MarketData::subscribe(const roq::span<std::string const> &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols, "market"sv, "bbo"sv);
-  auto depth = fmt::format("depth.size_{}.high_freq"sv, get_levels());
-  subscribe(symbols, "market"sv, depth, "incremental"sv);
+  subscribe(symbols, "market"sv, shared_.api.market_depth, "incremental"sv);
   subscribe(symbols, "market"sv, "trade.detail"sv);
   subscribe(symbols, "market"sv, "detail"sv);
 }

@@ -10,6 +10,8 @@
 #include "roq/core/memory.h"
 #include "roq/core/symbols.h"
 
+#include "roq/huobi_futures/api.h"
+
 namespace roq {
 namespace huobi_futures {
 
@@ -29,6 +31,7 @@ struct Shared final {
   }
 
  public:
+  const API api;
   core::page_aligned_vector<MBPUpdate> bids, asks, final_bids, final_asks;
   core::page_aligned_vector<Trade> trades;
 

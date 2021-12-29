@@ -37,15 +37,6 @@ struct create_metrics final : public core::metrics::Factory {
   explicit create_metrics(const std::string_view &group, const std::string_view &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
-
-bool is_inverse() {
-  auto api = Flags::api();
-  if (api.compare("inverse"sv) == 0)
-    return true;
-  if (api.compare("linear"sv) == 0)
-    return false;
-  log::fatal(R"(Unexpected: api="{}")"sv, api);
-}
 }  // namespace
 
 Rest::Rest(Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared)
@@ -164,8 +155,7 @@ uint32_t Rest::download(RestState state) {
 void Rest::get_contract_info() {
   profile_.contract_info([&]() {
     auto method = core::http::Method::GET;
-    auto path = is_inverse() ? "/api/v1/contract_contract_info"sv
-                             : "/linear-swap-api/v1/swap_contract_info"sv;
+    auto path = shared_.api.get_contract_info;
     core::web::Request request{
         .method = method,
         .path = path,
