@@ -22,7 +22,13 @@ API API::create() {
   if (api.compare("linear"sv) == 0) {
     return {
         .get_contract_info = "/linear-swap-api/v1/swap_contract_info"sv,
-        .market_depth = "depth.size_20.high_freq"sv,
+        .market_depth = "depth.size_150.high_freq"sv,
+    };
+  }
+  if (api.compare("swap"sv) == 0) {
+    return {
+        .get_contract_info = "/swap-api/v1/swap_contract_info"sv,
+        .market_depth = "depth.size_150.high_freq"sv,
     };
   }
   throw RuntimeErrorException(R"(Unknown api="{}")"sv, api);
