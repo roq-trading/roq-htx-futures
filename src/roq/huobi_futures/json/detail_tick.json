@@ -10,6 +10,7 @@
 	{ "name": "low", "type": "double" },
 	{ "name": "amount", "type": "double" },
 	{ "name": "vol", "type": "double" },
+	{ "name": "trade_turnover", "type": "double" },
 	{ "name": "count", "type": "double" },
 	{ "name": "ask", "type": "Quotation" },
 	{ "name": "bid", "type": "Quotation" }

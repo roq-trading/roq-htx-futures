@@ -12,7 +12,7 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_detail, simple) {
+TEST(json_detail, simple_inverse) {
   auto message = R"({)"
                  R"("ch":"market.FIL211231.detail",)"
                  R"("ts":1639628009780,)"
@@ -28,6 +28,30 @@ TEST(json_detail, simple) {
                  R"("count":4172,)"
                  R"("ask":[37.809,145],)"
                  R"("bid":[37.783,4])"
+                 R"(})"
+                 R"(})";
+  core::Buffer buffer(8192);
+  core::json::Buffer buffer_(buffer);
+  auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
+}
+
+TEST(json_detail, simple_linear) {
+  auto message = R"({)"
+                 R"("ch":"market.WOO-USDT.detail",)"
+                 R"("ts":1640775846213,)"
+                 R"("tick":{)"
+                 R"("id":1640775840,)"
+                 R"("mrid":38292289192,)"
+                 R"("open":0.99934,)"
+                 R"("close":0.89934,)"
+                 R"("high":1.00166,)"
+                 R"("low":0.88366,)"
+                 R"("amount":738940,)"
+                 R"("vol":73894,)"
+                 R"("trade_turnover":683194.497,)"
+                 R"("count":4256,)"
+                 R"("ask":[0.90157,10],)"
+                 R"("bid":[0.89738,235])"
                  R"(})"
                  R"(})";
   core::Buffer buffer(8192);

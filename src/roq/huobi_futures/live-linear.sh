@@ -15,8 +15,8 @@ CONFIG_FILE="$CWD/config/$NAME.toml"
 URI="api.hbdm.com"
 
 REST_URI="https://$URI"
-WS_MARKET_URI="wss://$URI/ws"
-WS_ORDER_URI="wss://$URI/notification"
+WS_MARKET_URI="wss://$URI/linear-swap-ws"
+WS_ORDER_URI="wss://$URI/linear-swap-notification"
 
 $PREFIX ./roq-huobi-futures \
 	--name "huobi-futures" \
@@ -26,4 +26,5 @@ $PREFIX ./roq-huobi-futures \
 	--rest_uri "$REST_URI" \
 	--ws_market_uri "$WS_MARKET_URI" \
 	--ws_order_uri "$WS_ORDER_URI" \
+  --api "linear" \
 	$@

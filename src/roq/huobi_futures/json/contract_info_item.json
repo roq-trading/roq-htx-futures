@@ -11,6 +11,10 @@
 	{ "name": "delivery_time", "type": "std::chrono::milliseconds" },
 	{ "name": "create_date", "type": "int32_t" },
 	{ "name": "contract_status", "type": "int32_t" },
-	{ "name": "settlement_time", "type": "std::chrono::milliseconds" }
+	{ "name": "settlement_time", "type": "std::chrono::milliseconds" },
+	{ "name": "settlement_date", "type": "std::chrono::milliseconds" },
+	{ "name": "support_margin_mode", "type": "std::string_view" },
+	{ "name": "business_type", "type": "std::string_view" },
+	{ "name": "pair", "type": "std::string_view" }
 ]
 }
