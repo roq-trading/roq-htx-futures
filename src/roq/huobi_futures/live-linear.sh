@@ -26,5 +26,5 @@ $PREFIX ./roq-huobi-futures \
 	--rest_uri "$REST_URI" \
 	--ws_market_uri "$WS_MARKET_URI" \
 	--ws_order_uri "$WS_ORDER_URI" \
-  --api "linear" \
+  --api "linear-swap" \
 	$@

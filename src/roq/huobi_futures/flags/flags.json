@@ -24,9 +24,8 @@
     {
       "name": "api",
       "type": "std::string",
-      "validator": "roq::core::flags::NonEmpty<std::string>",
-      "default": "inverse",
-      "description": "what api to use (inverse, linear)"
+      "default": "",
+      "description": "what api to use (<empty>, swap, linear-swap)"
     },
     {
       "name": "rest_uri",
