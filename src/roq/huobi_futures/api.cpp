@@ -31,7 +31,7 @@ API API::create() {
         .market_depth = "depth.size_150.high_freq"sv,
     };
   }
-  throw RuntimeErrorException(R"(Unknown api="{}")"sv, api);
+  throw RuntimeError(R"(Unknown api="{}")"sv, api);
 }
 
 }  // namespace huobi_futures
