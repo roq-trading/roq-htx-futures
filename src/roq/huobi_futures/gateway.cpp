@@ -62,7 +62,7 @@ Gateway::Gateway(server::Dispatcher &dispatcher, const Config &config)
       rest_(*this, context_, ++stream_id_, shared_),
       order_entry_(create_order_entry(*this, context_, stream_id_, security_, shared_)),
       drop_copy_(create_drop_copy(security_)) {
-  if (ROQ_UNLIKELY(Flags::rest_cancel_on_disconnect()))
+  if (Flags::rest_cancel_on_disconnect()) [[unlikely]]
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }
 
