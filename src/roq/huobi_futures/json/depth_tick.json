@@ -2,8 +2,8 @@
 "name": "DepthTick",
 "type": "comp",
 "values": [
-	{ "name": "asks", "type": "roq::span<Quotation>" },
-	{ "name": "bids", "type": "roq::span<Quotation>" },
+	{ "name": "asks", "type": "std::span<Quotation>" },
+	{ "name": "bids", "type": "std::span<Quotation>" },
 	{ "name": "ch", "type": "std::string_view" },
 	{ "name": "event", "type": "Event" },
 	{ "name": "id", "type": "int64_t" },
