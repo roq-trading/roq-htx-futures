@@ -5,11 +5,20 @@
 using namespace std::literals;
 
 namespace {
-static const auto DESCRIPTION = "Roq Binance Gateway"sv;
+static const auto DESCRIPTION = "Roq Huobi Futures Gateway"sv;
 }  // namespace
 
 int main(int argc, char **argv) {
   return roq::huobi_futures::Application(
-             argc, argv, DESCRIPTION, ROQ_BUILD_VERSION, ROQ_BUILD_TYPE, ROQ_GIT_DESCRIBE_HASH)
+             argc,
+             argv,
+             {
+                 .description = DESCRIPTION,
+                 .package_name = ROQ_PACKAGE_NAME,
+                 .build_version = ROQ_BUILD_VERSION,
+                 .build_number = ROQ_BUILD_NUMBER,
+                 .build_type = ROQ_BUILD_TYPE,
+                 .git_hash = ROQ_GIT_DESCRIBE_HASH,
+             })
       .run();
 }
