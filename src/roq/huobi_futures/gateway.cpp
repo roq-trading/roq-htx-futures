@@ -75,11 +75,14 @@ void Gateway::operator()(const Event<Start> &event) {
     if (static_cast<bool>(drop_copy))
       (*drop_copy)(event);
   assert(std::empty(market_data_));
+  assert(std::empty(web_socket_));
   // order_entry_.download.begin();
 }
 
 void Gateway::operator()(const Event<Stop> &event) {
   log::info("Stopping the gateway..."sv);
+  for (auto &iter : web_socket_)
+    (*iter)(event);
   for (auto &iter : market_data_)
     (*iter)(event);
   for (auto &[_, drop_copy] : drop_copy_)
@@ -98,6 +101,8 @@ void Gateway::operator()(const Event<Timer> &event) {
     if (static_cast<bool>(drop_copy))
       (*drop_copy)(event);
   for (auto &iter : market_data_)
+    (*iter)(event);
+  for (auto &iter : web_socket_)
     (*iter)(event);
   context_.dispatch(true);
 }
@@ -160,9 +165,12 @@ void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
   ensure_symbol_slices(size);
   for (auto &iter : market_data_)
     (*iter).subscribe(start_from);
+  for (auto &iter : web_socket_)
+    (*iter).subscribe(start_from);
 }
 
 void Gateway::ensure_symbol_slices(size_t size) {
+  // market data
   while (std::size(market_data_) < size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(market_data_);
@@ -172,6 +180,17 @@ void Gateway::ensure_symbol_slices(size_t size) {
     Start start;
     create_event_and_dispatch(*market_data, message_info, start);
     market_data_.emplace_back(std::move(market_data));
+  }
+  // web socket
+  while (std::size(web_socket_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(web_socket_);
+    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
+    auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*web_socket, message_info, start);
+    web_socket_.emplace_back(std::move(web_socket));
   }
 }
 

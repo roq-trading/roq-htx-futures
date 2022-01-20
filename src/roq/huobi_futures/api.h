@@ -12,6 +12,9 @@ struct API final {
   std::string_view get_contract_info;
   // ws
   std::string_view market_depth;
+  // index
+  bool has_premium_index = {};
+  bool has_estimated_rate = {};
   // factory
   static API create();
 };

@@ -1,6 +1,7 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
 set(SOURCES
+    json_basis.cpp
     json_bbo.cpp
     json_contract_info.cpp
     json_depth.cpp
@@ -8,6 +9,7 @@ set(SOURCES
     json_subbed.cpp
     json_trade.cpp
     json_utils.cpp
+    json_premium_index.cpp
     main.cpp)
 
 add_executable("${TARGET_NAME}" ${SOURCES})

@@ -1,0 +1,14 @@
+{
+"name": "PremiumIndexTick",
+"type": "comp",
+"values": [
+	{ "name": "id", "type": "int64_t" },
+	{ "name": "open", "type": "double" },
+	{ "name": "close", "type": "double" },
+	{ "name": "high", "type": "double" },
+	{ "name": "low", "type": "double" },
+	{ "name": "amount", "type": "double" },
+	{ "name": "vol", "type": "double" },
+	{ "name": "count", "type": "int32_t" }
+]
+}

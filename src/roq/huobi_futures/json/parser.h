@@ -8,11 +8,14 @@
 
 #include "roq/server.h"
 
+#include "roq/huobi_futures/json/basis.h"
 #include "roq/huobi_futures/json/bbo.h"
 #include "roq/huobi_futures/json/depth.h"
 #include "roq/huobi_futures/json/detail.h"
 #include "roq/huobi_futures/json/error.h"
+#include "roq/huobi_futures/json/estimated_rate.h"
 #include "roq/huobi_futures/json/ping.h"
+#include "roq/huobi_futures/json/premium_index.h"
 #include "roq/huobi_futures/json/subbed.h"
 #include "roq/huobi_futures/json/trade.h"
 
@@ -29,6 +32,9 @@ struct Parser final {
     virtual void operator()(const server::Trace<Depth> &) = 0;
     virtual void operator()(const server::Trace<Trade> &) = 0;
     virtual void operator()(const server::Trace<Detail> &) = 0;
+    virtual void operator()(const server::Trace<EstimatedRate> &) = 0;
+    virtual void operator()(const server::Trace<PremiumIndex> &) = 0;
+    virtual void operator()(const server::Trace<Basis> &) = 0;
   };
 
   static bool dispatch(

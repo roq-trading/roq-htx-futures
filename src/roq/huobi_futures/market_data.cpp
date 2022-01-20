@@ -190,7 +190,7 @@ void MarketData::subscribe(const std::span<std::string const> &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols, "market"sv, "bbo"sv);
-  subscribe(symbols, "market"sv, shared_.api.market_depth, "incremental"sv);
+  subscribe_with_data_type(symbols, "market"sv, shared_.api.market_depth, "incremental"sv);
   subscribe(symbols, "market"sv, "trade.detail"sv);
   subscribe(symbols, "market"sv, "detail"sv);
 }
@@ -216,7 +216,7 @@ void MarketData::subscribe(
   }
 }
 
-void MarketData::subscribe(
+void MarketData::subscribe_with_data_type(
     const std::span<std::string const> &symbols,
     const std::string_view &source,
     const std::string_view &theme,
@@ -291,6 +291,7 @@ void MarketData::operator()(const server::Trace<json::Subbed> &event) {
 void MarketData::operator()(const server::Trace<json::BBO> &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
+    log::info<3>("bbo={}"sv, bbo);
     auto symbol = json::extract_symbol(bbo.ch);
     auto &tick = bbo.tick;
     const TopOfBook top_of_book{
@@ -313,6 +314,7 @@ void MarketData::operator()(const server::Trace<json::BBO> &event) {
 void MarketData::operator()(const server::Trace<json::Depth> &event) {
   profile_.depth([&]() {
     auto &[trace_info, depth] = event;
+    log::info<3>("depth={}"sv, depth);
     auto symbol = json::extract_symbol(depth.ch);
     auto &tick = depth.tick;
     auto snapshot = tick.event == json::Event::SNAPSHOT;
@@ -347,6 +349,7 @@ void MarketData::operator()(const server::Trace<json::Depth> &event) {
 void MarketData::operator()(const server::Trace<json::Trade> &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
+    log::info<3>("trade={}"sv, trade);
     auto symbol = json::extract_symbol(trade.ch);
     auto &tick = trade.tick;
     core::back_emplacer trades(shared_.trades);
@@ -366,6 +369,7 @@ void MarketData::operator()(const server::Trace<json::Trade> &event) {
 void MarketData::operator()(const server::Trace<json::Detail> &event) {
   profile_.detail([&]() {
     auto &[trace_info, detail] = event;
+    log::info<3>("detail={}"sv, detail);
     auto symbol = json::extract_symbol(detail.ch);
     auto &tick = detail.tick;
     Statistics statistics[] = {
@@ -410,6 +414,18 @@ void MarketData::operator()(const server::Trace<json::Detail> &event) {
     };
     server::create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
+}
+
+void MarketData::operator()(const server::Trace<json::EstimatedRate> &) {
+  log::fatal("Unexpected"sv);
+}
+
+void MarketData::operator()(const server::Trace<json::PremiumIndex> &) {
+  log::fatal("Unexpected"sv);
+}
+
+void MarketData::operator()(const server::Trace<json::Basis> &) {
+  log::fatal("Unexpected"sv);
 }
 
 }  // namespace huobi_futures

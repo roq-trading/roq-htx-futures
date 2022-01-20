@@ -17,18 +17,24 @@ API API::create() {
     return {
         .get_contract_info = "/api/v1/contract_contract_info"sv,
         .market_depth = "depth.size_150.high_freq"sv,
+        .has_premium_index = false,
+        .has_estimated_rate = false,
     };
   }
   if (api.compare("linear-swap"sv) == 0) {
     return {
         .get_contract_info = "/linear-swap-api/v1/swap_contract_info"sv,
         .market_depth = "depth.size_150.high_freq"sv,
+        .has_premium_index = true,
+        .has_estimated_rate = true,
     };
   }
   if (api.compare("swap"sv) == 0) {
     return {
         .get_contract_info = "/swap-api/v1/swap_contract_info"sv,
         .market_depth = "depth.size_150.high_freq"sv,
+        .has_premium_index = true,
+        .has_estimated_rate = true,
     };
   }
   throw RuntimeError(R"(Unknown api="{}")"sv, api);

@@ -14,6 +14,7 @@ set(SOURCES
     rest.cpp
     security.cpp
     shared.cpp
+    web_socket.cpp
     main.cpp)
 
 add_subdirectory("json")

@@ -5,6 +5,9 @@
 	{ "name": "bbo" },
 	{ "name": "depth" },
 	{ "name": "trade" },
-	{ "name": "detail" }
+	{ "name": "detail" },
+	{ "name": "estimated_rate" },
+	{ "name": "premium_index" },
+	{ "name": "basis" }
 ]
 }

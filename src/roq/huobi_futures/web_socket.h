@@ -26,7 +26,7 @@
 namespace roq {
 namespace huobi_futures {
 
-class MarketData final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
+class WebSocket final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
@@ -38,10 +38,10 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
     virtual void operator()(const server::Trace<StatisticsUpdate> &, bool is_last) = 0;
   };
 
-  MarketData(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
+  WebSocket(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
 
-  MarketData(MarketData &&) = delete;
-  MarketData(const MarketData &) = delete;
+  WebSocket(WebSocket &&) = delete;
+  WebSocket(const WebSocket &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 
@@ -70,11 +70,6 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
       const std::span<std::string const> &symbols,
       const std::string_view &source,
       const std::string_view &theme);
-  void subscribe_with_data_type(
-      const std::span<std::string const> &symbols,
-      const std::string_view &source,
-      const std::string_view &theme,
-      const std::string_view &data_type);
 
   void send_pong(std::chrono::milliseconds timestamp);
 
@@ -111,7 +106,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, error, subbed, bbo, depth, trade, detail;
+    core::metrics::Profile parse, ping, error, subbed, estimated_rate, premium_index, basis;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

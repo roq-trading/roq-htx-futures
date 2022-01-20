@@ -5,6 +5,8 @@ set(SOURCES parser.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
+    basis.json
+    basis_tick.json
     bbo.json
     bbo_tick.json
     contract_info_item.json
@@ -14,9 +16,13 @@ set(AUTOGEN_SCHEMAS
     detail.json
     detail_tick.json
     error.json
+    estimated_rate.json
+    estimated_rate_tick.json
     event.json
     frame.json
     ping.json
+    premium_index.json
+    premium_index_tick.json
     quotation.json
     side.json
     status.json

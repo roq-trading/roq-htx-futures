@@ -51,6 +51,21 @@ bool Parser::dispatch(
             server::create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
+          case Topic::ESTIMATED_RATE: {
+            auto estimated_rate = core::json::Parser::create<json::EstimatedRate>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, estimated_rate);
+            return true;
+          }
+          case Topic::PREMIUM_INDEX: {
+            auto premium_index = core::json::Parser::create<json::PremiumIndex>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, premium_index);
+            return true;
+          }
+          case Topic::BASIS: {
+            auto basis = core::json::Parser::create<json::Basis>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, basis);
+            return true;
+          }
           default:
             break;
         }
