@@ -19,6 +19,8 @@ API API::create() {
         .market_depth = "depth.size_150.high_freq"sv,
         .has_premium_index = false,
         .has_estimated_rate = false,
+        .has_index = false,
+        .has_funding_rate = false,
     };
   }
   if (api.compare("linear-swap"sv) == 0) {
@@ -27,6 +29,8 @@ API API::create() {
         .market_depth = "depth.size_150.high_freq"sv,
         .has_premium_index = true,
         .has_estimated_rate = true,
+        .has_index = true,
+        .has_funding_rate = true,
     };
   }
   if (api.compare("swap"sv) == 0) {
@@ -35,6 +39,8 @@ API API::create() {
         .market_depth = "depth.size_150.high_freq"sv,
         .has_premium_index = true,
         .has_estimated_rate = true,
+        .has_index = true,
+        .has_funding_rate = true,
     };
   }
   throw RuntimeError(R"(Unknown api="{}")"sv, api);

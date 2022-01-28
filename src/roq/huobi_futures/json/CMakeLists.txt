@@ -20,6 +20,8 @@ set(AUTOGEN_SCHEMAS
     estimated_rate_tick.json
     event.json
     frame.json
+    index.json
+    index_tick.json
     ping.json
     premium_index.json
     premium_index_tick.json

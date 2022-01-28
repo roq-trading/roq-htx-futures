@@ -88,6 +88,7 @@ class WebSocket final : public core::web::ClientSocket::Handler, public json::Pa
   void operator()(const server::Trace<json::EstimatedRate> &) override;
   void operator()(const server::Trace<json::PremiumIndex> &) override;
   void operator()(const server::Trace<json::Basis> &) override;
+  void operator()(const server::Trace<json::Index> &) override;
 
  private:
   Handler &handler_;
@@ -106,7 +107,7 @@ class WebSocket final : public core::web::ClientSocket::Handler, public json::Pa
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, error, subbed, estimated_rate, premium_index, basis;
+    core::metrics::Profile parse, ping, error, subbed, estimated_rate, premium_index, basis, index;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

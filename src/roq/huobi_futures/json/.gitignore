@@ -28,6 +28,10 @@ event.h
 event.cpp
 frame.h
 frame.cpp
+index.h
+index.cpp
+index_tick.h
+index_tick.cpp
 ping.h
 ping.cpp
 premium_index.h

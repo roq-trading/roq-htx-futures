@@ -82,6 +82,7 @@ WebSocket::WebSocket(
           .estimated_rate = create_metrics(name_, "estimated_rate"sv),
           .premium_index = create_metrics(name_, "premium_index"sv),
           .basis = create_metrics(name_, "basis"sv),
+          .index = create_metrics(name_, "index"sv),
       },
       latency_{
           .ping = create_metrics(name_, "ping"sv),
@@ -113,6 +114,7 @@ void WebSocket::operator()(metrics::Writer &writer) {
       .write(profile_.estimated_rate, metrics::PROFILE)
       .write(profile_.premium_index, metrics::PROFILE)
       .write(profile_.basis, metrics::PROFILE)
+      .write(profile_.index, metrics::PROFILE)
       // latency
       .write(latency_.ping, metrics::LATENCY)
       .write(latency_.heartbeat, metrics::LATENCY);
@@ -185,10 +187,14 @@ void WebSocket::subscribe(const std::span<std::string const> &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols, "market"sv, "basis.1min.open"sv);
-  if (shared_.api.has_premium_index)
-    subscribe(symbols, "market"sv, "premium_index.1min"sv);
   if (shared_.api.has_estimated_rate)
     subscribe(symbols, "market"sv, "estimated_rate.1min"sv);
+  /* ... may topics will return error
+  if (shared_.api.has_funding_rate)
+    subscribe(symbols, "market"sv, "funding_rate.1min"sv);
+  */
+  if (shared_.api.has_index)
+    subscribe(symbols, "market"sv, "index.1min"sv);
 }
 
 void WebSocket::subscribe(
@@ -306,8 +312,15 @@ void WebSocket::operator()(const server::Trace<json::PremiumIndex> &event) {
   profile_.premium_index([&]() {
     auto &[trace_info, premium_index] = event;
     log::info<3>("premium_index={}"sv, premium_index);
-    auto symbol = json::extract_symbol(premium_index.ch);
-    auto &tick = premium_index.tick;
+  });
+}
+
+void WebSocket::operator()(const server::Trace<json::Index> &event) {
+  profile_.index([&]() {
+    auto &[trace_info, index] = event;
+    log::info<3>("index={}"sv, index);
+    auto symbol = json::extract_symbol(index.ch);
+    auto &tick = index.tick;
     Statistics statistics[] = {
         {
             .type = StatisticsType::INDEX_VALUE,
@@ -322,7 +335,7 @@ void WebSocket::operator()(const server::Trace<json::PremiumIndex> &event) {
         .symbol = symbol,
         .statistics = statistics,
         .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = utils::safe_cast(premium_index.ts),
+        .exchange_time_utc = utils::safe_cast(index.ts),
     };
     server::create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });

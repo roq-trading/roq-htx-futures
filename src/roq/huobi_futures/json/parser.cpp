@@ -66,6 +66,11 @@ bool Parser::dispatch(
             server::create_trace_and_dispatch(handler, trace_info, basis);
             return true;
           }
+          case Topic::INDEX: {
+            auto index = core::json::Parser::create<json::Index>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, index);
+            return true;
+          }
           default:
             break;
         }

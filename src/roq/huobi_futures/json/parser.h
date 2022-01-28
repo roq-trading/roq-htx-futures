@@ -14,6 +14,7 @@
 #include "roq/huobi_futures/json/detail.h"
 #include "roq/huobi_futures/json/error.h"
 #include "roq/huobi_futures/json/estimated_rate.h"
+#include "roq/huobi_futures/json/index.h"
 #include "roq/huobi_futures/json/ping.h"
 #include "roq/huobi_futures/json/premium_index.h"
 #include "roq/huobi_futures/json/subbed.h"
@@ -35,10 +36,11 @@ struct Parser final {
     virtual void operator()(const server::Trace<EstimatedRate> &) = 0;
     virtual void operator()(const server::Trace<PremiumIndex> &) = 0;
     virtual void operator()(const server::Trace<Basis> &) = 0;
+    virtual void operator()(const server::Trace<Index> &) = 0;
   };
 
   static bool dispatch(
-      Handler &handler,
+      Handler &,
       const std::string_view &message,
       core::json::Buffer &buffer,
       const server::TraceInfo &);

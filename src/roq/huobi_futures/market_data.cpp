@@ -428,5 +428,9 @@ void MarketData::operator()(const server::Trace<json::Basis> &) {
   log::fatal("Unexpected"sv);
 }
 
+void MarketData::operator()(const server::Trace<json::Index> &) {
+  log::fatal("Unexpected"sv);
+}
+
 }  // namespace huobi_futures
 }  // namespace roq

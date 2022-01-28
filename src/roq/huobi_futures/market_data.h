@@ -93,6 +93,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
   void operator()(const server::Trace<json::EstimatedRate> &) override;
   void operator()(const server::Trace<json::PremiumIndex> &) override;
   void operator()(const server::Trace<json::Basis> &) override;
+  void operator()(const server::Trace<json::Index> &) override;
 
  private:
   Handler &handler_;

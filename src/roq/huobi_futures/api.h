@@ -15,6 +15,8 @@ struct API final {
   // index
   bool has_premium_index = {};
   bool has_estimated_rate = {};
+  bool has_index = {};
+  bool has_funding_rate = {};
   // factory
   static API create();
 };

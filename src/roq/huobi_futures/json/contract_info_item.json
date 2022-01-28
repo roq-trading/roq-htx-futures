@@ -15,6 +15,7 @@
 	{ "name": "settlement_date", "type": "std::chrono::milliseconds" },
 	{ "name": "support_margin_mode", "type": "std::string_view" },
 	{ "name": "business_type", "type": "std::string_view" },
-	{ "name": "pair", "type": "std::string_view" }
+	{ "name": "pair", "type": "std::string_view" },
+	{ "name": "trade_partition", "type": "std::string_view" }
 ]
 }

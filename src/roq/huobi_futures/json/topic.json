@@ -8,6 +8,7 @@
 	{ "name": "detail" },
 	{ "name": "estimated_rate" },
 	{ "name": "premium_index" },
-	{ "name": "basis" }
+	{ "name": "basis" },
+	{ "name": "index" }
 ]
 }
