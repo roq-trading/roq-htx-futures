@@ -22,7 +22,7 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-static auto create_security(const Config &config) {
+auto create_security(const Config &config) {
   absl::flat_hash_map<std::string, std::unique_ptr<Security>> result;
   for (auto &[_, iter] : config.accounts) {
     result.try_emplace(iter.name, std::make_unique<Security>(config, iter.name));
@@ -31,7 +31,7 @@ static auto create_security(const Config &config) {
 }
 
 template <typename T>
-static auto create_order_entry(
+auto create_order_entry(
     Gateway &gateway,
     core::io::Context &context,
     uint16_t &stream_id,
@@ -47,7 +47,7 @@ static auto create_order_entry(
 }
 
 template <typename T>
-static auto create_drop_copy(T &security) {
+auto create_drop_copy(T &security) {
   absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> result;
   for (auto &iter : security) {
     result.try_emplace(iter.first, nullptr);

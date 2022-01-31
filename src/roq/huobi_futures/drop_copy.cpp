@@ -17,12 +17,12 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-static const auto NAME = "ex"sv;
-static const auto SUPPORTS = utils::Mask{
+const auto NAME = "ex"sv;
+const auto SUPPORTS = utils::Mask{
     SupportType::FUNDS,
 };
 
-static auto create_query(const std::string_view &listen_key) {
+auto create_query(const std::string_view &listen_key) {
   assert(!std::empty(listen_key));
   return fmt::format("?streams={}"sv, listen_key);
 }

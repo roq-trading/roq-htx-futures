@@ -25,8 +25,8 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-static const auto NAME = "ws"sv;
-static const auto SUPPORTS = utils::Mask{
+const auto NAME = "ws"sv;
+const auto SUPPORTS = utils::Mask{
     SupportType::STATISTICS,
 };
 
