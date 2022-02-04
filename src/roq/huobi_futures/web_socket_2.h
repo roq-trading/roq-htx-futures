@@ -19,7 +19,6 @@
 #include "roq/download.h"
 #include "roq/server.h"
 
-#include "roq/huobi_futures/security.h"
 #include "roq/huobi_futures/shared.h"
 
 #include "roq/huobi_futures/json/parser_2.h"
@@ -27,18 +26,18 @@
 namespace roq {
 namespace huobi_futures {
 
-class DropCopy final : public core::web::ClientSocket::Handler, public json::Parser2::Handler {
+class WebSocket2 final : public core::web::ClientSocket::Handler, public json::Parser2::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
     virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
-    virtual void operator()(const server::Trace<FundsUpdate> &, bool is_last) = 0;
+    virtual void operator()(const server::Trace<StatisticsUpdate> &, bool is_last) = 0;
   };
 
-  DropCopy(Handler &, core::io::Context &, uint16_t stream_id, Security &, Shared &);
+  WebSocket2(Handler &, core::io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  DropCopy(DropCopy &&) = delete;
-  DropCopy(const DropCopy &) = delete;
+  WebSocket2(WebSocket2 &&) = delete;
+  WebSocket2(const WebSocket2 &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 
@@ -47,6 +46,8 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
   void operator()(const Event<Timer> &);
 
   void operator()(metrics::Writer &);
+
+  void subscribe(size_t start_from = 0);
 
  protected:
   void operator()(const core::web::ClientSocket::Connected &) override;
@@ -59,6 +60,12 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
 
  private:
   void operator()(ConnectionStatus);
+
+  void subscribe(const std::span<std::string const> &symbols);
+  void subscribe(
+      const std::span<std::string const> &symbols,
+      const std::string_view &source,
+      const std::string_view &theme);
 
   void send_pong(std::chrono::milliseconds timestamp);
 
@@ -73,6 +80,7 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
   // config
   const uint16_t stream_id_;
   const std::string name_;
+  const size_t index_;
   // web socket
   core::web::ClientSocket connection_;
   // buffers
@@ -84,13 +92,11 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, close;
+    core::metrics::Profile parse, ping, close, funding_rate;
   } profile_;
   struct {
     core::metrics::Latency ping;
   } latency_;
-  // security
-  Security &security_;
   // cache
   Shared &shared_;
   // state

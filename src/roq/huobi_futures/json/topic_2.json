@@ -1,0 +1,7 @@
+{
+"name": "Topic2",
+"type": "enum",
+"values": [
+	{ "name": "funding_rate" }
+]
+}

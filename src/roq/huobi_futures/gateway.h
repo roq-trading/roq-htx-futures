@@ -21,6 +21,7 @@
 #include "roq/huobi_futures/security.h"
 #include "roq/huobi_futures/shared.h"
 #include "roq/huobi_futures/web_socket.h"
+#include "roq/huobi_futures/web_socket_2.h"
 
 namespace roq {
 namespace huobi_futures {
@@ -30,7 +31,8 @@ class Gateway final : public server::Handler,
                       public OrderEntry::Handler,
                       public DropCopy::Handler,
                       public MarketData::Handler,
-                      public WebSocket::Handler {
+                      public WebSocket::Handler,
+                      public WebSocket2::Handler {
  public:
   Gateway(server::Dispatcher &, const Config &);
 
@@ -96,6 +98,7 @@ class Gateway final : public server::Handler,
   absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
   std::vector<std::unique_ptr<WebSocket>> web_socket_;
+  std::vector<std::unique_ptr<WebSocket2>> web_socket_2_;
 };
 
 }  // namespace huobi_futures

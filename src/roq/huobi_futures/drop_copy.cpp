@@ -17,15 +17,10 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-const auto NAME = "ex"sv;
+const auto NAME = "dc"sv;
 const auto SUPPORTS = utils::Mask{
     SupportType::FUNDS,
 };
-
-auto create_query(const std::string_view &listen_key) {
-  assert(!std::empty(listen_key));
-  return fmt::format("?streams={}"sv, listen_key);
-}
 
 struct create_metrics final : public core::metrics::Factory {
   explicit create_metrics(const std::string_view &group, const std::string_view &function)
@@ -38,14 +33,13 @@ DropCopy::DropCopy(
     core::io::Context &context,
     uint16_t stream_id,
     Security &security,
-    Shared &shared,
-    const std::string_view &listen_key)
+    Shared &shared)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
       connection_(
           *this,
           context,
           core::URI(Flags::ws_order_uri()),
-          create_query(listen_key),
+          {},  // query
           Flags::ws_ping_freq(),
           Flags::decode_buffer_size(),
           Flags::encode_buffer_size(),
@@ -56,21 +50,13 @@ DropCopy::DropCopy(
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
-          .outbound_account_info = create_metrics(name_, "outbound_account_info"sv),
-          .outbound_account_position = create_metrics(name_, "outbound_account_position"sv),
-          .balance_update = create_metrics(name_, "balance_update"sv),
-          .execution_report = create_metrics(name_, "execution_report"sv),
+          .ping = create_metrics(name_, "ping"sv),
+          .close = create_metrics(name_, "close"sv),
       },
       latency_{
           .ping = create_metrics(name_, "ping"sv),
-          .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      security_(security), shared_(shared),
-      download_({}, [this](auto state) { return download(state); }) {
-}
-
-bool DropCopy::ready() const {
-  return connection_.ready();
+      security_(security), shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
 }
 
 void DropCopy::operator()(const Event<Start> &) {
@@ -91,13 +77,8 @@ void DropCopy::operator()(metrics::Writer &writer) {
       .write(counter_.disconnect, metrics::COUNTER)
       // profile
       .write(profile_.parse, metrics::PROFILE)
-      .write(profile_.outbound_account_info, metrics::PROFILE)
-      .write(profile_.outbound_account_position, metrics::PROFILE)
-      .write(profile_.balance_update, metrics::PROFILE)
-      .write(profile_.execution_report, metrics::PROFILE)
       // latency
-      .write(latency_.ping, metrics::LATENCY)
-      .write(latency_.heartbeat, metrics::LATENCY);
+      .write(latency_.ping, metrics::LATENCY);
 }
 
 void DropCopy::operator()(const core::web::ClientSocket::Connected &) {
@@ -105,14 +86,11 @@ void DropCopy::operator()(const core::web::ClientSocket::Connected &) {
 
 void DropCopy::operator()(const core::web::ClientSocket::Disconnected &) {
   ++counter_.disconnect;
-  ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
-  download_.reset();
 }
 
 void DropCopy::operator()(const core::web::ClientSocket::Ready &) {
-  (*this)(ConnectionStatus::DOWNLOADING);
-  download_.begin();
+  (*this)(ConnectionStatus::READY);
 }
 
 void DropCopy::operator()(const core::web::ClientSocket::Close &) {
@@ -128,12 +106,21 @@ void DropCopy::operator()(const core::web::ClientSocket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Text &text) {
-  parse(text.payload);
+void DropCopy::operator()(const core::web::ClientSocket::Text &) {
+  log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Binary &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(const core::web::ClientSocket::Binary &binary) {
+  if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
+        std::string_view message{
+            reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        log::info<5>(R"(message="{}")"sv, message);
+        log::debug(R"(message="{}")"sv, message);
+        parse(message);
+      })) {
+  } else {
+    log::fatal("Failed to decode message"sv);
+  }
 }
 
 void DropCopy::operator()(ConnectionStatus status) {
@@ -152,20 +139,15 @@ void DropCopy::operator()(ConnectionStatus status) {
   }
 }
 
-uint32_t DropCopy::download(DropCopyState state) {
-  switch (state) {
-    case DropCopyState::UNDEFINED:
-      assert(false);
-      break;
-    case DropCopyState::DONE:
-      (*this)(ConnectionStatus::READY);
-      assert(!ready_);
-      ready_ = true;
-      // subscribe(symbols_);
-      return {};
-  }
-  assert(false);
-  return {};
+void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"pong",)"
+      R"("ts":{})"
+      R"(}})"sv,
+      timestamp.count());
+  // log::debug(R"(message="{}")"sv, message);
+  connection_.send_text(message);
 }
 
 void DropCopy::parse(const std::string_view &message) {
@@ -173,7 +155,7 @@ void DropCopy::parse(const std::string_view &message) {
     try {
       auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
-      json::Parser::dispatch(*this, message, buffer, trace_info);
+      json::Parser2::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
       core::tools::UnhandledException::terminate();
@@ -181,31 +163,22 @@ void DropCopy::parse(const std::string_view &message) {
   });
 }
 
-void DropCopy::operator()(const server::Trace<json::Ping> &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(const server::Trace<json::Ping> &event) {
+  profile_.ping([&]() {
+    auto &[trace_info, ping] = event;
+    send_pong(ping.timestamp);
+  });
 }
 
-void DropCopy::operator()(const server::Trace<json::Error> &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(const server::Trace<json::Close> &event) {
+  profile_.close([&]() {
+    auto &[trace_info, close] = event;
+    log::warn("trace_info={}, close={}"sv, trace_info, close);
+    connection_.close();
+  });
 }
 
-void DropCopy::operator()(const server::Trace<json::Subbed> &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(const server::Trace<json::BBO> &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(const server::Trace<json::Depth> &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(const server::Trace<json::Trade> &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(const server::Trace<json::Detail> &) {
+void DropCopy::operator()(const server::Trace<json::FundingRate> &) {
   log::fatal("Unexpected"sv);
 }
 

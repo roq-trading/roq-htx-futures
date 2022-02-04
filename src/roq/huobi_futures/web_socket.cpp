@@ -189,10 +189,6 @@ void WebSocket::subscribe(const std::span<std::string const> &symbols) {
   subscribe(symbols, "market"sv, "basis.1min.open"sv);
   if (shared_.api.has_estimated_rate)
     subscribe(symbols, "market"sv, "estimated_rate.1min"sv);
-  /* ... may topics will return error
-  if (shared_.api.has_funding_rate)
-    subscribe(symbols, "market"sv, "funding_rate.1min"sv);
-  */
   if (shared_.api.has_index)
     subscribe(symbols, "market"sv, "index.1min"sv);
 }
@@ -286,25 +282,6 @@ void WebSocket::operator()(const server::Trace<json::EstimatedRate> &event) {
   profile_.estimated_rate([&]() {
     auto &[trace_info, estimated_rate] = event;
     log::info<3>("estimated_rate={}"sv, estimated_rate);
-    auto symbol = json::extract_symbol(estimated_rate.ch);
-    auto &tick = estimated_rate.tick;
-    Statistics statistics[] = {
-        {
-            .type = StatisticsType::FUNDING_RATE,
-            .value = tick.close,
-            .begin_time_utc = {},
-            .end_time_utc = {},
-        },
-    };
-    const StatisticsUpdate statistics_update{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = symbol,
-        .statistics = statistics,
-        .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = utils::safe_cast(estimated_rate.ts),
-    };
-    server::create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
 }
 

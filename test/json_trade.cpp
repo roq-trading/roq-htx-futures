@@ -33,6 +33,20 @@ TEST(json_trade, simple_inverse) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::Trade>(message, buffer_);
+  EXPECT_EQ(obj.ch, "market.BTC220325.trade.detail"sv);
+  EXPECT_EQ(obj.ts, 1639629424053ms);
+  auto &tick = obj.tick;
+  EXPECT_EQ(tick.id, 150302535330);
+  EXPECT_EQ(tick.ts, 1639629424028ms);
+  auto &data = tick.data;
+  EXPECT_EQ(std::size(data), 1);
+  auto &d0 = data[0];
+  EXPECT_EQ(d0.amount, 18);
+  EXPECT_DOUBLE_EQ(d0.quantity, 0.0360801846022600627634855703315047361);
+  EXPECT_EQ(d0.ts, 1639629424028ms);
+  EXPECT_EQ(d0.id, 1503025353300000);
+  EXPECT_DOUBLE_EQ(d0.price, 49888.88);
+  EXPECT_DOUBLE_EQ(d0.direction, json::Side::BUY);
 }
 
 TEST(json_trade, simple_linear) {
@@ -65,4 +79,27 @@ TEST(json_trade, simple_linear) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::Trade>(message, buffer_);
+  EXPECT_EQ(obj.ch, "market.BTC-USDT.trade.detail"sv);
+  EXPECT_EQ(obj.ts, 1640775632524ms);
+  auto &tick = obj.tick;
+  EXPECT_EQ(tick.id, 89747117157);
+  EXPECT_EQ(tick.ts, 1640775632497ms);
+  auto &data = tick.data;
+  EXPECT_EQ(std::size(data), 2);
+  auto &d0 = data[0];
+  EXPECT_DOUBLE_EQ(d0.amount, 120.0);
+  EXPECT_DOUBLE_EQ(d0.quantity, 0.12);
+  EXPECT_DOUBLE_EQ(d0.trade_turnover, 5724.132);
+  EXPECT_EQ(d0.ts, 1640775632497ms);
+  EXPECT_EQ(d0.id, 897471171570000);
+  EXPECT_DOUBLE_EQ(d0.price, 47701.1);
+  EXPECT_EQ(d0.direction, json::Side::SELL);
+  auto &d1 = data[1];
+  EXPECT_DOUBLE_EQ(d1.amount, 2.0);
+  EXPECT_DOUBLE_EQ(d1.quantity, 0.002);
+  EXPECT_DOUBLE_EQ(d1.trade_turnover, 95.4022);
+  EXPECT_EQ(d1.ts, 1640775632497ms);
+  EXPECT_EQ(d1.id, 897471171570001);
+  EXPECT_DOUBLE_EQ(d1.price, 47701.1);
+  EXPECT_EQ(d1.direction, json::Side::SELL);
 }

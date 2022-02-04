@@ -45,6 +45,32 @@ TEST(json_contract_info, simple_inverse) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::ContractInfo>(message, buffer_);
+  EXPECT_EQ(obj.status, "ok"sv);
+  auto &data = obj.data;
+  ASSERT_EQ(std::size(data), 2);
+  auto &d0 = data[0];
+  EXPECT_EQ(d0.symbol, "BTC"sv);
+  EXPECT_EQ(d0.contract_code, "BTC211217"sv);
+  EXPECT_EQ(d0.contract_type, "this_week"sv);
+  EXPECT_DOUBLE_EQ(d0.contract_size, 100.0);
+  EXPECT_DOUBLE_EQ(d0.price_tick, 0.01);
+  // EXPECT_EQ(d0.delivery_data, "20211217"sv);
+  EXPECT_EQ(d0.delivery_time, 1639728000000ms);
+  // EXPECT_EQ(d0.create_date, "20211203";
+  EXPECT_EQ(d0.contract_status, 1);
+  EXPECT_EQ(d0.settlement_time, 1639641600000ms);
+  auto &d1 = data[1];
+  EXPECT_EQ(d1.symbol, "BTC"sv);
+  EXPECT_EQ(d1.contract_code, "BTC211224"sv);
+  EXPECT_EQ(d1.contract_type, "next_week"sv);
+  EXPECT_DOUBLE_EQ(d1.contract_size, 100.0);
+  EXPECT_DOUBLE_EQ(d1.price_tick, 0.01);
+  // EXPECT_EQ(d1.delivery_data, "20211224"sv);
+  EXPECT_EQ(d1.delivery_time, 1640332800000ms);
+  // EXPECT_EQ(d1.create_date, "20211210";
+  EXPECT_EQ(d1.contract_status, 1);
+  EXPECT_EQ(d1.settlement_time, 1639641600000ms);
+  EXPECT_EQ(obj.ts, 1639583414002ms);
 }
 
 // note! reduced
@@ -98,5 +124,5 @@ TEST(json_contract_info, simple_linear) {
                  R"(})";
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::ContractInfo>(message, buffer_);
+  /*auto obj =*/core::json::Parser::create<json::ContractInfo>(message, buffer_);
 }

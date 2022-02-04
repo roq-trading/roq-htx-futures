@@ -6,6 +6,8 @@ bbo.h
 bbo.cpp
 bbo_tick.h
 bbo_tick.cpp
+close.h
+close.cpp
 contract_info_item.h
 contract_info_item.cpp
 contract_info.h
@@ -28,10 +30,18 @@ event.h
 event.cpp
 frame.h
 frame.cpp
+frame_2.h
+frame_2.cpp
+funding_rate.h
+funding_rate.cpp
+funding_rate_item.h
+funding_rate_item.cpp
 index.h
 index.cpp
 index_tick.h
 index_tick.cpp
+operator.h
+operator.cpp
 ping.h
 ping.cpp
 premium_index.h
@@ -48,6 +58,8 @@ subbed.h
 subbed.cpp
 topic.h
 topic.cpp
+topic_2.h
+topic_2.cpp
 trade.h
 trade.cpp
 trade_tick_item.h

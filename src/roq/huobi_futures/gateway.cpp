@@ -24,9 +24,8 @@ namespace huobi_futures {
 namespace {
 auto create_security(const Config &config) {
   absl::flat_hash_map<std::string, std::unique_ptr<Security>> result;
-  for (auto &[_, iter] : config.accounts) {
+  for (auto &[_, iter] : config.accounts)
     result.try_emplace(iter.name, std::make_unique<Security>(config, iter.name));
-  }
   return result;
 }
 
@@ -36,21 +35,31 @@ auto create_order_entry(
     core::io::Context &context,
     uint16_t &stream_id,
     T &security,
-    Shared &shared) {
+    Shared &shared,
+    bool has_real_accounts) {
   absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> result;
-  for (auto &iter : security) {
-    result.try_emplace(
-        iter.first,
-        std::make_unique<OrderEntry>(gateway, context, ++stream_id, *iter.second, shared));
+  if (has_real_accounts) {
+    for (auto &iter : security) {
+      result.try_emplace(
+          iter.first,
+          std::make_unique<OrderEntry>(gateway, context, ++stream_id, *(iter.second), shared));
+    }
   }
   return result;
 }
 
 template <typename T>
-auto create_drop_copy(T &security) {
+auto create_drop_copy(
+    Gateway &gateway,
+    core::io::Context &context,
+    uint16_t &stream_id,
+    T &security,
+    Shared &shared) {
   absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> result;
   for (auto &iter : security) {
-    result.try_emplace(iter.first, nullptr);
+    result.try_emplace(
+        iter.first,
+        std::make_unique<DropCopy>(gateway, context, ++stream_id, *(iter.second), shared));
   }
   return result;
 }
@@ -60,9 +69,10 @@ Gateway::Gateway(server::Dispatcher &dispatcher, const Config &config)
     : dispatcher_(dispatcher), master_account_(config.get_master_account()),
       security_(create_security(config)), shared_(dispatcher),
       rest_(*this, context_, ++stream_id_, shared_),
-      order_entry_(create_order_entry(*this, context_, stream_id_, security_, shared_)),
-      drop_copy_(create_drop_copy(security_)) {
-  if (Flags::rest_cancel_on_disconnect()) [[unlikely]]
+      order_entry_(create_order_entry(
+          *this, context_, stream_id_, security_, shared_, !std::empty(config.accounts))),
+      drop_copy_(create_drop_copy(*this, context_, stream_id_, security_, shared_)) {
+  if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }
 
@@ -76,11 +86,13 @@ void Gateway::operator()(const Event<Start> &event) {
       (*drop_copy)(event);
   assert(std::empty(market_data_));
   assert(std::empty(web_socket_));
-  // order_entry_.download.begin();
+  assert(std::empty(web_socket_2_));
 }
 
 void Gateway::operator()(const Event<Stop> &event) {
   log::info("Stopping the gateway..."sv);
+  for (auto &iter : web_socket_2_)
+    (*iter)(event);
   for (auto &iter : web_socket_)
     (*iter)(event);
   for (auto &iter : market_data_)
@@ -103,6 +115,8 @@ void Gateway::operator()(const Event<Timer> &event) {
   for (auto &iter : market_data_)
     (*iter)(event);
   for (auto &iter : web_socket_)
+    (*iter)(event);
+  for (auto &iter : web_socket_2_)
     (*iter)(event);
   context_.dispatch(true);
 }
@@ -167,6 +181,8 @@ void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
     (*iter).subscribe(start_from);
   for (auto &iter : web_socket_)
     (*iter).subscribe(start_from);
+  for (auto &iter : web_socket_2_)
+    (*iter).subscribe(start_from);
 }
 
 void Gateway::ensure_symbol_slices(size_t size) {
@@ -181,16 +197,27 @@ void Gateway::ensure_symbol_slices(size_t size) {
     create_event_and_dispatch(*market_data, message_info, start);
     market_data_.emplace_back(std::move(market_data));
   }
-  // web socket
+  // web socket #1
   while (std::size(web_socket_) < size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(web_socket_);
-    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
+    log::debug("Create WebSocket #1 (stream_id={}, index={})"sv, stream_id, index);
     auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*web_socket, message_info, start);
     web_socket_.emplace_back(std::move(web_socket));
+  }
+  // web socket #2
+  while (std::size(web_socket_2_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(web_socket_2_);
+    log::debug("Create WebSocket #2 (stream_id={}, index={})"sv, stream_id, index);
+    auto web_socket_2 = std::make_unique<WebSocket2>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*web_socket_2, message_info, start);
+    web_socket_2_.emplace_back(std::move(web_socket_2));
   }
 }
 

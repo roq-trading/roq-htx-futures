@@ -6,10 +6,11 @@ set(SOURCES
     json_contract_info.cpp
     json_depth.cpp
     json_detail.cpp
+    json_funding_rate.cpp
+    json_premium_index.cpp
     json_subbed.cpp
     json_trade.cpp
     json_utils.cpp
-    json_premium_index.cpp
     main.cpp)
 
 add_executable("${TARGET_NAME}" ${SOURCES})

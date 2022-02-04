@@ -4,6 +4,8 @@
 
 #include <utility>
 
+#include "roq/utils/compare.h"
+
 #include "roq/logging.h"
 
 #include "roq/huobi_futures/flags.h"
@@ -19,6 +21,10 @@ Config::Config(const std::string_view &config_path, const std::string_view &secr
 
 std::string Config::get_master_account() const {
   return master_account_;
+}
+
+bool Config::is_master_account(const std::string_view &account) const {
+  return utils::compare(account, master_account_) == 0;
 }
 
 std::string Config::get_api_key(const std::string_view &account) const {

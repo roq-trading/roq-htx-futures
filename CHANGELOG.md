@@ -6,6 +6,7 @@ All notable changes will be documented in this file.
 
 ### Added
 
+* Support funding rates (#172)
 * Add funding rate and index price (#162)
 
 ## 0.8.1 &ndash; 2022-01-16

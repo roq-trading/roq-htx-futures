@@ -22,6 +22,8 @@ class Config final : public server::Config, public server::ConfigReader::Handler
 
   std::string get_master_account() const;
 
+  bool is_master_account(const std::string_view &account) const;
+
   std::string get_api_key(const std::string_view &account) const;
   std::string get_secret(const std::string_view &account) const;
 
