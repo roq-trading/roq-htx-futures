@@ -1,12 +1,6 @@
+!!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-huobi-futures
-
-# debug
-????-W??/
-
-# auto-generated
-drop_copy_state.cpp
-drop_copy_state.h
-order_entry_state.cpp
 order_entry_state.h
-rest_state.cpp
 rest_state.h
+order_entry_state.cpp
+rest_state.cpp

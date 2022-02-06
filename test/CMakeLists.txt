@@ -13,6 +13,8 @@ set(SOURCES
     json_utils.cpp
     main.cpp)
 
+roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
+
 add_executable("${TARGET_NAME}" ${SOURCES})
 
 target_link_libraries(

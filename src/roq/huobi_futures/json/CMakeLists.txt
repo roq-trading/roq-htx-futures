@@ -66,14 +66,7 @@ roq_autogen(
   SOURCES
   ${AUTOGEN_SCHEMAS})
 
-set(GITIGNORE "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore")
-
-file(WRITE "${GITIGNORE}" "")
-
-foreach(path ${AUTOGEN_SCHEMAS})
-  get_filename_component(name ${path} NAME_WE)
-  file(APPEND "${GITIGNORE}" "${name}.h\n${name}.cpp\n")
-endforeach()
+roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}" ${AUTOGEN_HEADERS} ${AUTOGEN_SOURCES})
 
 add_library("${TARGET_NAME}" STATIC ${SOURCES} ${AUTOGEN_SOURCES})
 
