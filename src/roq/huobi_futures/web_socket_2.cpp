@@ -27,20 +27,24 @@ struct create_metrics final : public core::metrics::Factory {
   explicit create_metrics(const std::string_view &group, const std::string_view &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
+
+auto create_connection(auto &handler, auto &context) {
+  core::web::ClientSocket::Config config{
+      .validate_certificate = server::Flags::tls_validate_certificate(),
+      .uri = Flags::ws_order_uri(),
+      .query = {},
+      .ping_frequency = Flags::ws_ping_freq(),
+      .read_buffer_size = Flags::decode_buffer_size(),
+      .encode_buffer_size = Flags::encode_buffer_size(),
+  };
+  return core::web::ClientSocket{handler, context, config, []() { return std::string(); }};
+}
 }  // namespace
 
 WebSocket2::WebSocket2(
     Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
-      index_(index), connection_(
-                         *this,
-                         context,
-                         core::URI(Flags::ws_order_uri()),
-                         {},  // query
-                         Flags::ws_ping_freq(),
-                         Flags::decode_buffer_size(),
-                         Flags::encode_buffer_size(),
-                         []() { return std::string(); }),
+      index_(index), connection_(create_connection(*this, context)),
       decode_buffer_(Flags::decode_buffer_size()),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
