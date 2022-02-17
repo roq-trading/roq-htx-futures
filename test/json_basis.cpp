@@ -35,4 +35,3 @@ TEST(json_basis, simple_swap) {
   EXPECT_DOUBLE_EQ(tick.basis, -0.0135621602666667);
   EXPECT_DOUBLE_EQ(tick.basis_rate, -0.0156867382010838518425939816818336619);
 }
-

@@ -31,4 +31,3 @@ TEST(json_estimated_rate, simple_swap) {
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::EstimatedRate>(message, buffer_);
 }
-
