@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "roq/core/buffer.h"
+#include "roq/core/download.h"
 
 #include "roq/core/metrics/counter.h"
 #include "roq/core/metrics/latency.h"
@@ -18,7 +19,6 @@
 
 #include "roq/core/web/client.h"
 
-#include "roq/download.h"
 #include "roq/server.h"
 
 #include "roq/huobi_futures/order_entry_state.h"
@@ -104,7 +104,7 @@ class OrderEntry final : public core::web::Client::Handler {
   Shared &shared_;
   // state
   ConnectionStatus status_ = {};
-  server::Download<OrderEntryState> download_;
+  core::Download<OrderEntryState> download_;
 };
 
 }  // namespace huobi_futures

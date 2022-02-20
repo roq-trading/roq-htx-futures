@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "roq/core/buffer.h"
+#include "roq/core/download.h"
 
 #include "roq/core/metrics/counter.h"
 #include "roq/core/metrics/latency.h"
@@ -18,7 +19,6 @@
 
 #include "roq/core/web/client.h"
 
-#include "roq/download.h"
 #include "roq/server.h"
 
 #include "roq/huobi_futures/rest_state.h"
@@ -94,7 +94,7 @@ class Rest final : public core::web::Client::Handler {
   absl::flat_hash_set<std::string> all_symbols_;
   // state
   ConnectionStatus status_ = {};
-  server::Download<RestState> download_;
+  core::Download<RestState> download_;
 };
 
 }  // namespace huobi_futures

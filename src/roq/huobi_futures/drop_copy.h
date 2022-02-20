@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+#include "roq/core/download.h"
+
 #include "roq/core/metrics/counter.h"
 #include "roq/core/metrics/latency.h"
 #include "roq/core/metrics/profile.h"
@@ -16,7 +18,6 @@
 
 #include "roq/core/zlib/inflate.h"
 
-#include "roq/download.h"
 #include "roq/server.h"
 
 #include "roq/huobi_futures/security.h"
