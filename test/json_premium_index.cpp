@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_premium_index, simple_swap) {
+using namespace Catch::literals;
+
+TEST_CASE("json_premium_index_simple_swap", "json_premium_index") {
   auto message = R"({)"
                  R"("ch":"market.BTC-USD.premium_index.1min",)"
                  R"("ts":1642657680747,)"
@@ -30,16 +32,16 @@ TEST(json_premium_index, simple_swap) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::PremiumIndex>(message, buffer_);
-  EXPECT_EQ(obj.ch, "market.BTC-USD.premium_index.1min"sv);
-  EXPECT_EQ(obj.ts, 1642657680747ms);
+  CHECK(obj.ch == "market.BTC-USD.premium_index.1min"sv);
+  CHECK(obj.ts == 1642657680747ms);
   auto &tick = obj.tick;
-  EXPECT_EQ(tick.id, 1642657680);
-  EXPECT_EQ(tick.id, 1642657680);
-  EXPECT_DOUBLE_EQ(tick.open, -0.0002871886442248);
-  EXPECT_DOUBLE_EQ(tick.close, -0.0002871886442248);
-  EXPECT_DOUBLE_EQ(tick.high, -0.0002871886442248);
-  EXPECT_DOUBLE_EQ(tick.low, -0.0002871886442248);
-  EXPECT_DOUBLE_EQ(tick.amount, 0.0);
-  EXPECT_DOUBLE_EQ(tick.vol, 0.0);
-  EXPECT_DOUBLE_EQ(tick.count, 0.0);
+  CHECK(tick.id == 1642657680);
+  CHECK(tick.id == 1642657680);
+  CHECK(tick.open == -0.0002871886442248_a);
+  CHECK(tick.close == -0.0002871886442248_a);
+  CHECK(tick.high == -0.0002871886442248_a);
+  CHECK(tick.low == -0.0002871886442248_a);
+  CHECK(tick.amount == 0.0_a);
+  CHECK(tick.vol == 0.0_a);
+  CHECK(tick.count == 0.0_a);
 }

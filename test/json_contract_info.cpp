@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,8 +12,10 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
+using namespace Catch::literals;
+
 // note! reduced
-TEST(json_contract_info, simple_inverse) {
+TEST_CASE("json_contract_info_simple_inverse", "json_contract_info") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -45,36 +47,36 @@ TEST(json_contract_info, simple_inverse) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::ContractInfo>(message, buffer_);
-  EXPECT_EQ(obj.status, "ok"sv);
+  CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
-  ASSERT_EQ(std::size(data), 2);
+  REQUIRE(std::size(data) == 2);
   auto &d0 = data[0];
-  EXPECT_EQ(d0.symbol, "BTC"sv);
-  EXPECT_EQ(d0.contract_code, "BTC211217"sv);
-  EXPECT_EQ(d0.contract_type, "this_week"sv);
-  EXPECT_DOUBLE_EQ(d0.contract_size, 100.0);
-  EXPECT_DOUBLE_EQ(d0.price_tick, 0.01);
-  // EXPECT_EQ(d0.delivery_data, "20211217"sv);
-  EXPECT_EQ(d0.delivery_time, 1639728000000ms);
+  CHECK(d0.symbol == "BTC"sv);
+  CHECK(d0.contract_code == "BTC211217"sv);
+  CHECK(d0.contract_type == "this_week"sv);
+  CHECK(d0.contract_size == 100.0_a);
+  CHECK(d0.price_tick == 0.01_a);
+  // CHECK(d0.delivery_data == "20211217"sv);
+  CHECK(d0.delivery_time == 1639728000000ms);
   // EXPECT_EQ(d0.create_date, "20211203";
-  EXPECT_EQ(d0.contract_status, 1);
-  EXPECT_EQ(d0.settlement_time, 1639641600000ms);
+  CHECK(d0.contract_status == 1);
+  CHECK(d0.settlement_time == 1639641600000ms);
   auto &d1 = data[1];
-  EXPECT_EQ(d1.symbol, "BTC"sv);
-  EXPECT_EQ(d1.contract_code, "BTC211224"sv);
-  EXPECT_EQ(d1.contract_type, "next_week"sv);
-  EXPECT_DOUBLE_EQ(d1.contract_size, 100.0);
-  EXPECT_DOUBLE_EQ(d1.price_tick, 0.01);
-  // EXPECT_EQ(d1.delivery_data, "20211224"sv);
-  EXPECT_EQ(d1.delivery_time, 1640332800000ms);
+  CHECK(d1.symbol == "BTC"sv);
+  CHECK(d1.contract_code == "BTC211224"sv);
+  CHECK(d1.contract_type == "next_week"sv);
+  CHECK(d1.contract_size == 100.0_a);
+  CHECK(d1.price_tick == 0.01_a);
+  // CHECK(d1.delivery_data == "20211224"sv);
+  CHECK(d1.delivery_time == 1640332800000ms);
   // EXPECT_EQ(d1.create_date, "20211210";
-  EXPECT_EQ(d1.contract_status, 1);
-  EXPECT_EQ(d1.settlement_time, 1639641600000ms);
-  EXPECT_EQ(obj.ts, 1639583414002ms);
+  CHECK(d1.contract_status == 1);
+  CHECK(d1.settlement_time == 1639641600000ms);
+  CHECK(obj.ts == 1639583414002ms);
 }
 
 // note! reduced
-TEST(json_contract_info, simple_linear) {
+TEST_CASE("json_contract_info_simple_linear", "json_contract_info") {
   auto message = R"({)"
                  R"("data":[{)"
                  R"("symbol":"BTC",)"

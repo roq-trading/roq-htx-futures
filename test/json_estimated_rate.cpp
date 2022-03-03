@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_estimated_rate, simple_swap) {
+using namespace Catch::literals;
+
+TEST_CASE("json_estimated_rate_simple_swap", "json_estimated_rate") {
   auto message = R"({)"
                  R"("ch":"market.BTC-USD.estimated_rate.1min",)"
                  R"("ts":1642658280847,)"

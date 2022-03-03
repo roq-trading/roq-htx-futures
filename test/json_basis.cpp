@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_basis, simple_swap) {
+using namespace Catch::literals;
+
+TEST_CASE("json_basis_simple_swap", "json_basis") {
   auto message = R"({)"
                  R"("ch":"market.WOO-USDT.basis.1min.open",)"
                  R"("ts":1642659617542,)"
@@ -26,12 +28,12 @@ TEST(json_basis, simple_swap) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::Basis>(message, buffer_);
-  EXPECT_EQ(obj.ch, "market.WOO-USDT.basis.1min.open"sv);
-  EXPECT_EQ(obj.ts, 1642659617542ms);
+  CHECK(obj.ch == "market.WOO-USDT.basis.1min.open"sv);
+  CHECK(obj.ts == 1642659617542ms);
   auto &tick = obj.tick;
-  EXPECT_EQ(tick.id, 1642659600);
-  EXPECT_DOUBLE_EQ(tick.index_price, 0.8645621602666667);
-  EXPECT_DOUBLE_EQ(tick.contract_price, 0.851);
-  EXPECT_DOUBLE_EQ(tick.basis, -0.0135621602666667);
-  EXPECT_DOUBLE_EQ(tick.basis_rate, -0.0156867382010838518425939816818336619);
+  CHECK(tick.id == 1642659600);
+  CHECK(tick.index_price == 0.8645621602666667_a);
+  CHECK(tick.contract_price == 0.851_a);
+  CHECK(tick.basis == -0.0135621602666667_a);
+  CHECK(tick.basis_rate == -0.0156867382010838518425939816818336619_a);
 }

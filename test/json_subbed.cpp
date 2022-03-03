@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_subbed, simple) {
+using namespace Catch::literals;
+
+TEST_CASE("json_subbed_simple", "json_subbed") {
   /*
   auto message = R"({)"
                  R"("id":"3000001",)"

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_bbo, simple) {
+using namespace Catch::literals;
+
+TEST_CASE("json_bbo_simple", "json_bbo") {
   auto message = R"({)"
                  R"("ch":"market.TRX211224.bbo",)"
                  R"("ts":1639583658324,)"
@@ -29,16 +31,16 @@ TEST(json_bbo, simple) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::BBO>(message, buffer_);
-  EXPECT_EQ(obj.ch, "market.TRX211224.bbo"sv);
-  EXPECT_EQ(obj.ts, 1639583658324ms);
+  CHECK(obj.ch == "market.TRX211224.bbo"sv);
+  CHECK(obj.ts == 1639583658324ms);
   auto &tick = obj.tick;
-  EXPECT_EQ(tick.mrid, 131671795982);
-  EXPECT_EQ(tick.id, 1639583658);
-  EXPECT_DOUBLE_EQ(tick.bid.price, 0.08308);
-  EXPECT_DOUBLE_EQ(tick.bid.vol, 71.0);
-  EXPECT_DOUBLE_EQ(tick.ask.price, 0.08337);
-  EXPECT_DOUBLE_EQ(tick.ask.vol, 247.0);
-  EXPECT_EQ(tick.ts, 1639583658324ms);
-  EXPECT_EQ(tick.version, 131671795982);
-  EXPECT_EQ(tick.ch, "market.TRX211224.bbo"sv);
+  CHECK(tick.mrid == 131671795982);
+  CHECK(tick.id == 1639583658);
+  CHECK(tick.bid.price == 0.08308_a);
+  CHECK(tick.bid.vol == 71.0_a);
+  CHECK(tick.ask.price == 0.08337_a);
+  CHECK(tick.ask.vol == 247.0_a);
+  CHECK(tick.ts == 1639583658324ms);
+  CHECK(tick.version == 131671795982);
+  CHECK(tick.ch == "market.TRX211224.bbo"sv);
 }

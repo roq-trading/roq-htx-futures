@@ -23,7 +23,7 @@ target_link_libraries(
   roq-server::roq-server
   roq-core::roq-core
   fmt::fmt
-  gtest_main
+  Catch2::Catch2
   ${RT_LIBRARIES})
 
 target_compile_features("${TARGET_NAME}" PUBLIC cxx_std_20)

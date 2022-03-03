@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,8 +12,10 @@ using namespace roq::huobi_futures;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
+using namespace Catch::literals;
+
 // note! reduced
-TEST(json_depth, simple) {
+TEST_CASE("json_depth_simple", "json_depth") {
   auto message = R"({)"
                  R"("ch":"market.FIL211231.depth.size_150.high_freq",)"
                  R"("tick":{)"
@@ -37,29 +39,29 @@ TEST(json_depth, simple) {
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
   auto obj = core::json::Parser::create<json::Depth>(message, buffer_);
-  EXPECT_EQ(obj.ch, "market.FIL211231.depth.size_150.high_freq"sv);
+  CHECK(obj.ch == "market.FIL211231.depth.size_150.high_freq"sv);
   auto &tick = obj.tick;
   auto &asks = tick.asks;
-  ASSERT_EQ(std::size(asks), 2);
+  REQUIRE(std::size(asks) == 2);
   auto &a0 = asks[0];
-  EXPECT_DOUBLE_EQ(a0.price, 37.722);
-  EXPECT_DOUBLE_EQ(a0.vol, 2.0);
+  CHECK(a0.price == 37.722_a);
+  CHECK(a0.vol == 2.0_a);
   auto &a1 = asks[1];
-  EXPECT_DOUBLE_EQ(a1.price, 37.735);
-  EXPECT_DOUBLE_EQ(a1.vol, 145.0);
+  CHECK(a1.price == 37.735_a);
+  CHECK(a1.vol == 145.0_a);
   auto &bids = tick.bids;
-  ASSERT_EQ(std::size(bids), 2);
+  REQUIRE(std::size(bids) == 2);
   auto &b0 = bids[0];
-  EXPECT_DOUBLE_EQ(b0.price, 37.71);
-  EXPECT_DOUBLE_EQ(b0.vol, 145.0);
+  CHECK(b0.price == 37.71_a);
+  CHECK(b0.vol == 145.0_a);
   auto &b1 = bids[1];
-  EXPECT_DOUBLE_EQ(b1.price, 37.709);
-  EXPECT_DOUBLE_EQ(b1.vol, 170.0);
-  EXPECT_EQ(tick.ch, "market.FIL211231.depth.size_150.high_freq"sv);
-  EXPECT_EQ(tick.event, json::Event::SNAPSHOT);
-  EXPECT_EQ(tick.id, 149496559186);
-  EXPECT_EQ(tick.mrid, 149496559186);
-  EXPECT_EQ(tick.ts, 1639630955318ms);
-  EXPECT_EQ(tick.version, 195613528);
-  EXPECT_EQ(obj.ts, 1639630955318ms);
+  CHECK(b1.price == 37.709_a);
+  CHECK(b1.vol == 170.0_a);
+  CHECK(tick.ch == "market.FIL211231.depth.size_150.high_freq"sv);
+  CHECK(tick.event == json::Event::SNAPSHOT);
+  CHECK(tick.id == 149496559186);
+  CHECK(tick.mrid == 149496559186);
+  CHECK(tick.ts == 1639630955318ms);
+  CHECK(tick.version == 195613528);
+  CHECK(obj.ts == 1639630955318ms);
 }
