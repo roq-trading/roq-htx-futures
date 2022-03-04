@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_premium_index_simple_swap", "json_premium_index") {
+TEST_CASE("json_premium_index_simple_swap", "[json_premium_index]") {
   auto message = R"({)"
                  R"("ch":"market.BTC-USD.premium_index.1min",)"
                  R"("ts":1642657680747,)"

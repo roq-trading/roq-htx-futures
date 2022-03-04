@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 using namespace Catch::literals;
 
 // note! reduced
-TEST_CASE("json_contract_info_simple_inverse", "json_contract_info") {
+TEST_CASE("json_contract_info_simple_inverse", "[json_contract_info]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -76,7 +76,7 @@ TEST_CASE("json_contract_info_simple_inverse", "json_contract_info") {
 }
 
 // note! reduced
-TEST_CASE("json_contract_info_simple_linear", "json_contract_info") {
+TEST_CASE("json_contract_info_simple_linear", "[json_contract_info]") {
   auto message = R"({)"
                  R"("data":[{)"
                  R"("symbol":"BTC",)"

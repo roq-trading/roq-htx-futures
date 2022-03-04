@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_detail_simple_inverse", "json_detail") {
+TEST_CASE("json_detail_simple_inverse", "[json_detail]") {
   auto message = R"({)"
                  R"("ch":"market.FIL211231.detail",)"
                  R"("ts":1639628009780,)"
@@ -55,7 +55,7 @@ TEST_CASE("json_detail_simple_inverse", "json_detail") {
   CHECK(bid.vol == 4.0_a);
 }
 
-TEST_CASE("json_detail_simple_linear", "json_detail") {
+TEST_CASE("json_detail_simple_linear", "[json_detail]") {
   auto message = R"({)"
                  R"("ch":"market.WOO-USDT.detail",)"
                  R"("ts":1640775846213,)"

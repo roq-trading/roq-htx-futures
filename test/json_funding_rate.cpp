@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_funding_rate_simple_swap", "json_funding_rate") {
+TEST_CASE("json_funding_rate_simple_swap", "[json_funding_rate]") {
   auto message = R"({)"
                  R"("op":"notify",)"
                  R"("topic":"public.BTC-USDT.funding_rate",)"

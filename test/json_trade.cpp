@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_trade_simple_inverse", "json_trade") {
+TEST_CASE("json_trade_simple_inverse", "[json_trade]") {
   auto message = R"({)"
                  R"("ch":"market.BTC220325.trade.detail",)"
                  R"("ts":1639629424053,)"
@@ -51,7 +51,7 @@ TEST_CASE("json_trade_simple_inverse", "json_trade") {
   CHECK(d0.direction == json::Side::BUY);
 }
 
-TEST_CASE("json_trade_simple_linear", "json_trade") {
+TEST_CASE("json_trade_simple_linear", "[json_trade]") {
   auto message = R"({)"
                  R"("ch":"market.BTC-USDT.trade.detail",)"
                  R"("ts":1640775632524,)"

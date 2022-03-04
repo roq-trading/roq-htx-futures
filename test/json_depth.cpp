@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 using namespace Catch::literals;
 
 // note! reduced
-TEST_CASE("json_depth_simple", "json_depth") {
+TEST_CASE("json_depth_simple", "[json_depth]") {
   auto message = R"({)"
                  R"("ch":"market.FIL211231.depth.size_150.high_freq",)"
                  R"("tick":{)"

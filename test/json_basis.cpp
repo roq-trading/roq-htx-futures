@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_basis_simple_swap", "json_basis") {
+TEST_CASE("json_basis_simple_swap", "[json_basis]") {
   auto message = R"({)"
                  R"("ch":"market.WOO-USDT.basis.1min.open",)"
                  R"("ts":1642659617542,)"

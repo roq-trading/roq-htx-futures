@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_subbed_simple", "json_subbed") {
+TEST_CASE("json_subbed_simple", "[json_subbed]") {
   /*
   auto message = R"({)"
                  R"("id":"3000001",)"
