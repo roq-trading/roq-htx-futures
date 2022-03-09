@@ -1,18 +1,18 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi_futures/json/parser.h"
+#include "roq/huobi_futures/json/parser.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <string>
 
-#include "roq/compat.h"
+#include "roq/compat.hpp"
 
-#include "roq/logging.h"
+#include "roq/logging.hpp"
 
-#include "roq/huobi_futures/json/frame.h"
-#include "roq/huobi_futures/json/topic.h"
-#include "roq/huobi_futures/json/utils.h"
+#include "roq/huobi_futures/json/frame.hpp"
+#include "roq/huobi_futures/json/topic.hpp"
+#include "roq/huobi_futures/json/utils.hpp"
 
 using namespace std::literals;
 

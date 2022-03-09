@@ -9,19 +9,19 @@
 #include <utility>
 #include <vector>
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/core/io/context.h"
+#include "roq/core/io/context.hpp"
 
-#include "roq/huobi_futures/config.h"
-#include "roq/huobi_futures/drop_copy.h"
-#include "roq/huobi_futures/market_data.h"
-#include "roq/huobi_futures/order_entry.h"
-#include "roq/huobi_futures/rest.h"
-#include "roq/huobi_futures/security.h"
-#include "roq/huobi_futures/shared.h"
-#include "roq/huobi_futures/web_socket.h"
-#include "roq/huobi_futures/web_socket_2.h"
+#include "roq/huobi_futures/config.hpp"
+#include "roq/huobi_futures/drop_copy.hpp"
+#include "roq/huobi_futures/market_data.hpp"
+#include "roq/huobi_futures/order_entry.hpp"
+#include "roq/huobi_futures/rest.hpp"
+#include "roq/huobi_futures/security.hpp"
+#include "roq/huobi_futures/shared.hpp"
+#include "roq/huobi_futures/web_socket.hpp"
+#include "roq/huobi_futures/web_socket_2.hpp"
 
 namespace roq {
 namespace huobi_futures {

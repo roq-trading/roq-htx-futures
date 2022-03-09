@@ -1,8 +1,8 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi_futures/shared.h"
+#include "roq/huobi_futures/shared.hpp"
 
-#include "roq/huobi_futures/flags.h"
+#include "roq/huobi_futures/flags.hpp"
 
 namespace roq {
 namespace huobi_futures {

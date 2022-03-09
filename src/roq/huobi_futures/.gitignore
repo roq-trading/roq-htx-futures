@@ -1,6 +1,6 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-huobi-futures
-order_entry_state.h
-rest_state.h
+order_entry_state.hpp
+rest_state.hpp
 order_entry_state.cpp
 rest_state.cpp

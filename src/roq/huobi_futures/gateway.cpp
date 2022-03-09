@@ -1,20 +1,20 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi_futures/gateway.h"
+#include "roq/huobi_futures/gateway.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <limits>
 
-#include "roq/logging.h"
+#include "roq/logging.hpp"
 
-#include "roq/core/charconv.h"
-#include "roq/core/clock.h"
-#include "roq/core/utils.h"
+#include "roq/core/charconv.hpp"
+#include "roq/core/clock.hpp"
+#include "roq/core/utils.hpp"
 
-#include "roq/huobi_futures/flags.h"
+#include "roq/huobi_futures/flags.hpp"
 
-#include "roq/huobi_futures/json/utils.h"
+#include "roq/huobi_futures/json/utils.hpp"
 
 using namespace std::literals;
 

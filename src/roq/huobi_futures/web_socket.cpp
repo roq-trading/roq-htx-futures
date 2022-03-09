@@ -1,23 +1,23 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi_futures/web_socket.h"
+#include "roq/huobi_futures/web_socket.hpp"
 
 #include <algorithm>
 
-#include "roq/utils/mask.h"
-#include "roq/utils/safe_cast.h"
-#include "roq/utils/update.h"
+#include "roq/utils/mask.hpp"
+#include "roq/utils/safe_cast.hpp"
+#include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.h"
-#include "roq/core/charconv.h"
+#include "roq/core/back_emplacer.hpp"
+#include "roq/core/charconv.hpp"
 
-#include "roq/core/tools/exception.h"
+#include "roq/core/tools/exception.hpp"
 
-#include "roq/core/metrics/factory.h"
+#include "roq/core/metrics/factory.hpp"
 
-#include "roq/huobi_futures/flags.h"
+#include "roq/huobi_futures/flags.hpp"
 
-#include "roq/huobi_futures/json/utils.h"
+#include "roq/huobi_futures/json/utils.hpp"
 
 using namespace std::literals;
 

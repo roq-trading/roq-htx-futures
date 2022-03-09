@@ -2,9 +2,9 @@
 
 #include <catch2/catch.hpp>
 
-#include "roq/core/json/parser.h"
+#include "roq/core/json/parser.hpp"
 
-#include "roq/huobi_futures/json/estimated_rate.h"
+#include "roq/huobi_futures/json/estimated_rate.hpp"
 
 using namespace roq;
 using namespace roq::huobi_futures;

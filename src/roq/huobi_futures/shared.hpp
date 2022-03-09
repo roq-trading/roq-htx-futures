@@ -4,13 +4,13 @@
 
 #include <utility>
 
-#include "roq/api.h"
-#include "roq/server.h"
+#include "roq/api.hpp"
+#include "roq/server.hpp"
 
-#include "roq/core/memory.h"
-#include "roq/core/symbols.h"
+#include "roq/core/memory.hpp"
+#include "roq/core/symbols.hpp"
 
-#include "roq/huobi_futures/api.h"
+#include "roq/huobi_futures/api.hpp"
 
 namespace roq {
 namespace huobi_futures {

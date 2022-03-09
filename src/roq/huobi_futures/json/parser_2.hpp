@@ -4,13 +4,13 @@
 
 #include <string_view>
 
-#include "roq/core/json/buffer.h"
+#include "roq/core/json/buffer.hpp"
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi_futures/json/close.h"
-#include "roq/huobi_futures/json/funding_rate.h"
-#include "roq/huobi_futures/json/ping.h"
+#include "roq/huobi_futures/json/close.hpp"
+#include "roq/huobi_futures/json/funding_rate.hpp"
+#include "roq/huobi_futures/json/ping.hpp"
 
 namespace roq {
 namespace huobi_futures {

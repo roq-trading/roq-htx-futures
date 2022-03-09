@@ -6,39 +6,43 @@
 #include <string_view>
 #include <vector>
 
-#include "roq/core/download.h"
+#include "roq/core/download.hpp"
 
-#include "roq/core/metrics/counter.h"
-#include "roq/core/metrics/latency.h"
-#include "roq/core/metrics/profile.h"
+#include "roq/core/metrics/counter.hpp"
+#include "roq/core/metrics/latency.hpp"
+#include "roq/core/metrics/profile.hpp"
 
-#include "roq/core/io/context.h"
+#include "roq/core/io/context.hpp"
 
-#include "roq/core/web/client_socket.h"
+#include "roq/core/web/client_socket.hpp"
 
-#include "roq/core/zlib/inflate.h"
+#include "roq/core/zlib/inflate.hpp"
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi_futures/shared.h"
+#include "roq/huobi_futures/shared.hpp"
 
-#include "roq/huobi_futures/json/parser_2.h"
+#include "roq/huobi_futures/json/parser.hpp"
 
 namespace roq {
 namespace huobi_futures {
 
-class WebSocket2 final : public core::web::ClientSocket::Handler, public json::Parser2::Handler {
+class WebSocket final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
     virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
+    virtual void operator()(const server::Trace<TopOfBook> &, bool is_last) = 0;
+    virtual void operator()(
+        const server::Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
+    virtual void operator()(const server::Trace<TradeSummary> &, bool is_last) = 0;
     virtual void operator()(const server::Trace<StatisticsUpdate> &, bool is_last) = 0;
   };
 
-  WebSocket2(Handler &, core::io::Context &, uint16_t stream_id, Shared &, size_t index);
+  WebSocket(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
 
-  WebSocket2(WebSocket2 &&) = delete;
-  WebSocket2(const WebSocket2 &) = delete;
+  WebSocket(WebSocket &&) = delete;
+  WebSocket(const WebSocket &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 
@@ -73,8 +77,19 @@ class WebSocket2 final : public core::web::ClientSocket::Handler, public json::P
   void parse(const std::string_view &message);
 
   void operator()(const server::Trace<json::Ping> &) override;
-  void operator()(const server::Trace<json::Close> &) override;
-  void operator()(const server::Trace<json::FundingRate> &) override;
+
+  void operator()(const server::Trace<json::Error> &) override;
+  void operator()(const server::Trace<json::Subbed> &) override;
+
+  void operator()(const server::Trace<json::BBO> &) override;
+  void operator()(const server::Trace<json::Depth> &) override;
+  void operator()(const server::Trace<json::Trade> &) override;
+  void operator()(const server::Trace<json::Detail> &) override;
+
+  void operator()(const server::Trace<json::EstimatedRate> &) override;
+  void operator()(const server::Trace<json::PremiumIndex> &) override;
+  void operator()(const server::Trace<json::Basis> &) override;
+  void operator()(const server::Trace<json::Index> &) override;
 
  private:
   Handler &handler_;
@@ -93,10 +108,10 @@ class WebSocket2 final : public core::web::ClientSocket::Handler, public json::P
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, close, funding_rate;
+    core::metrics::Profile parse, ping, error, subbed, estimated_rate, premium_index, basis, index;
   } profile_;
   struct {
-    core::metrics::Latency ping;
+    core::metrics::Latency ping, heartbeat;
   } latency_;
   // cache
   Shared &shared_;

@@ -1,15 +1,15 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi_futures/tools/hasher.h"
+#include "roq/huobi_futures/tools/hasher.hpp"
 
 #include <fmt/format.h>
 
 #include <array>
 #include <cassert>
 
-#include "roq/core/binascii/hex.h"
+#include "roq/core/binascii/hex.hpp"
 
-#include "roq/core/crypto/hmac.h"
+#include "roq/core/crypto/hmac.hpp"
 
 using namespace std::literals;
 

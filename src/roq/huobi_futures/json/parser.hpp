@@ -4,21 +4,21 @@
 
 #include <string_view>
 
-#include "roq/core/json/buffer.h"
+#include "roq/core/json/buffer.hpp"
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi_futures/json/basis.h"
-#include "roq/huobi_futures/json/bbo.h"
-#include "roq/huobi_futures/json/depth.h"
-#include "roq/huobi_futures/json/detail.h"
-#include "roq/huobi_futures/json/error.h"
-#include "roq/huobi_futures/json/estimated_rate.h"
-#include "roq/huobi_futures/json/index.h"
-#include "roq/huobi_futures/json/ping.h"
-#include "roq/huobi_futures/json/premium_index.h"
-#include "roq/huobi_futures/json/subbed.h"
-#include "roq/huobi_futures/json/trade.h"
+#include "roq/huobi_futures/json/basis.hpp"
+#include "roq/huobi_futures/json/bbo.hpp"
+#include "roq/huobi_futures/json/depth.hpp"
+#include "roq/huobi_futures/json/detail.hpp"
+#include "roq/huobi_futures/json/error.hpp"
+#include "roq/huobi_futures/json/estimated_rate.hpp"
+#include "roq/huobi_futures/json/index.hpp"
+#include "roq/huobi_futures/json/ping.hpp"
+#include "roq/huobi_futures/json/premium_index.hpp"
+#include "roq/huobi_futures/json/subbed.hpp"
+#include "roq/huobi_futures/json/trade.hpp"
 
 namespace roq {
 namespace huobi_futures {

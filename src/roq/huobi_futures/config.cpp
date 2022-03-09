@@ -1,14 +1,14 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi_futures/config.h"
+#include "roq/huobi_futures/config.hpp"
 
 #include <utility>
 
-#include "roq/utils/compare.h"
+#include "roq/utils/compare.hpp"
 
-#include "roq/logging.h"
+#include "roq/logging.hpp"
 
-#include "roq/huobi_futures/flags.h"
+#include "roq/huobi_futures/flags.hpp"
 
 using namespace std::literals;
 

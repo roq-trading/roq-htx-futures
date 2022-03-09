@@ -7,7 +7,7 @@
 #include <string_view>
 #include <utility>
 
-#include "roq/core/crypto/hmac.h"
+#include "roq/core/crypto/hmac.hpp"
 
 namespace roq {
 namespace huobi_futures {

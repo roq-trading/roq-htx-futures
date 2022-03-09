@@ -7,9 +7,9 @@
 #include <string_view>
 #include <utility>
 
-#include "roq/huobi_futures/config.h"
+#include "roq/huobi_futures/config.hpp"
 
-#include "roq/huobi_futures/tools/hasher.h"
+#include "roq/huobi_futures/tools/hasher.hpp"
 
 namespace roq {
 namespace huobi_futures {
