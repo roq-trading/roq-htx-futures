@@ -2,7 +2,7 @@
 
 #include "roq/huobi_futures/drop_copy.hpp"
 
-#include "roq/utils/mask.hpp"
+#include "roq/mask.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -18,7 +18,7 @@ namespace huobi_futures {
 
 namespace {
 const auto NAME = "dc"sv;
-const auto SUPPORTS = utils::Mask{
+const auto SUPPORTS = Mask{
     SupportType::FUNDS,
 };
 

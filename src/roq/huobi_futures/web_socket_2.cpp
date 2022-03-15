@@ -2,7 +2,7 @@
 
 #include "roq/huobi_futures/web_socket_2.hpp"
 
-#include "roq/utils/mask.hpp"
+#include "roq/mask.hpp"
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
@@ -19,7 +19,7 @@ namespace huobi_futures {
 
 namespace {
 const auto NAME = "ws2"sv;
-const auto SUPPORTS = utils::Mask{
+const auto SUPPORTS = Mask{
     SupportType::STATISTICS,
 };
 
