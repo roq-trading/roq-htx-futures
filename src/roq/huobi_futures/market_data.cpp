@@ -192,7 +192,7 @@ void MarketData::operator()(ConnectionStatus status) {
   }
 }
 
-void MarketData::subscribe(const std::span<std::string const> &symbols) {
+void MarketData::subscribe(const std::span<Symbol const> &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols, "market"sv, "bbo"sv);
@@ -202,7 +202,7 @@ void MarketData::subscribe(const std::span<std::string const> &symbols) {
 }
 
 void MarketData::subscribe(
-    const std::span<std::string const> &symbols,
+    const std::span<Symbol const> &symbols,
     const std::string_view &source,
     const std::string_view &theme) {
   assert(!std::empty(symbols));
@@ -223,7 +223,7 @@ void MarketData::subscribe(
 }
 
 void MarketData::subscribe_with_data_type(
-    const std::span<std::string const> &symbols,
+    const std::span<Symbol const> &symbols,
     const std::string_view &source,
     const std::string_view &theme,
     const std::string_view &data_type) {

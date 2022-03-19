@@ -20,12 +20,12 @@ class Config final : public server::Config, public server::ConfigReader::Handler
  public:
   Config(const std::string_view &config_path, const std::string_view &secrets_path);
 
-  std::string get_master_account() const;
+  const Account &get_master_account() const;
 
-  bool is_master_account(const std::string_view &account) const;
+  bool is_master_account(const Account &) const;
 
-  std::string get_api_key(const std::string_view &account) const;
-  std::string get_secret(const std::string_view &account) const;
+  const std::string &get_api_key(const Account &) const;
+  const std::string &get_secret(const Account &) const;
 
  protected:
   // server::Config
@@ -39,11 +39,11 @@ class Config final : public server::Config, public server::ConfigReader::Handler
   void operator()(const std::string_view &key, toml::node &) override;
 
  public:
-  std::vector<server::User> users;
+  server::Users users;
   server::Symbols symbols;
-  absl::flat_hash_map<std::string, server::Account> accounts;
-  std::string master_account_;
-  absl::flat_hash_map<std::string, server::RateLimit> rate_limits;
+  server::Accounts accounts;
+  Account master_account_;
+  server::RateLimits rate_limits;
 };
 
 /*

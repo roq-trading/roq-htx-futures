@@ -62,9 +62,9 @@ class WebSocket2 final : public core::web::ClientSocket::Handler, public json::P
  private:
   void operator()(ConnectionStatus);
 
-  void subscribe(const std::span<std::string const> &symbols);
+  void subscribe(const std::span<Symbol const> &symbols);
   void subscribe(
-      const std::span<std::string const> &symbols,
+      const std::span<Symbol const> &symbols,
       const std::string_view &source,
       const std::string_view &theme);
 

@@ -19,15 +19,15 @@ Config::Config(const std::string_view &config_path, const std::string_view &secr
   server::ConfigReader::parse_file(*this, config_path, secrets_path);
 }
 
-std::string Config::get_master_account() const {
+const Account &Config::get_master_account() const {
   return master_account_;
 }
 
-bool Config::is_master_account(const std::string_view &account) const {
+bool Config::is_master_account(const Account &account) const {
   return utils::compare(account, master_account_) == 0;
 }
 
-std::string Config::get_api_key(const std::string_view &account) const {
+const std::string &Config::get_api_key(const Account &account) const {
   auto iter = accounts.find(account);
   if (iter == std::end(accounts)) {
     log::fatal(R"(Unknown account="{}")"sv, account);
@@ -35,7 +35,7 @@ std::string Config::get_api_key(const std::string_view &account) const {
   return (*iter).second.login;
 }
 
-std::string Config::get_secret(const std::string_view &account) const {
+const std::string &Config::get_secret(const Account &account) const {
   auto iter = accounts.find(account);
   if (iter == std::end(accounts)) {
     log::fatal(R"(Unknown account="{}")"sv, account);

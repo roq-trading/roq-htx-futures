@@ -85,7 +85,7 @@ class Gateway final : public server::Handler,
   // config
   const std::string master_account_;
   // security
-  absl::flat_hash_map<std::string, std::unique_ptr<Security>> security_;
+  absl::flat_hash_map<Account, std::unique_ptr<Security>> security_;
   // io
   core::io::Context context_;
   // shared
@@ -94,8 +94,8 @@ class Gateway final : public server::Handler,
   uint16_t stream_id_ = {};
   // streams
   Rest rest_;
-  absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
-  absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
+  absl::flat_hash_map<Account, std::unique_ptr<OrderEntry>> order_entry_;
+  absl::flat_hash_map<Account, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
   std::vector<std::unique_ptr<WebSocket>> web_socket_;
   std::vector<std::unique_ptr<WebSocket2>> web_socket_2_;

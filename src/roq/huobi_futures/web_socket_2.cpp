@@ -149,7 +149,7 @@ void WebSocket2::operator()(ConnectionStatus status) {
   }
 }
 
-void WebSocket2::subscribe(const std::span<std::string const> &symbols) {
+void WebSocket2::subscribe(const std::span<Symbol const> &symbols) {
   if (std::empty(symbols))
     return;
   if (shared_.api.has_funding_rate)
@@ -157,7 +157,7 @@ void WebSocket2::subscribe(const std::span<std::string const> &symbols) {
 }
 
 void WebSocket2::subscribe(
-    const std::span<std::string const> &symbols,
+    const std::span<Symbol const> &symbols,
     const std::string_view &source,
     const std::string_view &theme) {
   assert(!std::empty(symbols));

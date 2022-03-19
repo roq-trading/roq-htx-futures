@@ -211,7 +211,7 @@ void Rest::get_contract_info_ack(
 void Rest::operator()(const server::Trace<json::ContractInfo> &event) {
   auto &[trace_info, contract_info] = event;
   log::info<4>("contract_info={}"sv, contract_info);
-  std::vector<std::string> symbols;
+  std::vector<Symbol> symbols;
   symbols.reserve(std::size(contract_info.data));
   size_t counter = 0;
   for (size_t i = 0; i < std::size(contract_info.data); ++i) {

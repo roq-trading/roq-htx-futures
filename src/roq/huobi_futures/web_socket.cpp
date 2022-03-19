@@ -189,7 +189,7 @@ void WebSocket::operator()(ConnectionStatus status) {
   }
 }
 
-void WebSocket::subscribe(const std::span<std::string const> &symbols) {
+void WebSocket::subscribe(const std::span<Symbol const> &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols, "market"sv, "basis.1min.open"sv);
@@ -200,7 +200,7 @@ void WebSocket::subscribe(const std::span<std::string const> &symbols) {
 }
 
 void WebSocket::subscribe(
-    const std::span<std::string const> &symbols,
+    const std::span<Symbol const> &symbols,
     const std::string_view &source,
     const std::string_view &theme) {
   assert(!std::empty(symbols));
