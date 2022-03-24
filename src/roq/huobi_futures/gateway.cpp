@@ -131,28 +131,28 @@ void Gateway::operator()(const Event<Disconnected> &event) {
   }
 }
 
-void Gateway::operator()(const server::Trace<StreamStatus> &event) {
+void Gateway::operator()(const Trace<StreamStatus> &event) {
   dispatcher_(event);
 }
 
-void Gateway::operator()(const server::Trace<ExternalLatency> &event) {
+void Gateway::operator()(const Trace<ExternalLatency> &event) {
   dispatcher_(event);
 }
 
-void Gateway::operator()(const server::Trace<ReferenceData> &event, bool is_last) {
+void Gateway::operator()(const Trace<ReferenceData> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
-void Gateway::operator()(const server::Trace<MarketStatus> &event, bool is_last) {
+void Gateway::operator()(const Trace<MarketStatus> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
-void Gateway::operator()(const server::Trace<TopOfBook> &event, bool is_last) {
+void Gateway::operator()(const Trace<TopOfBook> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
 void Gateway::operator()(
-    const server::Trace<MarketByPriceUpdate> &event, bool is_last, bool refresh) {
+    const Trace<MarketByPriceUpdate> &event, bool is_last, bool refresh) {
   dispatcher_(
       event,
       is_last,
@@ -162,15 +162,15 @@ void Gateway::operator()(
       []([[maybe_unused]] auto &market_by_price) {});
 }
 
-void Gateway::operator()(const server::Trace<TradeSummary> &event, bool is_last) {
+void Gateway::operator()(const Trace<TradeSummary> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
-void Gateway::operator()(const server::Trace<StatisticsUpdate> &event, bool is_last) {
+void Gateway::operator()(const Trace<StatisticsUpdate> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
-void Gateway::operator()(const server::Trace<FundsUpdate> &event, bool is_last) {
+void Gateway::operator()(const Trace<FundsUpdate> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 

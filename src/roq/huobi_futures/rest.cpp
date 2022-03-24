@@ -108,7 +108,7 @@ void Rest::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"sv, stream_status);
-    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
+    create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -135,7 +135,7 @@ void Rest::operator()(const core::web::Client::Latency &latency) {
       .account = {},
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -177,14 +177,14 @@ void Rest::get_contract_info() {
         request,
         [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
           auto trace_info = server::create_trace_info();
-          server::Trace event(trace_info, response);
+          Trace event(trace_info, response);
           get_contract_info_ack(event, sequence);
         });
   });
 }
 
 void Rest::get_contract_info_ack(
-    const server::Trace<core::web::Response> &event, uint32_t sequence) {
+    const Trace<core::web::Response> &event, uint32_t sequence) {
   profile_.contract_info_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CONTRACT_INFO;
@@ -198,7 +198,7 @@ void Rest::get_contract_info_ack(
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
       auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
-      server::Trace event(trace_info, contract_info);
+      Trace event(trace_info, contract_info);
       (*this)(event);
       download_.check(state);
     } catch (core::NetworkError &e) {
@@ -208,7 +208,7 @@ void Rest::get_contract_info_ack(
   });
 }
 
-void Rest::operator()(const server::Trace<json::ContractInfo> &event) {
+void Rest::operator()(const Trace<json::ContractInfo> &event) {
   auto &[trace_info, contract_info] = event;
   log::info<4>("contract_info={}"sv, contract_info);
   std::vector<Symbol> symbols;
@@ -253,7 +253,7 @@ void Rest::operator()(const server::Trace<json::ContractInfo> &event) {
         .expiry_datetime = {},
         .expiry_datetime_utc = {},
     };
-    server::create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
   }
   if (!std::empty(symbols)) {
     SymbolsUpdate symbols_update{

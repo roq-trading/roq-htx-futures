@@ -153,7 +153,7 @@ void WebSocket::operator()(const core::web::ClientSocket::Latency &latency) {
       .account = {},
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -185,7 +185,7 @@ void WebSocket::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"sv, stream_status);
-    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
+    create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -247,58 +247,58 @@ void WebSocket::parse(const std::string_view &message) {
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::Ping> &event) {
+void WebSocket::operator()(const Trace<json::Ping> &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::Error> &event) {
+void WebSocket::operator()(const Trace<json::Error> &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::Subbed> &event) {
+void WebSocket::operator()(const Trace<json::Subbed> &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::BBO> &) {
+void WebSocket::operator()(const Trace<json::BBO> &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(const server::Trace<json::Depth> &) {
+void WebSocket::operator()(const Trace<json::Depth> &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(const server::Trace<json::Trade> &) {
+void WebSocket::operator()(const Trace<json::Trade> &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(const server::Trace<json::Detail> &) {
+void WebSocket::operator()(const Trace<json::Detail> &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(const server::Trace<json::EstimatedRate> &event) {
+void WebSocket::operator()(const Trace<json::EstimatedRate> &event) {
   profile_.estimated_rate([&]() {
     auto &[trace_info, estimated_rate] = event;
     log::info<3>("estimated_rate={}"sv, estimated_rate);
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::PremiumIndex> &event) {
+void WebSocket::operator()(const Trace<json::PremiumIndex> &event) {
   profile_.premium_index([&]() {
     auto &[trace_info, premium_index] = event;
     log::info<3>("premium_index={}"sv, premium_index);
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::Index> &event) {
+void WebSocket::operator()(const Trace<json::Index> &event) {
   profile_.index([&]() {
     auto &[trace_info, index] = event;
     log::info<3>("index={}"sv, index);
@@ -320,11 +320,11 @@ void WebSocket::operator()(const server::Trace<json::Index> &event) {
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = utils::safe_cast(index.ts),
     };
-    server::create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
 }
 
-void WebSocket::operator()(const server::Trace<json::Basis> &event) {
+void WebSocket::operator()(const Trace<json::Basis> &event) {
   profile_.basis([&]() {
     auto &[trace_info, basis] = event;
     log::info<3>("basis={}"sv, basis);

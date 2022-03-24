@@ -31,9 +31,9 @@ namespace huobi_futures {
 class DropCopy final : public core::web::ClientSocket::Handler, public json::Parser2::Handler {
  public:
   struct Handler {
-    virtual void operator()(const server::Trace<StreamStatus> &) = 0;
-    virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
-    virtual void operator()(const server::Trace<FundsUpdate> &, bool is_last) = 0;
+    virtual void operator()(const Trace<StreamStatus> &) = 0;
+    virtual void operator()(const Trace<ExternalLatency> &) = 0;
+    virtual void operator()(const Trace<FundsUpdate> &, bool is_last) = 0;
   };
 
   DropCopy(Handler &, core::io::Context &, uint16_t stream_id, Security &, Shared &);
@@ -65,9 +65,9 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
 
   void parse(const std::string_view &message);
 
-  void operator()(const server::Trace<json::Ping> &) override;
-  void operator()(const server::Trace<json::Close> &) override;
-  void operator()(const server::Trace<json::FundingRate> &) override;
+  void operator()(const Trace<json::Ping> &) override;
+  void operator()(const Trace<json::Close> &) override;
+  void operator()(const Trace<json::FundingRate> &) override;
 
  private:
   Handler &handler_;

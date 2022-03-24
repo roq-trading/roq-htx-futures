@@ -24,7 +24,7 @@ bool Parser::dispatch(
     Parser::Handler &handler,
     const std::string_view &message,
     core::json::Buffer &buffer,
-    const server::TraceInfo &trace_info) {
+    const TraceInfo &trace_info) {
   auto frame = core::json::Parser::create<json::Frame>(message, buffer);
   if (!frame.ping.count()) {
     switch (frame.status) {
@@ -33,42 +33,42 @@ bool Parser::dispatch(
         switch (topic) {
           case Topic::BBO: {
             auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, bbo);
+            create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case Topic::DEPTH: {
             auto depth = core::json::Parser::create<json::Depth>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, depth);
+            create_trace_and_dispatch(handler, trace_info, depth);
             return true;
           }
           case Topic::TRADE: {
             auto trade = core::json::Parser::create<json::Trade>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, trade);
+            create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case Topic::DETAIL: {
             auto detail = core::json::Parser::create<json::Detail>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, detail);
+            create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case Topic::ESTIMATED_RATE: {
             auto estimated_rate = core::json::Parser::create<json::EstimatedRate>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, estimated_rate);
+            create_trace_and_dispatch(handler, trace_info, estimated_rate);
             return true;
           }
           case Topic::PREMIUM_INDEX: {
             auto premium_index = core::json::Parser::create<json::PremiumIndex>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, premium_index);
+            create_trace_and_dispatch(handler, trace_info, premium_index);
             return true;
           }
           case Topic::BASIS: {
             auto basis = core::json::Parser::create<json::Basis>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, basis);
+            create_trace_and_dispatch(handler, trace_info, basis);
             return true;
           }
           case Topic::INDEX: {
             auto index = core::json::Parser::create<json::Index>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, index);
+            create_trace_and_dispatch(handler, trace_info, index);
             return true;
           }
           default:
@@ -86,7 +86,7 @@ bool Parser::dispatch(
               .ts = frame.ts,
               .status = frame.status,
           };
-          server::create_trace_and_dispatch(handler, trace_info, subbed);
+          create_trace_and_dispatch(handler, trace_info, subbed);
           return true;
         } else {
           log::fatal("DEBUG {}"sv, message);  // ???
@@ -99,14 +99,14 @@ bool Parser::dispatch(
             .err_msg = frame.err_msg,
             .ts = frame.ts,
         };
-        server::create_trace_and_dispatch(handler, trace_info, error);
+        create_trace_and_dispatch(handler, trace_info, error);
         return true;
     }
   } else {
     Ping ping{
         .timestamp = frame.ping,
     };
-    server::create_trace_and_dispatch(handler, trace_info, ping);
+    create_trace_and_dispatch(handler, trace_info, ping);
     return true;
   }
   log::warn(R"(Unexpected: message="{}")"sv, message);

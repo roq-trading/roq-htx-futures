@@ -27,7 +27,7 @@ bool Parser2::dispatch(
     Parser2::Handler &handler,
     const std::string_view &message,
     core::json::Buffer &buffer,
-    const server::TraceInfo &trace_info) {
+    const TraceInfo &trace_info) {
   auto frame = core::json::Parser::create<json::Frame2>(message, buffer);
   switch (frame.op) {
     case Operator::UNDEFINED:
@@ -37,14 +37,14 @@ bool Parser2::dispatch(
       Ping ping{
           .timestamp = frame.ts,
       };
-      server::create_trace_and_dispatch(handler, trace_info, ping);
+      create_trace_and_dispatch(handler, trace_info, ping);
       return true;
     }
     case Operator::CLOSE: {
       Close close{
           .timestamp = frame.ts,
       };
-      server::create_trace_and_dispatch(handler, trace_info, close);
+      create_trace_and_dispatch(handler, trace_info, close);
       return true;
     }
     case Operator::SUB:
@@ -58,7 +58,7 @@ bool Parser2::dispatch(
           break;
         case Topic2::FUNDING_RATE: {
           auto funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
-          server::create_trace_and_dispatch(handler, trace_info, funding_rate);
+          create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;
         }
       }

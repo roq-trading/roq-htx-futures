@@ -18,16 +18,16 @@ namespace json {
 
 struct Parser2 final {
   struct Handler {
-    virtual void operator()(const server::Trace<Ping> &) = 0;
-    virtual void operator()(const server::Trace<Close> &) = 0;
-    virtual void operator()(const server::Trace<FundingRate> &) = 0;
+    virtual void operator()(const Trace<Ping> &) = 0;
+    virtual void operator()(const Trace<Close> &) = 0;
+    virtual void operator()(const Trace<FundingRate> &) = 0;
   };
 
   static bool dispatch(
       Handler &,
       const std::string_view &message,
       core::json::Buffer &buffer,
-      const server::TraceInfo &);
+      const TraceInfo &);
 };
 
 }  // namespace json

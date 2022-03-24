@@ -107,7 +107,7 @@ void DropCopy::operator()(const core::web::ClientSocket::Latency &latency) {
       .account = security_.get_account(),
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -140,7 +140,7 @@ void DropCopy::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"sv, stream_status);
-    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
+    create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -168,14 +168,14 @@ void DropCopy::parse(const std::string_view &message) {
   });
 }
 
-void DropCopy::operator()(const server::Trace<json::Ping> &event) {
+void DropCopy::operator()(const Trace<json::Ping> &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void DropCopy::operator()(const server::Trace<json::Close> &event) {
+void DropCopy::operator()(const Trace<json::Close> &event) {
   profile_.close([&]() {
     auto &[trace_info, close] = event;
     log::warn("trace_info={}, close={}"sv, trace_info, close);
@@ -183,7 +183,7 @@ void DropCopy::operator()(const server::Trace<json::Close> &event) {
   });
 }
 
-void DropCopy::operator()(const server::Trace<json::FundingRate> &) {
+void DropCopy::operator()(const Trace<json::FundingRate> &) {
   log::fatal("Unexpected"sv);
 }
 
