@@ -151,8 +151,7 @@ void Gateway::operator()(const Trace<TopOfBook> &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
-void Gateway::operator()(
-    const Trace<MarketByPriceUpdate> &event, bool is_last, bool refresh) {
+void Gateway::operator()(const Trace<MarketByPriceUpdate> &event, bool is_last, bool refresh) {
   dispatcher_(
       event,
       is_last,

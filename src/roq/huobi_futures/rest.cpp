@@ -183,8 +183,7 @@ void Rest::get_contract_info() {
   });
 }
 
-void Rest::get_contract_info_ack(
-    const Trace<core::web::Response> &event, uint32_t sequence) {
+void Rest::get_contract_info_ack(const Trace<core::web::Response> &event, uint32_t sequence) {
   profile_.contract_info_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CONTRACT_INFO;
