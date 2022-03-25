@@ -1,8 +1,14 @@
 {
-"name": "Quotation",
-"type": "array_item",
-"values": [
-	{ "name": "price", "type": "double" },
-	{ "name": "vol", "type": "double" }
-]
+  "name": "Quotation",
+  "type": "array_item",
+  "values": [
+    {
+      "name": "price",
+      "type": "double"
+    },
+    {
+      "name": "vol",
+      "type": "double"
+    }
+  ]
 }

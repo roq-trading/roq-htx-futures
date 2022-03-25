@@ -1,10 +1,22 @@
 {
-"name": "Subbed",
-"type": "struct",
-"values": [
-	{ "name": "id", "type": "int64_t" },
-	{ "name": "subbed", "type": "std::string_view" },
-	{ "name": "ts", "type": "std::chrono::milliseconds" },
-	{ "name": "status", "type": "Status" }
-]
+  "name": "Subbed",
+  "type": "struct",
+  "values": [
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "subbed",
+      "type": "std::string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "status",
+      "type": "Status"
+    }
+  ]
 }

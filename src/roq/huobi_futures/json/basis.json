@@ -1,9 +1,18 @@
 {
-"name": "Basis",
-"type": "comp",
-"values": [
-	{ "name": "ch", "type": "std::string_view" },
-	{ "name": "ts", "type": "std::chrono::milliseconds" },
-	{ "name": "tick", "type": "BasisTick" }
-]
+  "name": "Basis",
+  "type": "comp",
+  "values": [
+    {
+      "name": "ch",
+      "type": "std::string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "tick",
+      "type": "BasisTick"
+    }
+  ]
 }

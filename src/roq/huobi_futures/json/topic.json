@@ -1,14 +1,30 @@
 {
-"name": "Topic",
-"type": "enum",
-"values": [
-	{ "name": "bbo" },
-	{ "name": "depth" },
-	{ "name": "trade" },
-	{ "name": "detail" },
-	{ "name": "estimated_rate" },
-	{ "name": "premium_index" },
-	{ "name": "basis" },
-	{ "name": "index" }
-]
+  "name": "Topic",
+  "type": "enum",
+  "values": [
+    {
+      "name": "bbo"
+    },
+    {
+      "name": "depth"
+    },
+    {
+      "name": "trade"
+    },
+    {
+      "name": "detail"
+    },
+    {
+      "name": "estimated_rate"
+    },
+    {
+      "name": "premium_index"
+    },
+    {
+      "name": "basis"
+    },
+    {
+      "name": "index"
+    }
+  ]
 }

@@ -1,7 +1,10 @@
 {
-"name": "Close",
-"type": "struct",
-"values": [
-	{ "name": "timestamp", "type": "std::chrono::milliseconds" }
-]
+  "name": "Close",
+  "type": "struct",
+  "values": [
+    {
+      "name": "timestamp",
+      "type": "std::chrono::milliseconds"
+    }
+  ]
 }

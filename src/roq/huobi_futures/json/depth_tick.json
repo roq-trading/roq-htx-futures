@@ -1,14 +1,38 @@
 {
-"name": "DepthTick",
-"type": "comp",
-"values": [
-	{ "name": "asks", "type": "std::span<Quotation>" },
-	{ "name": "bids", "type": "std::span<Quotation>" },
-	{ "name": "ch", "type": "std::string_view" },
-	{ "name": "event", "type": "Event" },
-	{ "name": "id", "type": "int64_t" },
-	{ "name": "mrid", "type": "int64_t" },
-	{ "name": "ts", "type": "std::chrono::milliseconds" },
-	{ "name": "version", "type": "int64_t" }
-]
+  "name": "DepthTick",
+  "type": "comp",
+  "values": [
+    {
+      "name": "asks",
+      "type": "std::span<Quotation>"
+    },
+    {
+      "name": "bids",
+      "type": "std::span<Quotation>"
+    },
+    {
+      "name": "ch",
+      "type": "std::string_view"
+    },
+    {
+      "name": "event",
+      "type": "Event"
+    },
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "mrid",
+      "type": "int64_t"
+    },
+    {
+      "name": "ts",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "version",
+      "type": "int64_t"
+    }
+  ]
 }

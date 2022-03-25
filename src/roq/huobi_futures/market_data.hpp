@@ -33,8 +33,7 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
     virtual void operator()(const Trace<StreamStatus> &) = 0;
     virtual void operator()(const Trace<ExternalLatency> &) = 0;
     virtual void operator()(const Trace<TopOfBook> &, bool is_last) = 0;
-    virtual void operator()(
-        const Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
+    virtual void operator()(const Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
     virtual void operator()(const Trace<TradeSummary> &, bool is_last) = 0;
     virtual void operator()(const Trace<StatisticsUpdate> &, bool is_last) = 0;
   };

@@ -1,11 +1,26 @@
 {
-"name": "BasisTick",
-"type": "comp",
-"values": [
-	{ "name": "id", "type": "int64_t" },
-	{ "name": "index_price", "type": "double" },
-	{ "name": "contract_price", "type": "double" },
-	{ "name": "basis", "type": "double" },
-	{ "name": "basis_rate", "type": "double" }
-]
+  "name": "BasisTick",
+  "type": "comp",
+  "values": [
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "index_price",
+      "type": "double"
+    },
+    {
+      "name": "contract_price",
+      "type": "double"
+    },
+    {
+      "name": "basis",
+      "type": "double"
+    },
+    {
+      "name": "basis_rate",
+      "type": "double"
+    }
+  ]
 }

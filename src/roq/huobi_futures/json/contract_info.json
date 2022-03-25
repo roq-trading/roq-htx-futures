@@ -1,9 +1,18 @@
 {
-"name": "ContractInfo",
-"type": "comp",
-"values": [
-	{ "name": "status", "type": "std::string_view" },
-	{ "name": "data", "type": "std::span<ContractInfoItem>" },
-	{ "name": "ts", "type": "std::chrono::milliseconds" }
-]
+  "name": "ContractInfo",
+  "type": "comp",
+  "values": [
+    {
+      "name": "status",
+      "type": "std::string_view"
+    },
+    {
+      "name": "data",
+      "type": "std::span<ContractInfoItem>"
+    },
+    {
+      "name": "ts",
+      "type": "std::chrono::milliseconds"
+    }
+  ]
 }

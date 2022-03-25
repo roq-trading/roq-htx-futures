@@ -1,8 +1,12 @@
 {
-"name": "Status",
-"type": "enum",
-"values": [
-	{ "name": "ok" },
-	{ "name": "error" }
-]
+  "name": "Status",
+  "type": "enum",
+  "values": [
+    {
+      "name": "ok"
+    },
+    {
+      "name": "error"
+    }
+  ]
 }

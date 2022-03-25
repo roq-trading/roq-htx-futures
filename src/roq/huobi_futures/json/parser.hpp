@@ -40,10 +40,7 @@ struct Parser final {
   };
 
   static bool dispatch(
-      Handler &,
-      const std::string_view &message,
-      core::json::Buffer &buffer,
-      const TraceInfo &);
+      Handler &, const std::string_view &message, core::json::Buffer &buffer, const TraceInfo &);
 };
 
 }  // namespace json
