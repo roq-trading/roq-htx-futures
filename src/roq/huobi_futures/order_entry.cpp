@@ -21,7 +21,7 @@ namespace huobi_futures {
 
 namespace {
 const auto NAME = "om"sv;
-const auto SUPPORTS = Mask{
+const Mask<SupportType> SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
     SupportType::CREATE_ORDER,
@@ -179,7 +179,7 @@ void OrderEntry::operator()(ConnectionStatus status) {
     StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = security_.get_account(),
-        .supports = SUPPORTS.get(),
+        .supports = SUPPORTS,
         .status = status_,
         .type = StreamType::REST,
         .priority = Priority::PRIMARY,

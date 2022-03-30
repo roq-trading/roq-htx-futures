@@ -50,7 +50,7 @@ void Config::dispatch(server::Config::Handler &handler) const {
     handler(iter.second);
   for (auto &user : users)
     handler(user);
-  server::Settings settings{
+  GatewaySettings gateway_settings{
       .supports{
           SupportType::REFERENCE_DATA,
           SupportType::MARKET_STATUS,
@@ -72,7 +72,7 @@ void Config::dispatch(server::Config::Handler &handler) const {
       .oms_download_has_routing_id = {},
       .oms_request_id_type = RequestIdType::BASE64,
   };
-  handler(settings);
+  handler(gateway_settings);
   for (auto &iter : rate_limits)
     handler(iter.second);
 }

@@ -26,7 +26,7 @@ namespace huobi_futures {
 
 namespace {
 const auto NAME = "ws"sv;
-const auto SUPPORTS = Mask{
+const Mask<SupportType> SUPPORTS{
     SupportType::STATISTICS,
 };
 
@@ -179,7 +179,7 @@ void WebSocket::operator()(ConnectionStatus status) {
     StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
-        .supports = SUPPORTS.get(),
+        .supports = SUPPORTS,
         .status = status_,
         .type = StreamType::WEB_SOCKET,
         .priority = Priority::PRIMARY,
