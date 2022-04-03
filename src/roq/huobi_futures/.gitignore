@@ -2,5 +2,3 @@
 roq-huobi-futures
 order_entry_state.hpp
 rest_state.hpp
-order_entry_state.cpp
-rest_state.cpp
