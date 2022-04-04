@@ -18,7 +18,7 @@ namespace huobi_futures {
 
 namespace {
 const auto NAME = "dc"sv;
-const Mask<SupportType> SUPPORTS{
+const Mask SUPPORTS{
     SupportType::FUNDS,
 };
 
