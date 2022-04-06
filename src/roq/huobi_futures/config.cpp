@@ -24,7 +24,7 @@ const Account &Config::get_master_account() const {
 }
 
 bool Config::is_master_account(const Account &account) const {
-  return utils::compare(account, master_account_) == 0;
+  return account == master_account_;
 }
 
 const std::string &Config::get_api_key(const Account &account) const {
