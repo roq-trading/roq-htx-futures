@@ -30,33 +30,35 @@ bool Parser2::dispatch(
     const TraceInfo &trace_info) {
   auto frame = core::json::Parser::create<json::Frame2>(message, buffer);
   switch (frame.op) {
-    case Operator::UNDEFINED:
-    case Operator::UNKNOWN:
+    using enum Operator::type_t;
+    case UNDEFINED:
+    case UNKNOWN:
       break;
-    case Operator::PING: {
+    case PING: {
       Ping ping{
           .timestamp = frame.ts,
       };
       create_trace_and_dispatch(handler, trace_info, ping);
       return true;
     }
-    case Operator::CLOSE: {
+    case CLOSE: {
       Close close{
           .timestamp = frame.ts,
       };
       create_trace_and_dispatch(handler, trace_info, close);
       return true;
     }
-    case Operator::SUB:
+    case SUB:
       return true;
-    case Operator::NOTIFY: {
+    case NOTIFY: {
       auto topic = extract_topic(frame.topic);
       switch (topic) {
-        case Topic2::UNDEFINED:
+        using enum Topic2::type_t;
+        case UNDEFINED:
           break;
-        case Topic2::UNKNOWN:
+        case UNKNOWN:
           break;
-        case Topic2::FUNDING_RATE: {
+        case FUNDING_RATE: {
           auto funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
           create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;

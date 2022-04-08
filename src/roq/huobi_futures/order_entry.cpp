@@ -191,10 +191,11 @@ void OrderEntry::operator()(ConnectionStatus status) {
 
 uint32_t OrderEntry::download(OrderEntryState state) {
   switch (state) {
-    case OrderEntryState::UNDEFINED:
+    using enum OrderEntryState;
+    case UNDEFINED:
       assert(false);
       break;
-    case OrderEntryState::DONE:
+    case DONE:
       (*this)(ConnectionStatus::READY);
       return {};
   }

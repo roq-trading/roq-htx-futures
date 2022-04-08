@@ -68,13 +68,14 @@ inline std::string_view extract_topic(const std::string_view &channel) {
 
 inline roq::Side map(json::Side side) {
   switch (side) {
-    case json::Side::UNDEFINED:
+    using enum json::Side::type_t;
+    case UNDEFINED:
       break;
-    case json::Side::UNKNOWN:
+    case UNKNOWN:
       break;
-    case json::Side::BUY:
+    case BUY:
       return roq::Side::BUY;
-    case json::Side::SELL:
+    case SELL:
       return roq::Side::SELL;
   }
   return roq::Side::UNDEFINED;
@@ -82,11 +83,12 @@ inline roq::Side map(json::Side side) {
 
 inline json::Side map(roq::Side side) {
   switch (side) {
-    case roq::Side::UNDEFINED:
+    using enum roq::Side;
+    case UNDEFINED:
       break;
-    case roq::Side::BUY:
+    case BUY:
       return json::Side::BUY;
-    case roq::Side::SELL:
+    case SELL:
       return json::Side::SELL;
   }
   return json::Side::UNDEFINED;
