@@ -9,8 +9,6 @@
 
 #include "roq/core/binascii/hex.hpp"
 
-#include "roq/core/crypto/hmac.hpp"
-
 using namespace std::literals;
 
 namespace roq {
