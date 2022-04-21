@@ -105,7 +105,7 @@ void Rest::operator()(ConnectionStatus status) {
         .supports = SUPPORTS,
         .transport = Transport::TCP,
         .protocol = Protocol::HTTP,
-        .encoding = Encoding::JSON,
+        .encoding = {Encoding::JSON},
         .priority = Priority::PRIMARY,
         .connection_status = status_,
     };
