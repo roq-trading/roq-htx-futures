@@ -35,14 +35,14 @@ bool Parser2::dispatch(
     case UNKNOWN:
       break;
     case PING: {
-      Ping ping{
+      const Ping ping{
           .timestamp = frame.ts,
       };
       create_trace_and_dispatch(handler, trace_info, ping);
       return true;
     }
     case CLOSE: {
-      Close close{
+      const Close close{
           .timestamp = frame.ts,
       };
       create_trace_and_dispatch(handler, trace_info, close);
@@ -59,7 +59,7 @@ bool Parser2::dispatch(
         case UNKNOWN:
           break;
         case FUNDING_RATE: {
-          auto funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
+          const auto funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
           create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;
         }

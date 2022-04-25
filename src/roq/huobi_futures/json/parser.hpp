@@ -26,21 +26,21 @@ namespace json {
 
 struct Parser final {
   struct Handler {
-    virtual void operator()(const Trace<Ping> &) = 0;
-    virtual void operator()(const Trace<Error> &) = 0;
-    virtual void operator()(const Trace<Subbed> &) = 0;
-    virtual void operator()(const Trace<BBO> &) = 0;
-    virtual void operator()(const Trace<Depth> &) = 0;
-    virtual void operator()(const Trace<Trade> &) = 0;
-    virtual void operator()(const Trace<Detail> &) = 0;
-    virtual void operator()(const Trace<EstimatedRate> &) = 0;
-    virtual void operator()(const Trace<PremiumIndex> &) = 0;
-    virtual void operator()(const Trace<Basis> &) = 0;
-    virtual void operator()(const Trace<Index> &) = 0;
+    virtual void operator()(const Trace<Ping const> &) = 0;
+    virtual void operator()(const Trace<Error const> &) = 0;
+    virtual void operator()(const Trace<Subbed const> &) = 0;
+    virtual void operator()(const Trace<BBO const> &) = 0;
+    virtual void operator()(const Trace<Depth const> &) = 0;
+    virtual void operator()(const Trace<Trade const> &) = 0;
+    virtual void operator()(const Trace<Detail const> &) = 0;
+    virtual void operator()(const Trace<EstimatedRate const> &) = 0;
+    virtual void operator()(const Trace<PremiumIndex const> &) = 0;
+    virtual void operator()(const Trace<Basis const> &) = 0;
+    virtual void operator()(const Trace<Index const> &) = 0;
   };
 
   static bool dispatch(
-      Handler &, const std::string_view &message, core::json::Buffer &buffer, const TraceInfo &);
+      Handler &, const std::string_view &message, core::json::Buffer &, const TraceInfo &);
 };
 
 }  // namespace json

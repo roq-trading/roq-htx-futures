@@ -102,7 +102,7 @@ void DropCopy::operator()(const core::web::ClientSocket::Close &) {
 
 void DropCopy::operator()(const core::web::ClientSocket::Latency &latency) {
   auto trace_info = server::create_trace_info();
-  ExternalLatency external_latency{
+  const ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = security_.get_account(),
       .latency = latency.sample,
@@ -131,7 +131,7 @@ void DropCopy::operator()(const core::web::ClientSocket::Binary &binary) {
 void DropCopy::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    StreamStatus stream_status{
+    const StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = security_.get_account(),
         .supports = SUPPORTS,
@@ -170,14 +170,14 @@ void DropCopy::parse(const std::string_view &message) {
   });
 }
 
-void DropCopy::operator()(const Trace<json::Ping> &event) {
+void DropCopy::operator()(const Trace<json::Ping const> &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void DropCopy::operator()(const Trace<json::Close> &event) {
+void DropCopy::operator()(const Trace<json::Close const> &event) {
   profile_.close([&]() {
     auto &[trace_info, close] = event;
     log::warn("trace_info={}, close={}"sv, trace_info, close);
@@ -185,7 +185,7 @@ void DropCopy::operator()(const Trace<json::Close> &event) {
   });
 }
 
-void DropCopy::operator()(const Trace<json::FundingRate> &) {
+void DropCopy::operator()(const Trace<json::FundingRate const> &) {
   log::fatal("Unexpected"sv);
 }
 

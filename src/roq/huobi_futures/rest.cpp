@@ -99,7 +99,7 @@ void Rest::operator()(metrics::Writer &writer) {
 void Rest::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    StreamStatus stream_status{
+    const StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -132,7 +132,7 @@ void Rest::operator()(const core::web::Client::Disconnected &) {
 
 void Rest::operator()(const core::web::Client::Latency &latency) {
   auto trace_info = server::create_trace_info();
-  ExternalLatency external_latency{
+  const ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -186,7 +186,7 @@ void Rest::get_contract_info() {
   });
 }
 
-void Rest::get_contract_info_ack(const Trace<core::web::Response> &event, uint32_t sequence) {
+void Rest::get_contract_info_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
   profile_.contract_info_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CONTRACT_INFO;
@@ -199,7 +199,7 @@ void Rest::get_contract_info_ack(const Trace<core::web::Response> &event, uint32
       }
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
-      auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
+      const auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
       Trace event(trace_info, contract_info);
       (*this)(event);
       download_.check(state);
@@ -210,7 +210,7 @@ void Rest::get_contract_info_ack(const Trace<core::web::Response> &event, uint32
   });
 }
 
-void Rest::operator()(const Trace<json::ContractInfo> &event) {
+void Rest::operator()(const Trace<json::ContractInfo const> &event) {
   auto &[trace_info, contract_info] = event;
   log::info<4>("contract_info={}"sv, contract_info);
   std::vector<Symbol> symbols;

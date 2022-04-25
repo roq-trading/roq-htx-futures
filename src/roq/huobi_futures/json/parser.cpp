@@ -34,42 +34,44 @@ bool Parser::dispatch(
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
+            const auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case DEPTH: {
-            auto depth = core::json::Parser::create<json::Depth>(message, buffer);
+            const auto depth = core::json::Parser::create<json::Depth>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, depth);
             return true;
           }
           case TRADE: {
-            auto trade = core::json::Parser::create<json::Trade>(message, buffer);
+            const auto trade = core::json::Parser::create<json::Trade>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            auto detail = core::json::Parser::create<json::Detail>(message, buffer);
+            const auto detail = core::json::Parser::create<json::Detail>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case ESTIMATED_RATE: {
-            auto estimated_rate = core::json::Parser::create<json::EstimatedRate>(message, buffer);
+            const auto estimated_rate =
+                core::json::Parser::create<json::EstimatedRate>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, estimated_rate);
             return true;
           }
           case PREMIUM_INDEX: {
-            auto premium_index = core::json::Parser::create<json::PremiumIndex>(message, buffer);
+            const auto premium_index =
+                core::json::Parser::create<json::PremiumIndex>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, premium_index);
             return true;
           }
           case BASIS: {
-            auto basis = core::json::Parser::create<json::Basis>(message, buffer);
+            const auto basis = core::json::Parser::create<json::Basis>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, basis);
             return true;
           }
           case INDEX: {
-            auto index = core::json::Parser::create<json::Index>(message, buffer);
+            const auto index = core::json::Parser::create<json::Index>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, index);
             return true;
           }
@@ -82,7 +84,7 @@ bool Parser::dispatch(
         break;
       case OK:
         if (!std::empty(frame.subbed)) {
-          Subbed subbed{
+          const Subbed subbed{
               .id = frame.id,
               .subbed = frame.subbed,
               .ts = frame.ts,
@@ -95,7 +97,7 @@ bool Parser::dispatch(
         }
         break;
       case ERROR:
-        Error error{
+        const Error error{
             .id = frame.id,
             .err_code = frame.err_code,
             .err_msg = frame.err_msg,
@@ -105,7 +107,7 @@ bool Parser::dispatch(
         return true;
     }
   } else {
-    Ping ping{
+    const Ping ping{
         .timestamp = frame.ping,
     };
     create_trace_and_dispatch(handler, trace_info, ping);

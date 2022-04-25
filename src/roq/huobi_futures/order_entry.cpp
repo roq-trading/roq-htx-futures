@@ -164,7 +164,7 @@ void OrderEntry::operator()(const core::web::Client::Disconnected &) {
 
 void OrderEntry::operator()(const core::web::Client::Latency &latency) {
   auto trace_info = server::create_trace_info();
-  ExternalLatency external_latency{
+  const ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = security_.get_account(),
       .latency = latency.sample,
@@ -176,7 +176,7 @@ void OrderEntry::operator()(const core::web::Client::Latency &latency) {
 void OrderEntry::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    StreamStatus stream_status{
+    const StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = security_.get_account(),
         .supports = SUPPORTS,

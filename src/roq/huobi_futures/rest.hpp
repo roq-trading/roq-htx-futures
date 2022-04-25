@@ -36,10 +36,10 @@ class Rest final : public core::web::Client::Handler {
   };
 
   struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<ReferenceData> const &, bool is_last) = 0;
-    virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
+    virtual void operator()(Trace<StreamStatus const> const &) = 0;
+    virtual void operator()(Trace<ExternalLatency const> const &) = 0;
+    virtual void operator()(Trace<ReferenceData const> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
     // cross-communication
     virtual void operator()(SymbolsUpdate &) = 0;
   };
@@ -67,8 +67,8 @@ class Rest final : public core::web::Client::Handler {
   uint32_t download(RestState);
 
   void get_contract_info();
-  void get_contract_info_ack(const Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const Trace<json::ContractInfo> &);
+  void get_contract_info_ack(const Trace<core::web::Response const> &, uint32_t sequence);
+  void operator()(const Trace<json::ContractInfo const> &);
 
  private:
   Handler &handler_;
