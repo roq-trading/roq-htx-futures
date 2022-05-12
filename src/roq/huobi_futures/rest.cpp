@@ -242,9 +242,9 @@ void Rest::operator()(const Trace<json::ContractInfo const> &event) {
         .commission_currency = {},
         .tick_size = item.price_tick,
         .multiplier = item.contract_size,
-        .min_trade_vol = NaN,
+        .min_trade_vol = 1,  // lots
         .max_trade_vol = NaN,
-        .trade_vol_step_size = NaN,
+        .trade_vol_step_size = 1,  // lots
         .option_type = {},
         .strike_currency = {},
         .strike_price = NaN,
