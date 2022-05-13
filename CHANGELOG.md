@@ -4,6 +4,8 @@ All notable changes will be documented in this file.
 
 ## Head
 
+## 0.8.4 &ndash; 2022-05-14
+
 ### Changed
 
 * Extend ReferenceData with `min_trade_vol` and `trade_vol_step_size` (#216)
