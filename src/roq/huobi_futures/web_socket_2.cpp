@@ -18,13 +18,13 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-const auto NAME = "ws2"sv;
+auto const NAME = "ws2"sv;
 const Mask SUPPORTS{
     SupportType::STATISTICS,
 };
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+  explicit create_metrics(std::string_view const &group, std::string_view const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
@@ -42,11 +42,9 @@ auto create_connection(auto &handler, auto &context) {
 }
 }  // namespace
 
-WebSocket2::WebSocket2(
-    Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
-      index_(index), connection_(create_connection(*this, context)),
-      decode_buffer_(Flags::decode_buffer_size()),
+WebSocket2::WebSocket2(Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)), index_(index),
+      connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -62,15 +60,15 @@ WebSocket2::WebSocket2(
       shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
 }
 
-void WebSocket2::operator()(const Event<Start> &) {
+void WebSocket2::operator()(Event<Start> const &) {
   connection_.start();
 }
 
-void WebSocket2::operator()(const Event<Stop> &) {
+void WebSocket2::operator()(Event<Stop> const &) {
   connection_.stop();
 }
 
-void WebSocket2::operator()(const Event<Timer> &event) {
+void WebSocket2::operator()(Event<Timer> const &event) {
   connection_.refresh(event.value.now);
 }
 
@@ -90,23 +88,23 @@ void WebSocket2::subscribe(size_t start_from) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Connected &) {
+void WebSocket2::operator()(core::web::ClientSocket::Connected const &) {
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Disconnected &) {
+void WebSocket2::operator()(core::web::ClientSocket::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Ready &) {
+void WebSocket2::operator()(core::web::ClientSocket::Ready const &) {
   (*this)(ConnectionStatus::READY);
   subscribe();
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Close &) {
+void WebSocket2::operator()(core::web::ClientSocket::Close const &) {
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Latency &latency) {
+void WebSocket2::operator()(core::web::ClientSocket::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -117,14 +115,13 @@ void WebSocket2::operator()(const core::web::ClientSocket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Text &) {
+void WebSocket2::operator()(core::web::ClientSocket::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(const core::web::ClientSocket::Binary &binary) {
+void WebSocket2::operator()(core::web::ClientSocket::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
-        std::string_view message{
-            reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
         parse(message);
       })) {
@@ -151,7 +148,7 @@ void WebSocket2::operator()(ConnectionStatus status) {
   }
 }
 
-void WebSocket2::subscribe(const std::span<Symbol const> &symbols) {
+void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
   if (std::empty(symbols))
     return;
   if (shared_.api.has_funding_rate)
@@ -159,9 +156,7 @@ void WebSocket2::subscribe(const std::span<Symbol const> &symbols) {
 }
 
 void WebSocket2::subscribe(
-    const std::span<Symbol const> &symbols,
-    const std::string_view &source,
-    const std::string_view &theme) {
+    std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
     // auto id = ++request_id_;
@@ -189,7 +184,7 @@ void WebSocket2::send_pong(std::chrono::milliseconds timestamp) {
   connection_.send_text(message);
 }
 
-void WebSocket2::parse(const std::string_view &message) {
+void WebSocket2::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       auto trace_info = server::create_trace_info();
@@ -202,7 +197,7 @@ void WebSocket2::parse(const std::string_view &message) {
   });
 }
 
-void WebSocket2::operator()(const Trace<json::Ping const> &event) {
+void WebSocket2::operator()(Trace<json::Ping const> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::info<4>("trace_info={}, ping={}"sv, trace_info, ping);
@@ -210,7 +205,7 @@ void WebSocket2::operator()(const Trace<json::Ping const> &event) {
   });
 }
 
-void WebSocket2::operator()(const Trace<json::Close const> &event) {
+void WebSocket2::operator()(Trace<json::Close const> const &event) {
   profile_.close([&]() {
     auto &[trace_info, close] = event;
     log::warn("trace_info={}, close={}"sv, trace_info, close);
@@ -218,7 +213,7 @@ void WebSocket2::operator()(const Trace<json::Close const> &event) {
   });
 }
 
-void WebSocket2::operator()(const Trace<json::FundingRate const> &event) {
+void WebSocket2::operator()(Trace<json::FundingRate const> const &event) {
   profile_.funding_rate([&]() {
     auto &[trace_info, funding_rate] = event;
     log::info<3>("trace_info={}, funding_rate={}"sv, trace_info, funding_rate);

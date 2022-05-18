@@ -19,11 +19,9 @@ struct Shared final {
   explicit Shared(server::Dispatcher &);
 
   Shared(Shared &&) = default;
-  Shared(const Shared &) = delete;
+  Shared(Shared const &) = delete;
 
-  auto discard_symbol(const std::string_view &name) const {
-    return dispatcher_.discard_symbol(name);
-  }
+  auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
 
   template <typename... Args>
   auto update_order(Args &&...args) {

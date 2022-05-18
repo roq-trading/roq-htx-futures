@@ -15,10 +15,10 @@ namespace tools {
 
 class Hasher final {
  public:
-  explicit Hasher(const std::string_view &secret);
+  explicit Hasher(std::string_view const &secret);
 
   Hasher(Hasher &&) = delete;
-  Hasher(const Hasher &) = delete;
+  Hasher(Hasher const &) = delete;
 
   std::pair<std::string, std::string> create_signature(std::chrono::nanoseconds now);
 

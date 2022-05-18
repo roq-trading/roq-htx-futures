@@ -47,28 +47,28 @@ class Rest final : public core::web::Client::Handler {
   Rest(Handler &, core::io::Context &context, uint16_t stream_id, Shared &);
 
   Rest(Rest &&) = delete;
-  Rest(const Rest &) = delete;
+  Rest(Rest const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 
-  void operator()(const Event<Start> &);
-  void operator()(const Event<Stop> &);
-  void operator()(const Event<Timer> &);
+  void operator()(Event<Start> const &);
+  void operator()(Event<Stop> const &);
+  void operator()(Event<Timer> const &);
 
   void operator()(metrics::Writer &);
 
  protected:
-  void operator()(const core::web::Client::Connected &) override;
-  void operator()(const core::web::Client::Disconnected &) override;
-  void operator()(const core::web::Client::Latency &) override;
+  void operator()(core::web::Client::Connected const &) override;
+  void operator()(core::web::Client::Disconnected const &) override;
+  void operator()(core::web::Client::Latency const &) override;
 
   void operator()(ConnectionStatus);
 
   uint32_t download(RestState);
 
   void get_contract_info();
-  void get_contract_info_ack(const Trace<core::web::Response const> &, uint32_t sequence);
-  void operator()(const Trace<json::ContractInfo const> &);
+  void get_contract_info_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void operator()(Trace<json::ContractInfo const> const &);
 
  private:
   Handler &handler_;

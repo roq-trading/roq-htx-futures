@@ -15,12 +15,11 @@ namespace roq {
 namespace huobi_futures {
 namespace tools {
 
-Hasher::Hasher(const std::string_view &secret) : hmac_(secret) {
+Hasher::Hasher(std::string_view const &secret) : hmac_(secret) {
 }
 
 std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanoseconds now) {
-  auto timestamp = fmt::format(
-      "timestamp={}"sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
+  auto timestamp = fmt::format("timestamp={}"sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
   hmac_.clear();
   hmac_.update(timestamp);
   std::array<char, 32> buffer;

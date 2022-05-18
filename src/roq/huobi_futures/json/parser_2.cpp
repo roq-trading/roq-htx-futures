@@ -16,7 +16,7 @@ namespace huobi_futures {
 namespace json {
 
 namespace {
-auto extract_topic(const std::string_view &topic) {
+auto extract_topic(std::string_view const &topic) {
   auto separator = topic.find_last_of('.');
   auto name = topic.substr(separator == topic.npos ? 0 : (separator + 1));
   return Topic2{name};
@@ -25,9 +25,9 @@ auto extract_topic(const std::string_view &topic) {
 
 bool Parser2::dispatch(
     Parser2::Handler &handler,
-    const std::string_view &message,
+    std::string_view const &message,
     core::json::Buffer &buffer,
-    const TraceInfo &trace_info) {
+    TraceInfo const &trace_info) {
   auto frame = core::json::Parser::create<json::Frame2>(message, buffer);
   switch (frame.op) {
     using enum Operator::type_t;
@@ -59,7 +59,7 @@ bool Parser2::dispatch(
         case UNKNOWN:
           break;
         case FUNDING_RATE: {
-          const auto funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
+          auto const funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
           create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;
         }

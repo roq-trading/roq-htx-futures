@@ -16,10 +16,10 @@ namespace huobi_futures {
 
 class Security final {
  public:
-  Security(const Config &, const std::string_view &account);
+  Security(Config const &, std::string_view const &account);
 
   Security(Security &&) = delete;
-  Security(const Security &) = delete;
+  Security(Security const &) = delete;
 
   std::string_view get_account() const { return account_; }
   std::string_view get_api_key() const { return key_; }

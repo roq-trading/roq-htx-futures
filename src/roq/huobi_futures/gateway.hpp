@@ -34,43 +34,42 @@ class Gateway final : public server::Handler,
                       public WebSocket::Handler,
                       public WebSocket2::Handler {
  public:
-  Gateway(server::Dispatcher &, const Config &);
+  Gateway(server::Dispatcher &, Config const &);
 
  protected:
-  void operator()(const Event<Start> &) override;
-  void operator()(const Event<Stop> &) override;
-  void operator()(const Event<Timer> &) override;
-  void operator()(const Event<Connected> &) override;
-  void operator()(const Event<Disconnected> &) override;
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
+  void operator()(Event<Connected> const &) override;
+  void operator()(Event<Disconnected> const &) override;
 
+  uint16_t operator()(Event<CreateOrder> const &, oms::Order const &, std::string_view const &request_id) override;
   uint16_t operator()(
-      const Event<CreateOrder> &, const oms::Order &, const std::string_view &request_id) override;
+      Event<ModifyOrder> const &,
+      oms::Order const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) override;
   uint16_t operator()(
-      const Event<ModifyOrder> &,
-      const oms::Order &,
-      const std::string_view &request_id,
-      const std::string_view &previous_request_id) override;
-  uint16_t operator()(
-      const Event<CancelOrder> &,
-      const oms::Order &,
-      const std::string_view &request_id,
-      const std::string_view &previous_request_id) override;
+      Event<CancelOrder> const &,
+      oms::Order const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) override;
 
-  uint16_t operator()(const Event<CancelAllOrders> &, const std::string_view &request_id) override;
+  uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) override;
 
   void operator()(metrics::Writer &) override;
 
   // many
 
-  void operator()(const Trace<StreamStatus const> &) override;
-  void operator()(const Trace<ExternalLatency const> &) override;
-  void operator()(const Trace<ReferenceData const> &, bool is_last) override;
-  void operator()(const Trace<MarketStatus const> &, bool is_last) override;
-  void operator()(const Trace<TopOfBook const> &, bool is_last) override;
-  void operator()(const Trace<MarketByPriceUpdate const> &, bool is_last, bool refresh) override;
-  void operator()(const Trace<TradeSummary const> &, bool is_last) override;
-  void operator()(const Trace<StatisticsUpdate const> &, bool is_last) override;
-  void operator()(const Trace<FundsUpdate const> &, bool is_last) override;
+  void operator()(Trace<StreamStatus const> const &) override;
+  void operator()(Trace<ExternalLatency const> const &) override;
+  void operator()(Trace<ReferenceData const> const &, bool is_last) override;
+  void operator()(Trace<MarketStatus const> const &, bool is_last) override;
+  void operator()(Trace<TopOfBook const> const &, bool is_last) override;
+  void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) override;
+  void operator()(Trace<TradeSummary const> const &, bool is_last) override;
+  void operator()(Trace<StatisticsUpdate const> const &, bool is_last) override;
+  void operator()(Trace<FundsUpdate const> const &, bool is_last) override;
 
   void operator()(Rest::SymbolsUpdate &) override;
 
@@ -78,7 +77,7 @@ class Gateway final : public server::Handler,
 
   // utilities
 
-  OrderEntry &get_order_entry(const std::string_view &account);
+  OrderEntry &get_order_entry(std::string_view const &account);
 
  private:
   server::Dispatcher &dispatcher_;

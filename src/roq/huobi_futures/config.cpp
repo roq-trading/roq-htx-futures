@@ -15,19 +15,19 @@ using namespace std::literals;
 namespace roq {
 namespace huobi_futures {
 
-Config::Config(const std::string_view &config_path, const std::string_view &secrets_path) {
+Config::Config(std::string_view const &config_path, std::string_view const &secrets_path) {
   server::ConfigReader::parse_file(*this, config_path, secrets_path);
 }
 
-const Account &Config::get_master_account() const {
+Account const &Config::get_master_account() const {
   return master_account_;
 }
 
-bool Config::is_master_account(const Account &account) const {
+bool Config::is_master_account(Account const &account) const {
   return account == master_account_;
 }
 
-const std::string &Config::get_api_key(const Account &account) const {
+std::string const &Config::get_api_key(Account const &account) const {
   auto iter = accounts.find(account);
   if (iter == std::end(accounts)) {
     log::fatal(R"(Unknown account="{}")"sv, account);
@@ -35,7 +35,7 @@ const std::string &Config::get_api_key(const Account &account) const {
   return (*iter).second.login;
 }
 
-const std::string &Config::get_secret(const Account &account) const {
+std::string const &Config::get_secret(Account const &account) const {
   auto iter = accounts.find(account);
   if (iter == std::end(accounts)) {
     log::fatal(R"(Unknown account="{}")"sv, account);
@@ -95,7 +95,7 @@ void Config::operator()(server::RateLimit &&rate_limit) {
   rate_limits.emplace(rate_limit.name, std::move(rate_limit));
 }
 
-void Config::operator()(const std::string_view &key, toml::node &) {
+void Config::operator()(std::string_view const &key, toml::node &) {
   log::warn(R"(Unexpected: key="{}")"sv, key);
 }
 

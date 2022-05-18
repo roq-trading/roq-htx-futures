@@ -20,7 +20,7 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-const auto NAME = "om"sv;
+auto const NAME = "om"sv;
 const Mask SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
@@ -30,10 +30,10 @@ const Mask SUPPORTS{
     SupportType::FUNDS,
 };
 
-const auto ALLOW_PIPELINING = true;
+auto const ALLOW_PIPELINING = true;
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+  explicit create_metrics(std::string_view const &group, std::string_view const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
@@ -57,11 +57,7 @@ auto create_connection(auto &handler, auto &context) {
 }  // namespace
 
 OrderEntry::OrderEntry(
-    Handler &handler,
-    core::io::Context &context,
-    uint16_t stream_id,
-    Security &security,
-    Shared &shared)
+    Handler &handler, core::io::Context &context, uint16_t stream_id, Security &security, Shared &shared)
     : handler_(handler), stream_id_(stream_id),
       name_(fmt::format("{}:{}:{}"sv, stream_id_, NAME, security.get_account())),
       connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
@@ -87,15 +83,15 @@ OrderEntry::OrderEntry(
       download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
 }
 
-void OrderEntry::operator()(const Event<Start> &) {
+void OrderEntry::operator()(Event<Start> const &) {
   connection_.start();
 }
 
-void OrderEntry::operator()(const Event<Stop> &) {
+void OrderEntry::operator()(Event<Stop> const &) {
   connection_.stop();
 }
 
-void OrderEntry::operator()(const Event<Timer> &event) {
+void OrderEntry::operator()(Event<Timer> const &event) {
   connection_.refresh(event.value.now);
 }
 
@@ -119,34 +115,31 @@ void OrderEntry::operator()(metrics::Writer &writer) {
 }
 
 uint16_t OrderEntry::operator()(
-    const Event<CreateOrder> &,
-    const oms::Order &,
-    [[maybe_unused]] const std::string_view &request_id) {
+    Event<CreateOrder> const &, oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
   throw oms::NotSupported("not supported"sv);
 }
 
 uint16_t OrderEntry::operator()(
-    const Event<ModifyOrder> &,
-    const oms::Order &,
-    [[maybe_unused]] const std::string_view &request_id,
-    [[maybe_unused]] const std::string_view &previous_request_id) {
+    Event<ModifyOrder> const &,
+    oms::Order const &,
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
   throw oms::NotSupported("not supported"sv);
 }
 
 uint16_t OrderEntry::operator()(
-    const Event<CancelOrder> &,
-    const oms::Order &,
-    [[maybe_unused]] const std::string_view &request_id,
-    [[maybe_unused]] const std::string_view &previous_request_id) {
+    Event<CancelOrder> const &,
+    oms::Order const &,
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
   throw oms::NotSupported("not supported"sv);
 }
 
-uint16_t OrderEntry::operator()(
-    const Event<CancelAllOrders> &, [[maybe_unused]] const std::string_view &request_id) {
+uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &, [[maybe_unused]] std::string_view const &request_id) {
   throw oms::NotSupported("not supported"sv);
 }
 
-void OrderEntry::operator()(const core::web::Client::Connected &) {
+void OrderEntry::operator()(core::web::Client::Connected const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
@@ -155,14 +148,14 @@ void OrderEntry::operator()(const core::web::Client::Connected &) {
   }
 }
 
-void OrderEntry::operator()(const core::web::Client::Disconnected &) {
+void OrderEntry::operator()(core::web::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
   if (!download_.downloading())
     download_.reset();
 }
 
-void OrderEntry::operator()(const core::web::Client::Latency &latency) {
+void OrderEntry::operator()(core::web::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,

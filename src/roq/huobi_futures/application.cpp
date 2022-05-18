@@ -16,8 +16,7 @@ int Application::main(int, char **) {
   Config config(Flags::config_file(), Flags::secrets_file());
   log::info<1>("config={}"sv, config);
   log::info("Starting the gateway"sv);
-  roq::server::Trading<Gateway>(ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER, Flags::api(), config)
-      .dispatch();
+  roq::server::Trading<Gateway>(ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER, Flags::api(), config).dispatch();
   return EXIT_SUCCESS;
 }
 

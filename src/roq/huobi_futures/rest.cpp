@@ -24,7 +24,7 @@ namespace roq {
 namespace huobi_futures {
 
 namespace {
-const auto NAME = "rest"sv;
+auto const NAME = "rest"sv;
 
 const Mask SUPPORTS{
     SupportType::REFERENCE_DATA,
@@ -32,7 +32,7 @@ const Mask SUPPORTS{
 };
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+  explicit create_metrics(std::string_view const &group, std::string_view const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
@@ -68,19 +68,18 @@ Rest::Rest(Handler &handler, core::io::Context &context, uint16_t stream_id, Sha
       latency_{
           .ping = create_metrics(name_, "ping"sv),
       },
-      shared_(shared),
-      download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
+      shared_(shared), download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
 }
 
-void Rest::operator()(const Event<Start> &) {
+void Rest::operator()(Event<Start> const &) {
   connection_.start();
 }
 
-void Rest::operator()(const Event<Stop> &) {
+void Rest::operator()(Event<Stop> const &) {
   connection_.stop();
 }
 
-void Rest::operator()(const Event<Timer> &event) {
+void Rest::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   connection_.refresh(now);
 }
@@ -114,7 +113,7 @@ void Rest::operator()(ConnectionStatus status) {
   }
 }
 
-void Rest::operator()(const core::web::Client::Connected &) {
+void Rest::operator()(core::web::Client::Connected const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
@@ -123,14 +122,14 @@ void Rest::operator()(const core::web::Client::Connected &) {
   }
 }
 
-void Rest::operator()(const core::web::Client::Disconnected &) {
+void Rest::operator()(core::web::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
   if (!download_.downloading())
     download_.reset();
 }
 
-void Rest::operator()(const core::web::Client::Latency &latency) {
+void Rest::operator()(core::web::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -175,18 +174,15 @@ void Rest::get_contract_info() {
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_(
-        "contract_info"sv,
-        request,
-        [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          auto trace_info = server::create_trace_info();
-          Trace event(trace_info, response);
-          get_contract_info_ack(event, sequence);
-        });
+    connection_("contract_info"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+      auto trace_info = server::create_trace_info();
+      Trace event(trace_info, response);
+      get_contract_info_ack(event, sequence);
+    });
   });
 }
 
-void Rest::get_contract_info_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
+void Rest::get_contract_info_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
   profile_.contract_info_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CONTRACT_INFO;
@@ -210,7 +206,7 @@ void Rest::get_contract_info_ack(const Trace<core::web::Response const> &event, 
   });
 }
 
-void Rest::operator()(const Trace<json::ContractInfo const> &event) {
+void Rest::operator()(Trace<json::ContractInfo const> const &event) {
   auto &[trace_info, contract_info] = event;
   log::info<4>("contract_info={}"sv, contract_info);
   std::vector<Symbol> symbols;
@@ -223,8 +219,7 @@ void Rest::operator()(const Trace<json::ContractInfo const> &event) {
     if (shared_.discard_symbol(symbol))
       continue;
     if (item.contract_status != 1) {
-      log::warn<1>(
-          R"(Dropping pair="{}" due to contract_status={})"sv, item.pair, item.contract_status);
+      log::warn<1>(R"(Dropping pair="{}" due to contract_status={})"sv, item.pair, item.contract_status);
       continue;
     }
     if (all_symbols_.emplace(symbol).second)  // only include new
