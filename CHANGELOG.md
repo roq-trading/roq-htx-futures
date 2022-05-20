@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Fixed
+
+* TradeSummary now reported as number of lots (#220)
+
 ## 0.8.4 &ndash; 2022-05-14
 
 ### Changed

@@ -4,7 +4,7 @@
   "values": [
     {
       "name": "amount",
-      "type": "int64_t"
+      "type": "double"
     },
     {
       "name": "quantity",

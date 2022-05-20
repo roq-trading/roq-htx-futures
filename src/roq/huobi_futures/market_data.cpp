@@ -56,7 +56,7 @@ void emplace(Trade &result, const T &value) {
   new (&result) Trade{
       .side = json::map(value.direction),
       .price = value.price,
-      .quantity = value.quantity,
+      .quantity = value.amount,
       .trade_id = {},
   };
 }
