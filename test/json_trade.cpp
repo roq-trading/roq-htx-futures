@@ -43,7 +43,7 @@ TEST_CASE("json_trade_simple_inverse", "[json_trade]") {
   auto &data = tick.data;
   CHECK(std::size(data) == 1);
   auto &d0 = data[0];
-  CHECK(d0.amount == 18);
+  CHECK(d0.amount == 18_a);
   CHECK(d0.quantity == 0.0360801846022600627634855703315047361_a);
   CHECK(d0.ts == 1639629424028ms);
   CHECK(d0.id == 1503025353300000);
