@@ -1,6 +1,8 @@
 symbols = [
-  "^BTC[0-9]{6}$",
-  "^ETH[0-9]{6}$"
+  "^BTC-USD[A-Z]?$",  # linear + swap
+  "^ETH-USD[A-Z]?$",  # linear + swap
+  "^BTC[0-9]{6}$",    # inverse
+  "^ETH[0-9]{6}$"     # inverse
 ]
 
 [accounts]

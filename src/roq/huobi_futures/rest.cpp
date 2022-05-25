@@ -215,16 +215,12 @@ void Rest::operator()(Trace<json::ContractInfo const> const &event) {
   for (size_t i = 0; i < std::size(contract_info.data); ++i) {
     auto &item = contract_info.data[i];
     log::info<2>("item={}"sv, item);
-    auto symbol = item.contract_code;
-    if (shared_.discard_symbol(symbol))
-      continue;
     if (item.contract_status != 1) {
       log::warn<1>(R"(Dropping pair="{}" due to contract_status={})"sv, item.pair, item.contract_status);
       continue;
     }
-    if (all_symbols_.emplace(symbol).second)  // only include new
-      symbols.emplace_back(symbol);
-    ++counter;
+    auto symbol = item.contract_code;
+    auto discard = shared_.discard_symbol(symbol);
     const ReferenceData reference_data{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
@@ -249,8 +245,14 @@ void Rest::operator()(Trace<json::ContractInfo const> const &event) {
         .settlement_date = utils::safe_cast(item.settlement_time),
         .expiry_datetime = {},
         .expiry_datetime_utc = {},
+        .discard = discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    if (discard)
+      continue;
+    if (all_symbols_.emplace(symbol).second)  // only include new
+      symbols.emplace_back(symbol);
+    ++counter;
   }
   if (!std::empty(symbols)) {
     SymbolsUpdate symbols_update{
