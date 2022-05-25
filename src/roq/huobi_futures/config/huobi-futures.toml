@@ -1,5 +1,7 @@
-#symbols = [ ".*" ]
-symbols = "BTC-USDT"
+symbols = [
+  "^BTC[0-9]{6}$",
+  "^ETH[0-9]{6}$"
+]
 
 #[accounts]
 #
