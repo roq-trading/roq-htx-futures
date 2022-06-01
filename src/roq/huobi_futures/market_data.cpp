@@ -43,7 +43,7 @@ auto create_connection(auto &handler, auto &context) {
   core::web::ClientSocket::Config config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
-      .disconnect_on_idle_timeout = {},
+      .disconnect_on_idle_timeout = server::Flags::net_disconnect_on_idle_timeout(),
       .validate_certificate = server::Flags::net_tls_validate_certificate(),
       .uris = {&uri, 1},
       .query = {},
@@ -298,6 +298,7 @@ void MarketData::operator()(Trace<json::BBO const> const &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
     log::info<3>("bbo={}"sv, bbo);
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(bbo.ch);
     auto &tick = bbo.tick;
     const TopOfBook top_of_book{
@@ -322,6 +323,7 @@ void MarketData::operator()(Trace<json::Depth const> const &event) {
   profile_.depth([&]() {
     auto &[trace_info, depth] = event;
     log::info<3>("depth={}"sv, depth);
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(depth.ch);
     auto &tick = depth.tick;
     auto snapshot = tick.event == json::Event::SNAPSHOT;
@@ -357,6 +359,7 @@ void MarketData::operator()(Trace<json::Trade const> const &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
     log::info<3>("trade={}"sv, trade);
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(trade.ch);
     auto &tick = trade.tick;
     core::back_emplacer trades(shared_.trades);
@@ -377,6 +380,7 @@ void MarketData::operator()(Trace<json::Detail const> const &event) {
   profile_.detail([&]() {
     auto &[trace_info, detail] = event;
     log::info<3>("detail={}"sv, detail);
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(detail.ch);
     auto &tick = detail.tick;
     Statistics statistics[] = {

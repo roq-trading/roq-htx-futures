@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Changed
+
+* Market data support for `--net_disconnect_on_idle_timeout`.
+
 ### Fixed
 
 * TradeSummary now reported as number of lots (#220)
