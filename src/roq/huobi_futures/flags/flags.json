@@ -82,6 +82,13 @@
       "description": "cancel orders on disconnect? (bool)"
     },
     {
+      "name": "rest_download_refresh",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "600s",
+      "description": "download refresh period"
+    },
+    {
       "name": "ws_market_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",

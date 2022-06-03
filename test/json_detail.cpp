@@ -97,3 +97,25 @@ TEST_CASE("json_detail_simple_linear", "[json_detail]") {
   CHECK(bid.price == 0.89738_a);
   CHECK(bid.vol == 235.0_a);
 }
+
+TEST_CASE("json_detail_crash_20220603", "[json_detail]") {
+  auto message = R"({)"
+                 R"("ch":"market.ETH220603.detail",)"
+                 R"("ts":1654243200419,)"
+                 R"("tick":{"id":1654243200,)"
+                 R"("mrid":222300079933399,)"
+                 R"("open":1815.648,)"
+                 R"("close":1812.743,)"
+                 R"("high":1851.112,)"
+                 R"("low":1800.036,)"
+                 R"("amount":216569.2166999844091298423223446240642115454,)"
+                 R"("vol":3939852,)"
+                 R"("count":13266,)"
+                 R"("ask":[1818.531,36],)"
+                 R"("bid":null)"
+                 R"(})"
+                 R"(})"sv;
+  core::Buffer buffer(8192);
+  core::json::Buffer buffer_(buffer);
+  auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
+}

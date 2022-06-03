@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Added
+
+* New flag to control periodic download of reference data (#233)
+
 ### Changed
 
 * Market data support for `--net_disconnect_on_idle_timeout`.

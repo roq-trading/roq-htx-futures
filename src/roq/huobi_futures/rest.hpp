@@ -95,6 +95,8 @@ class Rest final : public core::web::Client::Handler {
   // state
   ConnectionStatus status_ = {};
   core::Download<RestState> download_;
+  // experimental
+  std::chrono::nanoseconds next_refresh_ = {};
 };
 
 }  // namespace huobi_futures

@@ -82,6 +82,11 @@ void Rest::operator()(Event<Stop> const &) {
 void Rest::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   connection_.refresh(now);
+  if (ready() && next_refresh_.count() && next_refresh_ < now && !download_.downloading()) {
+    next_refresh_ = {};
+    download_.reset();
+    download_.begin();
+  }
 }
 
 void Rest::operator()(metrics::Writer &writer) {
@@ -127,6 +132,7 @@ void Rest::operator()(core::web::Client::Disconnected const &) {
   (*this)(ConnectionStatus::DISCONNECTED);
   if (!download_.downloading())
     download_.reset();
+  next_refresh_ = {};
 }
 
 void Rest::operator()(core::web::Client::Latency const &latency) {
@@ -149,9 +155,15 @@ uint32_t Rest::download(RestState state) {
     case CONTRACT_INFO:
       get_contract_info();
       return 1;
-    case DONE:
+    case DONE: {
       (*this)(ConnectionStatus::READY);
+      auto period = flags::Flags::rest_download_refresh();
+      if (period.count()) {
+        auto now = core::clock::GetSystem();
+        next_refresh_ = now + period;
+      }
       return {};
+    }
   }
   assert(false);
   return {};
@@ -196,6 +208,10 @@ void Rest::get_contract_info_ack(Trace<core::web::Response const> const &event, 
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
       const auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
+      // XXX debug -- saw something 20220603 -- maybe like this
+      if (std::empty(contract_info.data)) {
+        log::warn(R"(DEBUG: body="{}")"sv, body);
+      }
       Trace event(trace_info, contract_info);
       (*this)(event);
       download_.check(state);
