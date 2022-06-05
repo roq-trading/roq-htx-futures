@@ -117,5 +117,5 @@ TEST_CASE("json_detail_crash_20220603", "[json_detail]") {
                  R"(})"sv;
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
+  [[maybe_unused]] auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
 }
