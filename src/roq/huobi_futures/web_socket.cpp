@@ -67,8 +67,9 @@ void emplace(MBPUpdate &result, const T &value) {
       .price = value.price,
       .quantity = value.vol,
       .implied_quantity = NaN,
-      .price_level = {},
       .number_of_orders = {},
+      .update_action = {},
+      .price_level = {},
   };
 }
 }  // namespace
