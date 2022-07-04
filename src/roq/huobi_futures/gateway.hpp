@@ -86,7 +86,7 @@ class Gateway final : public server::Handler,
   // security
   absl::flat_hash_map<Account, std::unique_ptr<Security>> security_;
   // io
-  core::io::Context context_;
+  std::unique_ptr<core::io::Context> context_;
   // shared
   Shared shared_;
   // seed
