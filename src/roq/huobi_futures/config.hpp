@@ -67,7 +67,7 @@ struct fmt::formatter<roq::huobi_futures::Config> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(roq::huobi_futures::Config const &value, Context &context) {
+  auto format(roq::huobi_futures::Config const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
