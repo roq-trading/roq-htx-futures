@@ -29,14 +29,14 @@
     },
     {
       "name": "rest_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "https://api.hbdm.com",
       "description": "REST end-point (URI)"
     },
     {
       "name": "rest_proxy",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "description": "proxy end-point (URI)"
     },
@@ -90,21 +90,21 @@
     },
     {
       "name": "ws_market_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.hbdm.com/ws",
       "description": "WebSocket end-point (URI) for market data"
     },
     {
       "name": "ws_index_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.hbdm.com/ws_index",
       "description": "WebSocket end-point (URI) for market data"
     },
     {
       "name": "ws_order_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.hbdm.com/notification",
       "description": "WebSocket end-point (URI) for order management"
