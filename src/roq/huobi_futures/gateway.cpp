@@ -34,12 +34,7 @@ auto create_security(Config const &config) {
 
 template <typename R, typename T>
 auto create_order_entry(
-    Gateway &gateway,
-    io::Context &context,
-    uint16_t &stream_id,
-    T &security,
-    Shared &shared,
-    bool has_real_accounts) {
+    Gateway &gateway, io::Context &context, uint16_t &stream_id, T &security, Shared &shared, bool has_real_accounts) {
   R result;
   if (has_real_accounts) {
     for (auto &iter : security)
