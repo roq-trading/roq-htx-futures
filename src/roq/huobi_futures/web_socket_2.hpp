@@ -12,7 +12,7 @@
 #include "roq/core/metrics/latency.hpp"
 #include "roq/core/metrics/profile.hpp"
 
-#include "roq/core/io/context.hpp"
+#include "roq/io/context.hpp"
 
 #include "roq/core/web/client_socket.hpp"
 
@@ -35,7 +35,7 @@ class WebSocket2 final : public core::web::ClientSocket::Handler, public json::P
     virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
-  WebSocket2(Handler &, core::io::Context &, uint16_t stream_id, Shared &, size_t index);
+  WebSocket2(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
   WebSocket2(WebSocket2 &&) = delete;
   WebSocket2(WebSocket2 const &) = delete;

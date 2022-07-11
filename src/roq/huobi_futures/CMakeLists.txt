@@ -52,6 +52,7 @@ target_link_libraries(
   "${PROJECT_NAME}-tools"
   roq-server::roq-server
   roq-core::roq-core
+  roq-io::roq-io
   roq-logging::roq-logging
   absl::flags
   absl::flat_hash_map

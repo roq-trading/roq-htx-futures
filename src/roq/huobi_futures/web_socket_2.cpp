@@ -45,7 +45,7 @@ auto create_connection(auto &handler, auto &context) {
 }
 }  // namespace
 
-WebSocket2::WebSocket2(Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
+WebSocket2::WebSocket2(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)), index_(index),
       connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       counter_{
