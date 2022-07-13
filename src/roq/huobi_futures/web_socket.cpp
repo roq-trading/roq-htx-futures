@@ -15,6 +15,8 @@
 
 #include "roq/core/metrics/factory.hpp"
 
+#include "roq/web/socket/client_factory.hpp"
+
 #include "roq/huobi_futures/flags.hpp"
 
 #include "roq/huobi_futures/json/utils.hpp"
@@ -37,7 +39,7 @@ struct create_metrics final : public core::metrics::Factory {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_index_uri();
-  core::web::ClientSocket::Config config{
+  web::socket::Client::Config config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
       .disconnect_on_idle_timeout = {},
@@ -48,7 +50,7 @@ auto create_connection(auto &handler, auto &context) {
       .read_buffer_size = Flags::decode_buffer_size(),
       .encode_buffer_size = Flags::encode_buffer_size(),
   };
-  return core::web::ClientSocket{handler, context, config, []() { return std::string(); }};
+  return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
 
 template <typename T>
@@ -99,15 +101,15 @@ WebSocket::WebSocket(Handler &handler, io::Context &context, uint32_t stream_id,
 }
 
 void WebSocket::operator()(Event<Start> const &) {
-  connection_.start();
+  (*connection_).start();
 }
 
 void WebSocket::operator()(Event<Stop> const &) {
-  connection_.stop();
+  (*connection_).stop();
 }
 
 void WebSocket::operator()(Event<Timer> const &event) {
-  connection_.refresh(event.value.now);
+  (*connection_).refresh(event.value.now);
 }
 
 void WebSocket::operator()(metrics::Writer &writer) {
@@ -132,23 +134,23 @@ void WebSocket::subscribe(size_t start_from) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Connected const &) {
+void WebSocket::operator()(web::socket::Client::Connected const &) {
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Disconnected const &) {
+void WebSocket::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Ready const &) {
+void WebSocket::operator()(web::socket::Client::Ready const &) {
   (*this)(ConnectionStatus::READY);
   subscribe();
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Close const &) {
+void WebSocket::operator()(web::socket::Client::Close const &) {
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Latency const &latency) {
+void WebSocket::operator()(web::socket::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -159,11 +161,11 @@ void WebSocket::operator()(core::web::ClientSocket::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Text const &) {
+void WebSocket::operator()(web::socket::Client::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(core::web::ClientSocket::Binary const &binary) {
+void WebSocket::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
@@ -217,7 +219,7 @@ void WebSocket::subscribe(
         theme,
         id);
     log::debug(R"(message="{}")"sv, message);
-    connection_.send_text(message);
+    (*connection_).send_text(message);
   }
 }
 
@@ -228,7 +230,7 @@ void WebSocket::send_pong(std::chrono::milliseconds timestamp) {
       R"(}})"sv,
       timestamp.count());
   // log::debug(R"(message="{}")"sv, message);
-  connection_.send_text(message);
+  (*connection_).send_text(message);
 }
 
 void WebSocket::parse(std::string_view const &message) {

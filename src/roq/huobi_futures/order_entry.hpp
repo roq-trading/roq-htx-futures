@@ -17,7 +17,7 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/core/web/client.hpp"
+#include "roq/web/rest/client.hpp"
 
 #include "roq/server.hpp"
 
@@ -28,7 +28,7 @@
 namespace roq {
 namespace huobi_futures {
 
-class OrderEntry final : public core::web::Client::Handler {
+class OrderEntry final : public web::rest::Client::Handler {
  public:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
@@ -66,9 +66,9 @@ class OrderEntry final : public core::web::Client::Handler {
   uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id);
 
  protected:
-  void operator()(core::web::Client::Connected const &);
-  void operator()(core::web::Client::Disconnected const &);
-  void operator()(core::web::Client::Latency const &);
+  void operator()(web::rest::Client::Connected const &);
+  void operator()(web::rest::Client::Disconnected const &);
+  void operator()(web::rest::Client::Latency const &);
 
   void operator()(ConnectionStatus);
 
@@ -80,7 +80,7 @@ class OrderEntry final : public core::web::Client::Handler {
   const uint16_t stream_id_;
   const std::string name_;
   // connection
-  core::web::Client connection_;
+  std::unique_ptr<web::rest::Client> connection_;
   // buffers
   core::Buffer decode_buffer_;
   // metrics

@@ -7,6 +7,8 @@
 
 #include "roq/core/metrics/factory.hpp"
 
+#include "roq/web/socket/client_factory.hpp"
+
 #include "roq/huobi_futures/flags.hpp"
 
 #include "roq/huobi_futures/json/utils.hpp"
@@ -29,7 +31,7 @@ struct create_metrics final : public core::metrics::Factory {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_order_uri();
-  core::web::ClientSocket::Config config{
+  web::socket::Client::Config config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
       .disconnect_on_idle_timeout = {},
@@ -40,7 +42,7 @@ auto create_connection(auto &handler, auto &context) {
       .read_buffer_size = Flags::decode_buffer_size(),
       .encode_buffer_size = Flags::encode_buffer_size(),
   };
-  return core::web::ClientSocket{handler, context, config, []() { return std::string(); }};
+  return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
 }  // namespace
 
@@ -62,15 +64,15 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, S
 }
 
 void DropCopy::operator()(Event<Start> const &) {
-  connection_.start();
+  (*connection_).start();
 }
 
 void DropCopy::operator()(Event<Stop> const &) {
-  connection_.stop();
+  (*connection_).stop();
 }
 
 void DropCopy::operator()(Event<Timer> const &event) {
-  connection_.refresh(event.value.now);
+  (*connection_).refresh(event.value.now);
 }
 
 void DropCopy::operator()(metrics::Writer &writer) {
@@ -83,22 +85,22 @@ void DropCopy::operator()(metrics::Writer &writer) {
       .write(latency_.ping, metrics::LATENCY);
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Connected const &) {
+void DropCopy::operator()(web::socket::Client::Connected const &) {
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Disconnected const &) {
+void DropCopy::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Ready const &) {
+void DropCopy::operator()(web::socket::Client::Ready const &) {
   (*this)(ConnectionStatus::READY);
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Close const &) {
+void DropCopy::operator()(web::socket::Client::Close const &) {
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Latency const &latency) {
+void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -109,11 +111,11 @@ void DropCopy::operator()(core::web::ClientSocket::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Text const &) {
+void DropCopy::operator()(web::socket::Client::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(core::web::ClientSocket::Binary const &binary) {
+void DropCopy::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
@@ -151,7 +153,7 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
       R"(}})"sv,
       timestamp.count());
   // log::debug(R"(message="{}")"sv, message);
-  connection_.send_text(message);
+  (*connection_).send_text(message);
 }
 
 void DropCopy::parse(std::string_view const &message) {
@@ -178,7 +180,7 @@ void DropCopy::operator()(Trace<json::Close const> const &event) {
   profile_.close([&]() {
     auto &[trace_info, close] = event;
     log::warn("trace_info={}, close={}"sv, trace_info, close);
-    connection_.close();
+    (*connection_).close();
   });
 }
 

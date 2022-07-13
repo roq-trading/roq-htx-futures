@@ -10,6 +10,8 @@
 
 #include "roq/core/metrics/factory.hpp"
 
+#include "roq/web/rest/client_factory.hpp"
+
 #include "roq/huobi_futures/flags.hpp"
 
 #include "roq/huobi_futures/json/utils.hpp"
@@ -39,20 +41,20 @@ struct create_metrics final : public core::metrics::Factory {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::rest_uri();
-  core::web::Client::Config config{
+  web::rest::Client::Config config{
       .decode_buffer_size = Flags::decode_buffer_size(),
       .encode_buffer_size = Flags::encode_buffer_size(),
       .validate_certificate = server::Flags::net_tls_validate_certificate(),
       .uris = {&uri, 1},
       .proxy = Flags::rest_proxy(),
       .user_agent = ROQ_PACKAGE_NAME,
-      .connection = core::http::Connection::KEEP_ALIVE,
+      .connection = web::http::Connection::KEEP_ALIVE,
       .allow_pipelining = true,
       .request_timeout = Flags::rest_request_timeout(),
       .ping_frequency = Flags::rest_ping_freq(),
       .ping_path = Flags::rest_ping_path(),
   };
-  return core::web::Client{handler, context, config};
+  return web::rest::ClientFactory::create(handler, context, config);
 }
 }  // namespace
 
@@ -83,15 +85,15 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
 }
 
 void OrderEntry::operator()(Event<Start> const &) {
-  connection_.start();
+  (*connection_).start();
 }
 
 void OrderEntry::operator()(Event<Stop> const &) {
-  connection_.stop();
+  (*connection_).stop();
 }
 
 void OrderEntry::operator()(Event<Timer> const &event) {
-  connection_.refresh(event.value.now);
+  (*connection_).refresh(event.value.now);
 }
 
 void OrderEntry::operator()(metrics::Writer &writer) {
@@ -138,7 +140,7 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &, [[maybe_unused]]
   throw oms::NotSupported("not supported"sv);
 }
 
-void OrderEntry::operator()(core::web::Client::Connected const &) {
+void OrderEntry::operator()(web::rest::Client::Connected const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
@@ -147,14 +149,14 @@ void OrderEntry::operator()(core::web::Client::Connected const &) {
   }
 }
 
-void OrderEntry::operator()(core::web::Client::Disconnected const &) {
+void OrderEntry::operator()(web::rest::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
   if (!download_.downloading())
     download_.reset();
 }
 
-void OrderEntry::operator()(core::web::Client::Latency const &latency) {
+void OrderEntry::operator()(web::rest::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
