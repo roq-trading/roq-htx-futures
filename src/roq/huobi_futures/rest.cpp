@@ -217,7 +217,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response const> const &event, 
       Trace event(trace_info, contract_info);
       (*this)(event);
       download_.check(state);
-    } catch (core::NetworkError &e) {
+    } catch (NetworkError &e) {
       log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
