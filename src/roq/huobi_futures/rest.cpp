@@ -251,6 +251,7 @@ void Rest::operator()(Trace<json::ContractInfo const> const &event) {
         .commission_currency = {},
         .tick_size = item.price_tick,
         .multiplier = item.contract_size,
+        .min_notional = NaN,
         .min_trade_vol = 1.0,  // lots
         .max_trade_vol = NaN,
         .trade_vol_step_size = 1.0,  // lots
