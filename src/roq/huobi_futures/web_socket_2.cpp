@@ -52,6 +52,7 @@ WebSocket2::WebSocket2(Handler &handler, io::Context &context, uint16_t stream_i
       connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
+          .total_bytes_received = create_metrics(name_, "total_bytes_received"sv),
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
@@ -81,6 +82,7 @@ void WebSocket2::operator()(metrics::Writer &writer) {
   writer
       // counter
       .write(counter_.disconnect, metrics::COUNTER)
+      .write(counter_.total_bytes_received, metrics::COUNTER)
       // profile
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.funding_rate, metrics::PROFILE)
@@ -133,6 +135,7 @@ void WebSocket2::operator()(web::socket::Client::Binary const &binary) {
   } else {
     log::fatal("Failed to decode message"sv);
   }
+  counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
 void WebSocket2::operator()(ConnectionStatus status) {
