@@ -169,14 +169,14 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Ping const> const &event) {
+void DropCopy::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void DropCopy::operator()(Trace<json::Close const> const &event) {
+void DropCopy::operator()(Trace<json::Close> const &event) {
   profile_.close([&]() {
     auto &[trace_info, close] = event;
     log::warn("trace_info={}, close={}"sv, trace_info, close);
@@ -184,7 +184,7 @@ void DropCopy::operator()(Trace<json::Close const> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::FundingRate const> const &) {
+void DropCopy::operator()(Trace<json::FundingRate> const &) {
   log::fatal("Unexpected"sv);
 }
 

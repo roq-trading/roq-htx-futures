@@ -30,9 +30,9 @@ namespace huobi_futures {
 class WebSocket2 final : public web::socket::Client::Handler, public json::Parser2::Handler {
  public:
   struct Handler {
-    virtual void operator()(Trace<StreamStatus const> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency const> const &) = 0;
-    virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
+    virtual void operator()(Trace<StreamStatus> const &) = 0;
+    virtual void operator()(Trace<ExternalLatency> const &) = 0;
+    virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
   WebSocket2(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
@@ -69,9 +69,9 @@ class WebSocket2 final : public web::socket::Client::Handler, public json::Parse
 
   void parse(std::string_view const &message);
 
-  void operator()(Trace<json::Ping const> const &) override;
-  void operator()(Trace<json::Close const> const &) override;
-  void operator()(Trace<json::FundingRate const> const &) override;
+  void operator()(Trace<json::Ping> const &) override;
+  void operator()(Trace<json::Close> const &) override;
+  void operator()(Trace<json::FundingRate> const &) override;
 
  private:
   Handler &handler_;

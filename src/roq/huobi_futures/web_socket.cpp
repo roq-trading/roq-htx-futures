@@ -252,58 +252,58 @@ void WebSocket::parse(std::string_view const &message) {
   });
 }
 
-void WebSocket::operator()(Trace<json::Ping const> const &event) {
+void WebSocket::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void WebSocket::operator()(Trace<json::Error const> const &event) {
+void WebSocket::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void WebSocket::operator()(Trace<json::Subbed const> const &event) {
+void WebSocket::operator()(Trace<json::Subbed> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void WebSocket::operator()(Trace<json::BBO const> const &) {
+void WebSocket::operator()(Trace<json::BBO> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::Depth const> const &) {
+void WebSocket::operator()(Trace<json::Depth> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::Trade const> const &) {
+void WebSocket::operator()(Trace<json::Trade> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::Detail const> const &) {
+void WebSocket::operator()(Trace<json::Detail> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::EstimatedRate const> const &event) {
+void WebSocket::operator()(Trace<json::EstimatedRate> const &event) {
   profile_.estimated_rate([&]() {
     auto &[trace_info, estimated_rate] = event;
     log::info<3>("estimated_rate={}"sv, estimated_rate);
   });
 }
 
-void WebSocket::operator()(Trace<json::PremiumIndex const> const &event) {
+void WebSocket::operator()(Trace<json::PremiumIndex> const &event) {
   profile_.premium_index([&]() {
     auto &[trace_info, premium_index] = event;
     log::info<3>("premium_index={}"sv, premium_index);
   });
 }
 
-void WebSocket::operator()(Trace<json::Index const> const &event) {
+void WebSocket::operator()(Trace<json::Index> const &event) {
   profile_.index([&]() {
     auto &[trace_info, index] = event;
     log::info<3>("index={}"sv, index);
@@ -329,7 +329,7 @@ void WebSocket::operator()(Trace<json::Index const> const &event) {
   });
 }
 
-void WebSocket::operator()(Trace<json::Basis const> const &event) {
+void WebSocket::operator()(Trace<json::Basis> const &event) {
   profile_.basis([&]() {
     auto &[trace_info, basis] = event;
     log::info<3>("basis={}"sv, basis);

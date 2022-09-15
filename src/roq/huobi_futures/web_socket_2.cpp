@@ -205,7 +205,7 @@ void WebSocket2::parse(std::string_view const &message) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Ping const> const &event) {
+void WebSocket2::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::info<4>("trace_info={}, ping={}"sv, trace_info, ping);
@@ -213,7 +213,7 @@ void WebSocket2::operator()(Trace<json::Ping const> const &event) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Close const> const &event) {
+void WebSocket2::operator()(Trace<json::Close> const &event) {
   profile_.close([&]() {
     auto &[trace_info, close] = event;
     log::warn("trace_info={}, close={}"sv, trace_info, close);
@@ -221,7 +221,7 @@ void WebSocket2::operator()(Trace<json::Close const> const &event) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::FundingRate const> const &event) {
+void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
   profile_.funding_rate([&]() {
     auto &[trace_info, funding_rate] = event;
     log::info<3>("trace_info={}, funding_rate={}"sv, trace_info, funding_rate);

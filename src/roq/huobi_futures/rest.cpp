@@ -196,7 +196,7 @@ void Rest::get_contract_info() {
   });
 }
 
-void Rest::get_contract_info_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
+void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   profile_.contract_info_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CONTRACT_INFO;
@@ -224,7 +224,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response const> const &event, 
   });
 }
 
-void Rest::operator()(Trace<json::ContractInfo const> const &event) {
+void Rest::operator()(Trace<json::ContractInfo> const &event) {
   auto &[trace_info, contract_info] = event;
   log::info<4>("contract_info={}"sv, contract_info);
   std::vector<Symbol> symbols;
