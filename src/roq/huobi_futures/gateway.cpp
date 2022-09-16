@@ -12,8 +12,6 @@
 #include "roq/core/clock.hpp"
 #include "roq/core/utils.hpp"
 
-#include "roq/io/engine/context_factory.hpp"
-
 #include "roq/huobi_futures/flags.hpp"
 
 #include "roq/huobi_futures/json/utils.hpp"
@@ -53,13 +51,13 @@ auto create_drop_copy(Gateway &gateway, io::Context &context, uint16_t &stream_i
 }
 }  // namespace
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config)
+Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
     : dispatcher_(dispatcher), master_account_(config.get_master_account()),
-      security_(create_security<decltype(security_)>(config)), context_(io::engine::ContextFactory::create_libevent()),
-      shared_(dispatcher), rest_(*this, *context_, ++stream_id_, shared_),
+      security_(create_security<decltype(security_)>(config)), context_(context), shared_(dispatcher),
+      rest_(*this, context_, ++stream_id_, shared_),
       order_entry_(create_order_entry<decltype(order_entry_)>(
-          *this, *context_, stream_id_, security_, shared_, !std::empty(config.accounts))),
-      drop_copy_(create_drop_copy<decltype(drop_copy_)>(*this, *context_, stream_id_, security_, shared_)) {
+          *this, context_, stream_id_, security_, shared_, !std::empty(config.accounts))),
+      drop_copy_(create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, security_, shared_)) {
   if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }
@@ -106,7 +104,6 @@ void Gateway::operator()(Event<Timer> const &event) {
     (*iter)(event);
   for (auto &iter : web_socket_2_)
     (*iter)(event);
-  (*context_).drain();
 }
 
 void Gateway::operator()(Event<Connected> const &) {
@@ -173,7 +170,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(market_data_);
     log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, *context_, stream_id, shared_, index);
+    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*market_data, message_info, start);
@@ -184,7 +181,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(web_socket_);
     log::debug("Create WebSocket #1 (stream_id={}, index={})"sv, stream_id, index);
-    auto web_socket = std::make_unique<WebSocket>(*this, *context_, stream_id, shared_, index);
+    auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*web_socket, message_info, start);
@@ -195,7 +192,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(web_socket_2_);
     log::debug("Create WebSocket #2 (stream_id={}, index={})"sv, stream_id, index);
-    auto web_socket_2 = std::make_unique<WebSocket2>(*this, *context_, stream_id, shared_, index);
+    auto web_socket_2 = std::make_unique<WebSocket2>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*web_socket_2, message_info, start);
