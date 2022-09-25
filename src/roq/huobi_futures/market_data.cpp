@@ -57,17 +57,20 @@ auto create_connection(auto &handler, auto &context) {
 }
 
 template <typename T>
-void emplace(Trade &result, const T &value) {
+void emplace(Trade &result, T const &value) {
   new (&result) Trade{
       .side = json::map(value.direction),
       .price = value.price,
       .quantity = value.amount,
       .trade_id = {},
+      .taker_order_id = {},
+      .maker_order_id = {},
   };
+  core::charconv::to_string(std::back_inserter(result.trade_id), value.id);
 }
 
 template <typename T>
-void emplace(MBPUpdate &result, const T &value) {
+void emplace(MBPUpdate &result, T const &value) {
   new (&result) MBPUpdate{
       .price = value.price,
       .quantity = value.vol,
@@ -377,6 +380,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
         .symbol = symbol,
         .trades = trades,
         .exchange_time_utc = utils::safe_cast(trade.ts),
+        .exchange_sequence = trade.tick.id,
     };
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
   });
