@@ -26,16 +26,22 @@ using namespace std::literals;
 namespace roq {
 namespace huobi_futures {
 
+// === CONSTANTS ===
+
 namespace {
 auto const NAME = "ws"sv;
+
 const Mask SUPPORTS{
     SupportType::STATISTICS,
 };
+}  // namespace
 
-struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(std::string_view const &group, std::string_view const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
-};
+// === HELPERS ===
+
+namespace {
+auto create_name(auto stream_id) {
+  return fmt::format("{}:{}"sv, stream_id, NAME);
+}
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_index_uri();
@@ -53,31 +59,16 @@ auto create_connection(auto &handler, auto &context) {
   return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
 
-template <typename T>
-void emplace(Trade &result, const T &value) {
-  new (&result) Trade{
-      .side = json::map(value.direction),
-      .price = value.price,
-      .quantity = value.quantity,
-      .trade_id = {},
-  };
-}
-
-template <typename T>
-void emplace(MBPUpdate &result, const T &value) {
-  new (&result) MBPUpdate{
-      .price = value.price,
-      .quantity = value.vol,
-      .implied_quantity = NaN,
-      .number_of_orders = {},
-      .update_action = {},
-      .price_level = {},
-  };
-}
+struct create_metrics final : public core::metrics::Factory {
+  explicit create_metrics(auto const &group, auto const &function)
+      : core::metrics::Factory(server::Flags::name(), group, function) {}
+};
 }  // namespace
 
+// === IMPLEMENTATION ===
+
 WebSocket::WebSocket(Handler &handler, io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)), index_(index),
+    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_)), index_(index),
       connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
       counter_{

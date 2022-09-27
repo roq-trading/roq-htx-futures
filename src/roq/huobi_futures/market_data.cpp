@@ -26,19 +26,25 @@ using namespace std::literals;
 namespace roq {
 namespace huobi_futures {
 
+// === CONSTANTS ===
+
 namespace {
 auto const NAME = "md"sv;
+
 const Mask SUPPORTS{
     SupportType::TOP_OF_BOOK,
     SupportType::MARKET_BY_PRICE,
     SupportType::TRADE_SUMMARY,
     SupportType::STATISTICS,
 };
+}  // namespace
 
-struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(std::string_view const &group, std::string_view const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
-};
+// === HELPERS ===
+
+namespace {
+auto create_name(auto stream_id) {
+  return fmt::format("{}:{}"sv, stream_id, NAME);
+}
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_market_uri();
@@ -56,34 +62,16 @@ auto create_connection(auto &handler, auto &context) {
   return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
 
-template <typename T>
-void emplace(Trade &result, T const &value) {
-  new (&result) Trade{
-      .side = json::map(value.direction),
-      .price = value.price,
-      .quantity = value.amount,
-      .trade_id = {},
-      .taker_order_id = {},
-      .maker_order_id = {},
-  };
-  core::charconv::to_string(std::back_inserter(result.trade_id), value.id);
-}
-
-template <typename T>
-void emplace(MBPUpdate &result, T const &value) {
-  new (&result) MBPUpdate{
-      .price = value.price,
-      .quantity = value.vol,
-      .implied_quantity = NaN,
-      .number_of_orders = {},
-      .update_action = {},
-      .price_level = {},
-  };
-}
+struct create_metrics final : public core::metrics::Factory {
+  explicit create_metrics(auto const &group, auto const &function)
+      : core::metrics::Factory(server::Flags::name(), group, function) {}
+};
 }  // namespace
 
+// === IMPLEMENTATION ===
+
 MarketData::MarketData(Handler &handler, io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)), index_(index),
+    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_)), index_(index),
       connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
       counter_{
@@ -336,11 +324,21 @@ void MarketData::operator()(Trace<json::Depth> const &event) {
     auto symbol = json::extract_symbol(depth.ch);
     auto &tick = depth.tick;
     auto snapshot = tick.event == json::Event::SNAPSHOT;
+    auto create_mbp_update = []<typename T>(T &result, auto const &value) {
+      new (&result) T{
+          .price = value.price,
+          .quantity = value.vol,
+          .implied_quantity = NaN,
+          .number_of_orders = {},
+          .update_action = {},
+          .price_level = {},
+      };
+    };
     core::back_emplacer bids(shared_.bids), asks(shared_.asks);
     for (auto &item : tick.bids)
-      bids.emplace_back([&item](auto &result) { emplace(result, item); });
+      bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     for (auto &item : tick.asks)
-      asks.emplace_back([&item](auto &result) { emplace(result, item); });
+      asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     // XXX HANS validate checksum
     const MarketByPriceUpdate market_by_price_update{
         .stream_id = stream_id_,
@@ -371,9 +369,20 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(trade.ch);
     auto &tick = trade.tick;
+    auto create_trade = []<typename T>(T &result, auto const &value) {
+      new (&result) T{
+          .side = json::map(value.direction),
+          .price = value.price,
+          .quantity = value.amount,
+          .trade_id = {},
+          .taker_order_id = {},
+          .maker_order_id = {},
+      };
+      core::charconv::to_string(std::back_inserter(result.trade_id), value.id);
+    };
     core::back_emplacer trades(shared_.trades);
     for (auto &item : tick.data)
-      trades.emplace_back([&item](auto &result) { emplace(result, item); });
+      trades.emplace_back([&](auto &result) { create_trade(result, item); });
     const TradeSummary trade_summary{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
