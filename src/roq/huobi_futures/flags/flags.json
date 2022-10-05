@@ -5,19 +5,19 @@
     {
       "name": "config_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path<std::string>",
+      "validator": "roq::core::flags::Path",
       "description": "config file (path)"
     },
     {
       "name": "secrets_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path<std::string>",
+      "validator": "roq::core::flags::Path",
       "description": "secrets file (path, optional)"
     },
     {
       "name": "exchange",
       "type": "std::string",
-      "validator": "roq::core::flags::NonEmpty<std::string>",
+      "validator": "roq::core::flags::NonEmpty",
       "default": "huobi-futures",
       "description": "exchange identifier (string)"
     },
@@ -30,14 +30,14 @@
     {
       "name": "rest_uri",
       "type": "roq::io::web::URI",
-      "validator": "roq::core::flags::URI<std::string>",
+      "validator": "roq::core::flags::URI",
       "default": "https://api.hbdm.com",
       "description": "REST end-point (URI)"
     },
     {
       "name": "rest_proxy",
       "type": "roq::io::web::URI",
-      "validator": "roq::core::flags::URI<std::string>",
+      "validator": "roq::core::flags::URI",
       "description": "proxy end-point (URI)"
     },
     {
@@ -50,7 +50,7 @@
     {
       "name": "rest_ping_path",
       "type": "std::string",
-      "validator": "roq::core::flags::Path<std::string>",
+      "validator": "roq::core::flags::Path",
       "default": "/api/v1/contract_api_state",
       "description": "URI path used for REST connection keep-alive messages"
     },
@@ -91,21 +91,21 @@
     {
       "name": "ws_market_uri",
       "type": "roq::io::web::URI",
-      "validator": "roq::core::flags::URI<std::string>",
+      "validator": "roq::core::flags::URI",
       "default": "wss://api.hbdm.com/ws",
       "description": "WebSocket end-point (URI) for market data"
     },
     {
       "name": "ws_index_uri",
       "type": "roq::io::web::URI",
-      "validator": "roq::core::flags::URI<std::string>",
+      "validator": "roq::core::flags::URI",
       "default": "wss://api.hbdm.com/ws_index",
       "description": "WebSocket end-point (URI) for market data"
     },
     {
       "name": "ws_order_uri",
       "type": "roq::io::web::URI",
-      "validator": "roq::core::flags::URI<std::string>",
+      "validator": "roq::core::flags::URI",
       "default": "wss://api.hbdm.com/notification",
       "description": "WebSocket end-point (URI) for order management"
     },
