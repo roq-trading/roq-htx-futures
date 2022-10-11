@@ -30,7 +30,7 @@ namespace huobi_futures {
 namespace {
 auto const NAME = "rest"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
 };
@@ -187,11 +187,9 @@ uint32_t Rest::download(RestState state) {
 
 void Rest::get_contract_info() {
   profile_.contract_info([&]() {
-    auto method = web::http::Method::GET;
-    auto path = shared_.api.get_contract_info;
     web::rest::Request request{
-        .method = method,
-        .path = path,
+        .method = web::http::Method::GET,
+        .path = shared_.api.get_contract_info,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -202,7 +200,7 @@ void Rest::get_contract_info() {
     auto sequence = download_.sequence();
     (*connection_)("contract_info"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
-      Trace event(trace_info, response);
+      Trace event{trace_info, response};
       get_contract_info_ack(event, sequence);
     });
   });
@@ -220,13 +218,13 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
         return;
       }
       response.expect(web::http::Status::OK);
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       const auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
       // XXX debug -- saw something 20220603 -- maybe like this
       if (std::empty(contract_info.data)) {
         log::warn(R"(DEBUG: body="{}")"sv, body);
       }
-      Trace event(trace_info, contract_info);
+      Trace event{trace_info, contract_info};
       (*this)(event);
       download_.check(state);
     } catch (NetworkError &e) {

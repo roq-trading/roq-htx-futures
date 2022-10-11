@@ -24,7 +24,7 @@ namespace huobi_futures {
 namespace {
 auto const NAME = "ws2"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::STATISTICS,
 };
 }  // namespace
@@ -209,7 +209,7 @@ void WebSocket2::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       auto trace_info = server::create_trace_info();
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       json::Parser2::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);

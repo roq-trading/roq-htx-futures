@@ -31,7 +31,7 @@ namespace huobi_futures {
 namespace {
 auto const NAME = "md"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::TOP_OF_BOOK,
     SupportType::MARKET_BY_PRICE,
     SupportType::TRADE_SUMMARY,
@@ -258,7 +258,7 @@ void MarketData::parse(std::string_view const &message) {
     try {
       // log::debug("HERE {}"sv, message);
       auto trace_info = server::create_trace_info();
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       if (json::Parser::dispatch(*this, message, buffer, trace_info)) {
       } else {
         log::warn(R"(Unable to parse message="{}")"sv, message);
@@ -334,7 +334,7 @@ void MarketData::operator()(Trace<json::Depth> const &event) {
           .price_level = {},
       };
     };
-    core::back_emplacer bids(shared_.bids), asks(shared_.asks);
+    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     for (auto &item : tick.bids)
       bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     for (auto &item : tick.asks)
@@ -380,7 +380,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
       };
       core::charconv::to_string(std::back_inserter(result.trade_id), value.id);
     };
-    core::back_emplacer trades(shared_.trades);
+    core::back_emplacer trades{shared_.trades};
     for (auto &item : tick.data)
       trades.emplace_back([&](auto &result) { create_trade(result, item); });
     const TradeSummary trade_summary{

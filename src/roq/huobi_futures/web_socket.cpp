@@ -8,9 +8,6 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.hpp"
-#include "roq/core/charconv.hpp"
-
 #include "roq/core/tools/exception.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -31,7 +28,7 @@ namespace huobi_futures {
 namespace {
 auto const NAME = "ws"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::STATISTICS,
 };
 }  // namespace
@@ -56,7 +53,7 @@ auto create_connection(auto &handler, auto &context) {
       .read_buffer_size = Flags::decode_buffer_size(),
       .encode_buffer_size = Flags::encode_buffer_size(),
   };
-  return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
+  return web::socket::ClientFactory::create(handler, context, config, []() -> std::string { return {}; });
 }
 
 struct create_metrics final : public core::metrics::Factory {
@@ -231,7 +228,7 @@ void WebSocket::parse(std::string_view const &message) {
     try {
       // log::debug("HERE {}"sv, message);
       auto trace_info = server::create_trace_info();
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       if (json::Parser::dispatch(*this, message, buffer, trace_info)) {
       } else {
         log::warn(R"(Unable to parse message="{}")"sv, message);

@@ -26,7 +26,7 @@ namespace huobi_futures {
 namespace {
 auto const NAME = "om"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
     SupportType::CREATE_ORDER,
@@ -129,7 +129,7 @@ void OrderEntry::operator()(metrics::Writer &writer) {
 
 uint16_t OrderEntry::operator()(
     Event<CreateOrder> const &, oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 uint16_t OrderEntry::operator()(
@@ -137,7 +137,7 @@ uint16_t OrderEntry::operator()(
     oms::Order const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 uint16_t OrderEntry::operator()(
@@ -145,11 +145,11 @@ uint16_t OrderEntry::operator()(
     oms::Order const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &, [[maybe_unused]] std::string_view const &request_id) {
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 void OrderEntry::operator()(web::rest::Client::Connected const &) {

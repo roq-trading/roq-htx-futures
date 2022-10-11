@@ -15,6 +15,8 @@ namespace roq {
 namespace huobi_futures {
 namespace tools {
 
+// === IMPLEMENTATION ===
+
 Hasher::Hasher(std::string_view const &secret) : hmac_(secret) {
 }
 

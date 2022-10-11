@@ -5,6 +5,8 @@
 namespace roq {
 namespace huobi_futures {
 
+// === IMPLEMENTATION ===
+
 Security::Security(Config const &config, std::string_view const &account)
     : account_(account), key_(config.get_api_key(account_)), hasher_(config.get_secret(account_)) {
 }
