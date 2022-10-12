@@ -30,7 +30,7 @@ int Application::main(int, char **) {
   Config config;
   auto context = server::create_io_context();
   auto settings = get_settings();
-  server::Trading<Gateway>(settings, config, *context).dispatch();
+  server::Trading<Gateway>{settings, config, *context}.dispatch();
   return EXIT_SUCCESS;
 }
 

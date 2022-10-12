@@ -19,5 +19,5 @@ roq::Service::Info const INFO{
 }  // namespace
 
 int main(int argc, char **argv) {
-  return roq::huobi_futures::Application(argc, argv, INFO).run();
+  return roq::huobi_futures::Application{argc, argv, INFO}.run();
 }
