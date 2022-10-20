@@ -117,7 +117,7 @@ void Rest::operator()(metrics::Writer &writer) {
 void Rest::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    const StreamStatus stream_status{
+    StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -151,7 +151,7 @@ void Rest::operator()(web::rest::Client::Disconnected const &) {
 
 void Rest::operator()(web::rest::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
-  const ExternalLatency external_latency{
+  ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -197,12 +197,12 @@ void Rest::get_contract_info() {
         .body = {},
         .quality_of_service = {},
     };
-    auto sequence = download_.sequence();
-    (*connection_)("contract_info"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
       Trace event{trace_info, response};
       get_contract_info_ack(event, sequence);
-    });
+    };
+    (*connection_)("contract_info"sv, request, callback);
   });
 }
 
@@ -219,7 +219,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
       }
       response.expect(web::http::Status::OK);
       core::json::Buffer buffer{decode_buffer_};
-      const auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
+      auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
       // XXX debug -- saw something 20220603 -- maybe like this
       if (std::empty(contract_info.data)) {
         log::warn(R"(DEBUG: body="{}")"sv, body);
@@ -249,7 +249,7 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
     }
     auto symbol = item.contract_code;
     auto discard = shared_.discard_symbol(symbol);
-    const ReferenceData reference_data{
+    ReferenceData reference_data{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,

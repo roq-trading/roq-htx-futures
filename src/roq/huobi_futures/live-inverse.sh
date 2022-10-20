@@ -3,9 +3,9 @@
 CWD="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 if [ "$1" == "debug" ]; then
-	PREFIX="gdb --args"
+  PREFIX="gdb --args"
 else
-	PREFIX=
+  PREFIX=
 fi
 
 NAME="huobi-futures"
@@ -19,14 +19,15 @@ WS_MARKET_URI="wss://$URI/ws"
 WS_ORDER_URI="wss://$URI/notification"
 
 $PREFIX ./roq-huobi-futures \
-	--name "huobi-futures" \
-	--config_file "$CONFIG_FILE" \
+  --name "huobi-futures" \
+  --config_file "$CONFIG_FILE" \
+  --cache_dir "$HOME/var/lib/roq/cache" \
   --event_log_dir "$HOME/var/lib/roq/data" \
-  --event_log_symlink \
+  --event_log_symlink true \
   --client_listen_address "$HOME/run/$NAME.sock" \
-  --metrics_listen_address "$HOME/run/${NAME}_metrics.sock" \
-	--rest_uri "$REST_URI" \
-	--ws_market_uri "$WS_MARKET_URI" \
-	--ws_order_uri "$WS_ORDER_URI" \
+  --metrics_listen_address "$HOME/run/metrics/${NAME}.sock" \
+  --rest_uri "$REST_URI" \
+  --ws_market_uri "$WS_MARKET_URI" \
+  --ws_order_uri "$WS_ORDER_URI" \
   --api "" \
-	$@
+  $@
