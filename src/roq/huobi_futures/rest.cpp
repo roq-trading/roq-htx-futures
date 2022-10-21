@@ -30,7 +30,7 @@ namespace huobi_futures {
 namespace {
 auto const NAME = "rest"sv;
 
-Mask const SUPPORTS{
+auto const SUPPORTS = Mask{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
 };
@@ -207,30 +207,28 @@ void Rest::get_contract_info() {
 }
 
 void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
+  constexpr auto const STATE = RestState::CONTRACT_INFO;
   profile_.contract_info_ack([&]() {
-    auto &[trace_info, response] = event;
-    auto state = RestState::CONTRACT_INFO;
-    try {
-      auto [status, category, body] = response.result();
-      log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
-      if (download_.skip(sequence, state)) {
-        log::info("Download state={} has already been processed"sv, state);
-        return;
+    auto handle_success = [&](auto &body) {
+      if (download_.skip(sequence, STATE)) {
+        log::info("Download state={} has already been processed"sv, STATE);
+      } else {
+        core::json::Buffer buffer{decode_buffer_};
+        auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
+        // XXX debug -- saw something 20220603 -- maybe like this
+        if (std::empty(contract_info.data)) {
+          log::warn(R"(DEBUG: body="{}")"sv, body);
+        }
+        Trace event_2{event, contract_info};
+        (*this)(event_2);
+        download_.check(STATE);
       }
-      response.expect(web::http::Status::OK);
-      core::json::Buffer buffer{decode_buffer_};
-      auto contract_info = core::json::Parser::create<json::ContractInfo>(body, buffer);
-      // XXX debug -- saw something 20220603 -- maybe like this
-      if (std::empty(contract_info.data)) {
-        log::warn(R"(DEBUG: body="{}")"sv, body);
-      }
-      Trace event{trace_info, contract_info};
-      (*this)(event);
-      download_.check(state);
-    } catch (NetworkError &e) {
-      log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
-      download_.retry(state);
-    }
+    };
+    auto handle_error = [&]([[maybe_unused]] auto origin, [[maybe_unused]] auto status, auto error, auto text) {
+      log::warn(R"(error={}, text="{}")"sv, error, text);
+      download_.retry(STATE);
+    };
+    process_response(event, handle_success, handle_error);
   });
 }
 
@@ -291,6 +289,35 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
   }
   if (counter > 0) [[unlikely]]
     log::info("Symbols {} / {}"sv, counter, std::size(contract_info.data));
+}
+
+template <typename SuccessHandler, typename ErrorHandler>
+void Rest::process_response(
+    web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {
+  try {
+    auto [status, category, body] = response.result();
+    log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
+    switch (category) {
+      using enum web::http::Category;
+      case SUCCESS:  // 2xx
+        success_handler(body);
+        break;
+      case CLIENT_ERROR:  // 4xx
+        error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN, magic_enum::enum_name(status));
+        break;
+      case SERVER_ERROR:  // 5xx
+        error_handler(Origin::EXCHANGE, RequestStatus::ERROR, Error::UNKNOWN, magic_enum::enum_name(status));
+        break;
+      default:
+        response.expect(web::http::Status::OK);  // throws
+    }
+  } catch (NetworkError &e) {
+    log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
+    error_handler(Origin::GATEWAY, e.request_status(), e.error(), e.what());
+  } catch (std::exception &e) {
+    log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
+    error_handler(Origin::EXCHANGE, RequestStatus::ERROR, Error::UNKNOWN, e.what());
+  }
 }
 
 }  // namespace huobi_futures
