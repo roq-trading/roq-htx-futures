@@ -116,7 +116,7 @@ void Rest::operator()(metrics::Writer &writer) {
 
 void Rest::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
-    auto trace_info = server::create_trace_info();
+    TraceInfo trace_info;
     StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
@@ -150,7 +150,7 @@ void Rest::operator()(web::rest::Client::Disconnected const &) {
 }
 
 void Rest::operator()(web::rest::Client::Latency const &latency) {
-  auto trace_info = server::create_trace_info();
+  TraceInfo trace_info;
   ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = {},
@@ -173,7 +173,7 @@ uint32_t Rest::download(RestState state) {
       (*this)(ConnectionStatus::READY);
       auto period = flags::Flags::rest_download_refresh();
       if (period.count()) {
-        auto now = core::clock::GetSystem();
+        auto now = clock::get_system();
         next_refresh_ = now + period;
       }
       return {};
@@ -198,7 +198,7 @@ void Rest::get_contract_info() {
         .quality_of_service = {},
     };
     auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      auto trace_info = server::create_trace_info();
+      TraceInfo trace_info;
       Trace event{trace_info, response};
       get_contract_info_ack(event, sequence);
     };
