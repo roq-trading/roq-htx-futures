@@ -43,7 +43,7 @@ API API::create() {
         .has_funding_rate = true,
     };
   }
-  throw RuntimeError(R"(Unknown api="{}")"sv, api);
+  throw RuntimeError{R"(Unknown api="{}")"sv, api};
 }
 
 }  // namespace huobi_futures
