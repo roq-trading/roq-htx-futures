@@ -17,7 +17,7 @@ namespace tools {
 
 // === IMPLEMENTATION ===
 
-Hasher::Hasher(std::string_view const &secret) : hmac_(secret) {
+Hasher::Hasher(std::string_view const &secret) : hmac_{secret} {
 }
 
 std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanoseconds now) {

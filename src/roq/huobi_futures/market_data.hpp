@@ -38,7 +38,7 @@ class MarketData final : public web::socket::Client::Handler, public json::Parse
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
-  MarketData(Handler &, io::Context &, uint32_t stream_id, Shared &, size_t index);
+  MarketData(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
   MarketData(MarketData &&) = delete;
   MarketData(MarketData const &) = delete;

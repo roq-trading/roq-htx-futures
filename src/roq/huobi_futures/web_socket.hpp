@@ -38,7 +38,7 @@ class WebSocket final : public web::socket::Client::Handler, public json::Parser
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
-  WebSocket(Handler &, io::Context &, uint32_t stream_id, Shared &, size_t index);
+  WebSocket(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
   WebSocket(WebSocket &&) = delete;
   WebSocket(WebSocket const &) = delete;

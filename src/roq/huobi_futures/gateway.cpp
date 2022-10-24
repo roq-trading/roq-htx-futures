@@ -8,8 +8,8 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/core/charconv.hpp"
 #include "roq/clock.hpp"
+#include "roq/core/charconv.hpp"
 #include "roq/core/utils.hpp"
 
 #include "roq/huobi_futures/flags.hpp"
@@ -55,12 +55,12 @@ auto create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &secur
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
-    : dispatcher_(dispatcher), master_account_(config.get_master_account()),
-      security_(create_security<decltype(security_)>(config)), context_(context), shared_(dispatcher),
-      rest_(*this, context_, ++stream_id_, shared_),
-      order_entry_(create_order_entry<decltype(order_entry_)>(
-          *this, context_, stream_id_, security_, shared_, !std::empty(config.accounts))),
-      drop_copy_(create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, security_, shared_)) {
+    : dispatcher_{dispatcher},
+      master_account_{config.get_master_account()}, security_{create_security<decltype(security_)>(config)},
+      context_{context}, shared_{dispatcher}, rest_{*this, context_, ++stream_id_, shared_},
+      order_entry_{create_order_entry<decltype(order_entry_)>(
+          *this, context_, stream_id_, security_, shared_, !std::empty(config.accounts))},
+      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, security_, shared_)} {
   if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }

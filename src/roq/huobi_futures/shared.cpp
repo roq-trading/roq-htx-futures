@@ -7,11 +7,13 @@
 namespace roq {
 namespace huobi_futures {
 
+// === IMPLEMENTATION ===
+
 Shared::Shared(server::Dispatcher &dispatcher)
-    : api(API::create()), bids(server::Flags::cache_mbp_max_depth()), asks(server::Flags::cache_mbp_max_depth()),
+    : api{API::create()}, bids(server::Flags::cache_mbp_max_depth()), asks(server::Flags::cache_mbp_max_depth()),
       final_bids(server::Flags::cache_mbp_max_depth()), final_asks(server::Flags::cache_mbp_max_depth()),
-      trades(server::Flags::cache_trades_max_depth()), dispatcher_(dispatcher),
-      symbols(Flags::ws_max_subscriptions_per_stream()) {
+      trades(server::Flags::cache_trades_max_depth()),
+      dispatcher_{dispatcher}, symbols{Flags::ws_max_subscriptions_per_stream()} {
 }
 
 }  // namespace huobi_futures
