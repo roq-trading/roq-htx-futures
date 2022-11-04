@@ -301,12 +301,16 @@ void Rest::process_response(
       case SUCCESS:  // 2xx
         success_handler(body);
         break;
-      case CLIENT_ERROR:  // 4xx
-        error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN, magic_enum::enum_name(status));
+      case CLIENT_ERROR: {  // 4xx
+        auto text = fmt::format("{}"sv, status);
+        error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN, text);
         break;
-      case SERVER_ERROR:  // 5xx
-        error_handler(Origin::EXCHANGE, RequestStatus::ERROR, Error::UNKNOWN, magic_enum::enum_name(status));
+      }
+      case SERVER_ERROR: {  // 5xx
+        auto text = fmt::format("{}"sv, status);
+        error_handler(Origin::EXCHANGE, RequestStatus::ERROR, Error::UNKNOWN, text);
         break;
+      }
       default:
         response.expect(web::http::Status::OK);  // throws
     }
