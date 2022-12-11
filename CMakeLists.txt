@@ -57,11 +57,15 @@ find_package(roq-logging REQUIRED)
 find_package(roq-server REQUIRED)
 find_package(roq-web REQUIRED)
 find_package(uuid REQUIRED)
-find_package(zlib REQUIRED)
 
 if(UNIX AND NOT APPLE)
-  find_package(rt REQUIRED)
+  find_package(rt REQUIRED) # XXX
 endif()
+
+find_package(PkgConfig REQUIRED)                                                                                           
+                                                                                                                           
+pkg_check_modules(UUID REQUIRED uuid)
+pkg_check_modules(ZLIB REQUIRED zlib)
 
 find_program(CLANG_FORMAT clang-format REQUIRED)
 
