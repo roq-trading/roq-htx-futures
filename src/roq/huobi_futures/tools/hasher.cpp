@@ -24,10 +24,11 @@ std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanose
   auto timestamp = fmt::format("timestamp={}"sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
   hmac_.clear();
   hmac_.update(timestamp);
-  std::array<char, 32> buffer;
+  std::array<std::byte, 32> buffer;
   auto length = hmac_.digest(buffer);
   assert(length == std::size(buffer));
-  auto signature = core::binascii::Hex::encode(buffer);
+  std::string signature;
+  core::binascii::Hex::encode(signature, buffer);
   return std::make_pair(timestamp, signature);
 }
 
