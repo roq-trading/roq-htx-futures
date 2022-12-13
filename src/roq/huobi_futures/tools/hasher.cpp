@@ -17,18 +17,16 @@ namespace tools {
 
 // === IMPLEMENTATION ===
 
-Hasher::Hasher(std::string_view const &secret) : hmac_{secret} {
+Hasher::Hasher(std::string_view const &secret) : mac_{secret} {
 }
 
 std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanoseconds now) {
   auto timestamp = fmt::format("timestamp={}"sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
-  hmac_.clear();
-  hmac_.update(timestamp);
-  std::array<std::byte, 32> buffer;
-  auto length = hmac_.digest(buffer);
-  assert(length == std::size(buffer));
+  mac_.clear();
+  mac_.update(timestamp);
+  auto digest = mac_.final(digest_);
   std::string signature;
-  core::binascii::Hex::encode(signature, buffer);
+  core::binascii::Hex::encode(signature, digest);
   return std::make_pair(timestamp, signature);
 }
 
