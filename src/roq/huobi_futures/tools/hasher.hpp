@@ -7,7 +7,7 @@
 #include <string_view>
 #include <utility>
 
-#include "roq/core/crypto/hmac_sha256.hpp"
+#include "roq/core/mac/hmac_sha256.hpp"
 
 namespace roq {
 namespace huobi_futures {
@@ -23,7 +23,7 @@ class Hasher final {
   std::pair<std::string, std::string> create_signature(std::chrono::nanoseconds now);
 
  private:
-  core::crypto::HMAC_SHA256 hmac_;
+  core::mac::HMAC_SHA256 hmac_;
 };
 
 }  // namespace tools
