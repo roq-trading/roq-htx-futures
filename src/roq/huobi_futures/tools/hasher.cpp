@@ -7,7 +7,7 @@
 #include <array>
 #include <cassert>
 
-#include "roq/core/binascii/hex.hpp"
+#include "roq/core/codec/hex.hpp"
 
 using namespace std::literals;
 
@@ -26,7 +26,7 @@ std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanose
   mac_.update(timestamp);
   auto digest = mac_.final(digest_);
   std::string signature;
-  core::binascii::Hex::encode(signature, digest);
+  core::codec::Hex::encode(signature, digest);
   return std::make_pair(timestamp, signature);
 }
 
