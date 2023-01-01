@@ -180,7 +180,6 @@ void WebSocket2::subscribe(
     std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
-    // auto id = ++request_id_;
     auto message = fmt::format(
         R"({{)"
         R"("op":"sub",)"

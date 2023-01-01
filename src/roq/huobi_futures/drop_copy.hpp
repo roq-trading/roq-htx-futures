@@ -21,7 +21,6 @@
 #include "roq/server.hpp"
 
 #include "roq/huobi_futures/security.hpp"
-#include "roq/huobi_futures/shared.hpp"
 
 #include "roq/huobi_futures/json/parser_2.hpp"
 
@@ -36,7 +35,7 @@ class DropCopy final : public web::socket::Client::Handler, public json::Parser2
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Security &, Shared &);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Security &);
 
   DropCopy(DropCopy &&) = delete;
   DropCopy(DropCopy const &) = delete;
@@ -78,8 +77,6 @@ class DropCopy final : public web::socket::Client::Handler, public json::Parser2
   std::unique_ptr<web::socket::Client> connection_;
   // buffers
   core::Buffer decode_buffer_;
-  // session
-  uint64_t request_id_ = {};
   // metrics
   struct {
     core::metrics::Counter disconnect;
@@ -92,8 +89,6 @@ class DropCopy final : public web::socket::Client::Handler, public json::Parser2
   } latency_;
   // security
   Security &security_;
-  // cache
-  Shared &shared_;
   // state
   ConnectionStatus status_ = {};
   // zlib

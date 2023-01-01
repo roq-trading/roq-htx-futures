@@ -83,8 +83,6 @@ class WebSocket2 final : public web::socket::Client::Handler, public json::Parse
   std::unique_ptr<web::socket::Client> connection_;
   // buffers
   core::Buffer decode_buffer_;
-  // session
-  uint64_t request_id_ = {};
   // metrics
   struct {
     core::metrics::Counter disconnect, total_bytes_received;

@@ -59,7 +59,7 @@ struct create_metrics final : public core::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Security &security, Shared &shared)
+DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Security &security)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)},
       connection_{create_connection(*this, context)}, decode_buffer_{Flags::decode_buffer_size()},
       counter_{
@@ -73,7 +73,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, S
       latency_{
           .ping = create_metrics(name_, "ping"sv),
       },
-      security_{security}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
+      security_{security}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
 void DropCopy::operator()(Event<Start> const &) {

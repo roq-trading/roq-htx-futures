@@ -34,8 +34,6 @@ auto const SUPPORTS = Mask{
     SupportType::ORDER_ACK,
     SupportType::FUNDS,
 };
-
-auto const ALLOW_PIPELINING = true;
 }  // namespace
 
 // === HELPERS ===
@@ -71,7 +69,7 @@ struct create_metrics final : public core::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Security &security, Shared &shared)
+OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Security &security)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, security.get_account())},
       connection_{create_connection(*this, context)}, decode_buffer_{Flags::decode_buffer_size()},
       counter_{
@@ -92,9 +90,7 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
       latency_{
           .ping = create_metrics(name_, "ping"sv),
       },
-      security_{security}, shared_{shared}, download_{Flags::rest_request_timeout(), [this](auto state) {
-                                                        return download(state);
-                                                      }} {
+      security_{security}, download_{Flags::rest_request_timeout(), [this](auto state) { return download(state); }} {
 }
 
 void OrderEntry::operator()(Event<Start> const &) {
