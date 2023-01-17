@@ -26,14 +26,13 @@
 namespace roq {
 namespace huobi_futures {
 
-class Gateway final : public server::Handler,
-                      public Rest::Handler,
-                      public OrderEntry::Handler,
-                      public DropCopy::Handler,
-                      public MarketData::Handler,
-                      public WebSocket::Handler,
-                      public WebSocket2::Handler {
- public:
+struct Gateway final : public server::Handler,
+                       public Rest::Handler,
+                       public OrderEntry::Handler,
+                       public DropCopy::Handler,
+                       public MarketData::Handler,
+                       public WebSocket::Handler,
+                       public WebSocket2::Handler {
   Gateway(server::Dispatcher &, Config const &, io::Context &);
 
  protected:

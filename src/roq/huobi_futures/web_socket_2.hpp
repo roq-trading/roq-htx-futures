@@ -27,8 +27,7 @@
 namespace roq {
 namespace huobi_futures {
 
-class WebSocket2 final : public web::socket::Client::Handler, public json::Parser2::Handler {
- public:
+struct WebSocket2 final : public web::socket::Client::Handler, public json::Parser2::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;

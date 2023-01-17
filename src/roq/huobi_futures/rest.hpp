@@ -29,8 +29,7 @@
 namespace roq {
 namespace huobi_futures {
 
-class Rest final : public web::rest::Client::Handler {
- public:
+struct Rest final : public web::rest::Client::Handler {
   struct SymbolsUpdate final {
     std::vector<Symbol> &symbols;
   };

@@ -16,8 +16,7 @@
 namespace roq {
 namespace huobi_futures {
 
-class Config final : public server::Config, public server::ConfigReader::Handler {
- public:
+struct Config final : public server::Config, public server::ConfigReader::Handler {
   Config();
 
   Account const &get_master_account() const;
