@@ -38,7 +38,7 @@ auto create_name(auto stream_id) {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_order_uri();
-  web::socket::Client::Config config{
+  auto config = web::socket::Client::Config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
       .disconnect_on_idle_timeout = {},
@@ -126,7 +126,7 @@ void WebSocket2::operator()(web::socket::Client::Close const &) {
 
 void WebSocket2::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
-  const ExternalLatency external_latency{
+  auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -154,7 +154,7 @@ void WebSocket2::operator()(web::socket::Client::Binary const &binary) {
 void WebSocket2::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     TraceInfo trace_info;
-    const StreamStatus stream_status{
+    auto stream_status = StreamStatus{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -239,7 +239,7 @@ void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
     log::info<3>("trace_info={}, funding_rate={}"sv, trace_info, funding_rate);
     for (auto &item : funding_rate.data) {
       auto symbol = item.contract_code;
-      Statistics statistics[] = {
+      auto statistics = std::array<Statistics, 2>{{
           {
               .type = StatisticsType::FUNDING_RATE,
               .value = item.funding_rate,
@@ -252,8 +252,8 @@ void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
               .begin_time_utc = {},
               .end_time_utc = {},
           },
-      };
-      const StatisticsUpdate statistics_update{
+      }};
+      auto statistics_update = StatisticsUpdate{
           .stream_id = stream_id_,
           .exchange = Flags::exchange(),
           .symbol = symbol,

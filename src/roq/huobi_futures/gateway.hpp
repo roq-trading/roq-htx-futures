@@ -97,6 +97,8 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<MarketData>> market_data_;
   std::vector<std::unique_ptr<WebSocket>> web_socket_;
   std::vector<std::unique_ptr<WebSocket2>> web_socket_2_;
+  // cache
+  std::vector<MBPUpdate> bids_, asks_;
 };
 
 }  // namespace huobi_futures

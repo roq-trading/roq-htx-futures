@@ -42,7 +42,7 @@ auto create_name(auto stream_id) {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_index_uri();
-  web::socket::Client::Config config{
+  auto config = web::socket::Client::Config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
       .disconnect_on_idle_timeout = {},
@@ -141,7 +141,7 @@ void WebSocket::operator()(web::socket::Client::Close const &) {
 
 void WebSocket::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
-  const ExternalLatency external_latency{
+  auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -169,7 +169,7 @@ void WebSocket::operator()(web::socket::Client::Binary const &binary) {
 void WebSocket::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     TraceInfo trace_info;
-    const StreamStatus stream_status{
+    auto stream_status = StreamStatus{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -297,19 +297,17 @@ void WebSocket::operator()(Trace<json::Index> const &event) {
     log::info<3>("index={}"sv, index);
     auto symbol = json::extract_symbol(index.ch);
     auto &tick = index.tick;
-    Statistics statistics[] = {
-        {
-            .type = StatisticsType::INDEX_VALUE,
-            .value = tick.close,
-            .begin_time_utc = {},
-            .end_time_utc = {},
-        },
+    auto statistics = Statistics{
+        .type = StatisticsType::INDEX_VALUE,
+        .value = tick.close,
+        .begin_time_utc = {},
+        .end_time_utc = {},
     };
-    const StatisticsUpdate statistics_update{
+    auto statistics_update = StatisticsUpdate{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
-        .statistics = statistics,
+        .statistics = {&statistics, 1u},
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = utils::safe_cast(index.ts),
     };
