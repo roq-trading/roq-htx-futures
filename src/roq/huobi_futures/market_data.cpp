@@ -357,7 +357,7 @@ void MarketData::operator()(Trace<json::Depth> const &event) {
     };
     log::info<3>("market_by_price_update={}"sv, market_by_price_update);
     try {
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     } catch (BadState &) {
       // resubscribe_order_book_l2(symbol);
     }
