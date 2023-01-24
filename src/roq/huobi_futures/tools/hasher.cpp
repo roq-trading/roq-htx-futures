@@ -27,7 +27,7 @@ std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanose
   auto digest = mac_.final(digest_);
   std::string signature;
   core::codec::Hex::encode(signature, digest);
-  return std::make_pair(timestamp, signature);
+  return {timestamp, signature};
 }
 
 }  // namespace tools
