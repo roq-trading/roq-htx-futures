@@ -9,16 +9,16 @@
 
 #include "roq/huobi_futures/config.hpp"
 
-#include "roq/huobi_futures/tools/hasher.hpp"
+#include "roq/huobi_futures/tools/crypto.hpp"
 
 namespace roq {
 namespace huobi_futures {
 
-struct Security final {
-  Security(Config const &, std::string_view const &account);
+struct Authenticator final {
+  Authenticator(Config const &, std::string_view const &account);
 
-  Security(Security &&) = delete;
-  Security(Security const &) = delete;
+  Authenticator(Authenticator &&) = delete;
+  Authenticator(Authenticator const &) = delete;
 
   std::string_view get_account() const { return account_; }
   std::string_view get_api_key() const { return key_; }
@@ -26,9 +26,9 @@ struct Security final {
   std::pair<std::string, std::string> create_signature(std::chrono::nanoseconds now);
 
  private:
-  const std::string account_;
-  const std::string key_;
-  tools::Hasher hasher_;
+  std::string const account_;
+  std::string const key_;
+  tools::Crypto crypto_;
 };
 
 }  // namespace huobi_futures

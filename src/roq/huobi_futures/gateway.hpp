@@ -13,12 +13,12 @@
 
 #include "roq/io/context.hpp"
 
+#include "roq/huobi_futures/authenticator.hpp"
 #include "roq/huobi_futures/config.hpp"
 #include "roq/huobi_futures/drop_copy.hpp"
 #include "roq/huobi_futures/market_data.hpp"
 #include "roq/huobi_futures/order_entry.hpp"
 #include "roq/huobi_futures/rest.hpp"
-#include "roq/huobi_futures/security.hpp"
 #include "roq/huobi_futures/shared.hpp"
 #include "roq/huobi_futures/web_socket.hpp"
 #include "roq/huobi_futures/web_socket_2.hpp"
@@ -82,8 +82,8 @@ struct Gateway final : public server::Handler,
   server::Dispatcher &dispatcher_;
   // config
   const std::string master_account_;
-  // security
-  absl::flat_hash_map<Account, std::unique_ptr<Security>> security_;
+  // authenticator
+  absl::flat_hash_map<Account, std::unique_ptr<Authenticator>> authenticator_;
   // io
   io::Context &context_;
   // shared

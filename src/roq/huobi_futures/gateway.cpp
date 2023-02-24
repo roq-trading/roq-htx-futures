@@ -25,29 +25,29 @@ namespace huobi_futures {
 
 namespace {
 template <typename R>
-auto create_security(auto const &config) {
+auto create_authenticator(auto const &config) {
   R result;
   for (auto &[_, account] : config.accounts)
-    result.try_emplace(account.name, std::make_unique<Security>(config, account.name));
+    result.try_emplace(account.name, std::make_unique<Authenticator>(config, account.name));
   return result;
 }
 
 template <typename R>
 auto create_order_entry(
-    Gateway &gateway, auto &context, auto &stream_id, auto &security_by_account, auto has_real_accounts) {
+    Gateway &gateway, auto &context, auto &stream_id, auto &authenticator_by_account, auto has_real_accounts) {
   R result;
   if (has_real_accounts) {
-    for (auto &[account, security] : security_by_account)
-      result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *security));
+    for (auto &[account, authenticator] : authenticator_by_account)
+      result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *authenticator));
   }
   return result;
 }
 
 template <typename R>
-auto create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &security_by_account) {
+auto create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &authenticator_by_account) {
   R result;
-  for (auto &[account, security] : security_by_account)
-    result.try_emplace(account, std::make_unique<DropCopy>(gateway, context, ++stream_id, *security));
+  for (auto &[account, authenticator] : authenticator_by_account)
+    result.try_emplace(account, std::make_unique<DropCopy>(gateway, context, ++stream_id, *authenticator));
   return result;
 }
 }  // namespace
@@ -55,12 +55,12 @@ auto create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &secur
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
-    : dispatcher_{dispatcher},
-      master_account_{config.get_master_account()}, security_{create_security<decltype(security_)>(config)},
-      context_{context}, shared_{dispatcher}, rest_{*this, context_, ++stream_id_, shared_},
+    : dispatcher_{dispatcher}, master_account_{config.get_master_account()},
+      authenticator_{create_authenticator<decltype(authenticator_)>(config)}, context_{context}, shared_{dispatcher},
+      rest_{*this, context_, ++stream_id_, shared_},
       order_entry_{create_order_entry<decltype(order_entry_)>(
-          *this, context_, stream_id_, security_, !std::empty(config.accounts))},
-      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, security_)} {
+          *this, context_, stream_id_, authenticator_, !std::empty(config.accounts))},
+      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, authenticator_)} {
   if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }

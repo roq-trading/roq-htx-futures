@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/huobi_futures/tools/hasher.hpp"
+#include "roq/huobi_futures/tools/crypto.hpp"
 
 #include <fmt/format.h>
 
@@ -17,10 +17,10 @@ namespace tools {
 
 // === IMPLEMENTATION ===
 
-Hasher::Hasher(std::string_view const &secret) : mac_{secret} {
+Crypto::Crypto(std::string_view const &secret) : mac_{secret} {
 }
 
-std::pair<std::string, std::string> Hasher::create_signature(std::chrono::nanoseconds now) {
+std::pair<std::string, std::string> Crypto::create_signature(std::chrono::nanoseconds now) {
   auto timestamp = fmt::format("timestamp={}"sv, std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
   mac_.clear();
   mac_.update(timestamp);

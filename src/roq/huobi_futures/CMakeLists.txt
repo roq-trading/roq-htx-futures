@@ -5,6 +5,7 @@ add_subdirectory(flags)
 set(SOURCES
     api.cpp
     application.cpp
+    authenticator.cpp
     config.cpp
     drop_copy.cpp
     flags.cpp
@@ -12,10 +13,9 @@ set(SOURCES
     market_data.cpp
     order_entry.cpp
     rest.cpp
-    security.cpp
     shared.cpp
-    web_socket.cpp
     web_socket_2.cpp
+    web_socket.cpp
     main.cpp)
 
 add_subdirectory("json")
