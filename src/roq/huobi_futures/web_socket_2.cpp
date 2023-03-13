@@ -259,7 +259,9 @@ void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
           .symbol = symbol,
           .statistics = statistics,
           .update_type = UpdateType::INCREMENTAL,
-          .exchange_time_utc = utils::safe_cast(funding_rate.ts),
+          .exchange_time_utc = funding_rate.ts,
+          .exchange_sequence = {},
+          .sending_time_utc = {},
       };
       create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
     }

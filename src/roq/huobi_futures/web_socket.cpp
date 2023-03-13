@@ -309,7 +309,9 @@ void WebSocket::operator()(Trace<json::Index> const &event) {
         .symbol = symbol,
         .statistics = {&statistics, 1u},
         .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = utils::safe_cast(index.ts),
+        .exchange_time_utc = index.ts,
+        .exchange_sequence = {},
+        .sending_time_utc = {},
     };
     create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
