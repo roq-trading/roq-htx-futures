@@ -2,10 +2,7 @@
 
 #include "roq/huobi_futures/tools/crypto.hpp"
 
-#include <fmt/format.h>
-
-#include <array>
-#include <cassert>
+#include <fmt/core.h>
 
 #include "roq/core/codec/hex.hpp"
 
