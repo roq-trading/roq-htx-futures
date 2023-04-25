@@ -31,8 +31,8 @@ bool Parser2::dispatch(
   auto frame = core::json::Parser::create<json::Frame2>(message, buffer);
   switch (frame.op) {
     using enum Operator::type_t;
-    case UNDEFINED:
-    case UNKNOWN:
+    case UNDEFINED__:
+    case UNKNOWN__:
       break;
     case PING: {
       const Ping ping{
@@ -54,9 +54,8 @@ bool Parser2::dispatch(
       auto topic = extract_topic(frame.topic);
       switch (topic) {
         using enum Topic2::type_t;
-        case UNDEFINED:
-          break;
-        case UNKNOWN:
+        case UNDEFINED__:
+        case UNKNOWN__:
           break;
         case FUNDING_RATE: {
           auto const funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);

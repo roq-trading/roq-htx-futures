@@ -29,7 +29,7 @@ bool Parser::dispatch(
   if (!frame.ping.count()) {
     switch (frame.status) {
       using enum Status::type_t;
-      case UNDEFINED: {
+      case UNDEFINED__: {
         Topic topic{extract_topic(frame.ch)};
         switch (topic) {
           using enum Topic::type_t;
@@ -78,7 +78,7 @@ bool Parser::dispatch(
         }
         break;
       }
-      case UNKNOWN:
+      case UNKNOWN__:
         break;
       case OK:
         if (!std::empty(frame.subbed)) {
