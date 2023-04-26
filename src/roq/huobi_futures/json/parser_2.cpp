@@ -28,21 +28,21 @@ bool Parser2::dispatch(
     std::string_view const &message,
     core::json::Buffer &buffer,
     TraceInfo const &trace_info) {
-  auto frame = core::json::Parser::create<json::Frame2>(message, buffer);
+  Frame2 frame{message, buffer};
   switch (frame.op) {
     using enum Operator::type_t;
     case UNDEFINED__:
     case UNKNOWN__:
       break;
     case PING: {
-      const Ping ping{
+      auto ping = Ping{
           .timestamp = frame.ts,
       };
       create_trace_and_dispatch(handler, trace_info, ping);
       return true;
     }
     case CLOSE: {
-      const Close close{
+      auto close = Close{
           .timestamp = frame.ts,
       };
       create_trace_and_dispatch(handler, trace_info, close);
@@ -58,7 +58,7 @@ bool Parser2::dispatch(
         case UNKNOWN__:
           break;
         case FUNDING_RATE: {
-          auto const funding_rate = core::json::Parser::create<json::FundingRate>(message, buffer);
+          FundingRate funding_rate{message, buffer};
           create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;
         }

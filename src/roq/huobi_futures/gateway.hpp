@@ -76,6 +76,9 @@ struct Gateway final : public server::Handler,
 
   // utilities
 
+  template <typename... Args>
+  void dispatch(Args &&...);
+
   OrderEntry &get_order_entry(std::string_view const &account);
 
  private:
