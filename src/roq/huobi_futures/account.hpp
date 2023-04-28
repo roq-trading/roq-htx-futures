@@ -14,19 +14,19 @@
 namespace roq {
 namespace huobi_futures {
 
-struct Authenticator final {
-  Authenticator(Config const &, std::string_view const &account);
+struct Account final {
+  Account(Config const &, std::string_view const &name);
 
-  Authenticator(Authenticator &&) = delete;
-  Authenticator(Authenticator const &) = delete;
+  Account(Account &&) = delete;
+  Account(Account const &) = delete;
 
-  std::string_view get_account() const { return account_; }
+  std::string_view get_name() const { return name_; }
   std::string_view get_api_key() const { return key_; }
 
   std::pair<std::string, std::string> create_signature(std::chrono::nanoseconds now);
 
  private:
-  std::string const account_;
+  std::string const name_;
   std::string const key_;
   tools::Crypto crypto_;
 };

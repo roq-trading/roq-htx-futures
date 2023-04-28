@@ -21,7 +21,7 @@
 
 #include "roq/server.hpp"
 
-#include "roq/huobi_futures/authenticator.hpp"
+#include "roq/huobi_futures/account.hpp"
 #include "roq/huobi_futures/order_entry_state.hpp"
 
 namespace roq {
@@ -36,7 +36,7 @@ struct OrderEntry final : public web::rest::Client::Handler {
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Authenticator &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &);
 
   OrderEntry(OrderEntry &&) = delete;
   OrderEntry(OrderEntry const &) = delete;
@@ -76,10 +76,10 @@ struct OrderEntry final : public web::rest::Client::Handler {
  private:
   Handler &handler_;
   // config
-  const uint16_t stream_id_;
-  const std::string name_;
+  uint16_t const stream_id_;
+  std::string const name_;
   // connection
-  std::unique_ptr<web::rest::Client> connection_;
+  std::unique_ptr<web::rest::Client> const connection_;
   // buffers
   core::Buffer decode_buffer_;
   // metrics
@@ -96,8 +96,8 @@ struct OrderEntry final : public web::rest::Client::Handler {
   struct {
     core::metrics::Latency ping;
   } latency_;
-  // authenticator
-  Authenticator &authenticator_;
+  // account
+  Account &account_;
   // state
   ConnectionStatus status_ = {};
   core::Download<OrderEntryState> download_;

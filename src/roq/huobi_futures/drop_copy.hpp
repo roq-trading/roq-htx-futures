@@ -20,7 +20,7 @@
 
 #include "roq/server.hpp"
 
-#include "roq/huobi_futures/authenticator.hpp"
+#include "roq/huobi_futures/account.hpp"
 
 #include "roq/huobi_futures/json/parser_2.hpp"
 
@@ -34,7 +34,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Authenticator &);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &);
 
   DropCopy(DropCopy &&) = delete;
   DropCopy(DropCopy const &) = delete;
@@ -70,10 +70,10 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
  private:
   Handler &handler_;
   // config
-  const uint16_t stream_id_;
-  const std::string name_;
+  uint16_t const stream_id_;
+  std::string const name_;
   // web socket
-  std::unique_ptr<web::socket::Client> connection_;
+  std::unique_ptr<web::socket::Client> const connection_;
   // buffers
   core::Buffer decode_buffer_;
   // metrics
@@ -86,8 +86,8 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   struct {
     core::metrics::Latency ping;
   } latency_;
-  // authenticator
-  Authenticator &authenticator_;
+  // account
+  Account &account_;
   // state
   ConnectionStatus status_ = {};
   // zlib

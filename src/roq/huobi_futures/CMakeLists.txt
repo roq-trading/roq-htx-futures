@@ -3,9 +3,9 @@ set(TARGET_NAME "${PROJECT_NAME}")
 add_subdirectory(flags)
 
 set(SOURCES
+    account.cpp
     api.cpp
     application.cpp
-    authenticator.cpp
     config.cpp
     drop_copy.cpp
     flags.cpp

@@ -68,7 +68,7 @@ struct create_metrics final : public core::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Authenticator &authenticator)
+DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)},
       connection_{create_connection(*this, context)}, decode_buffer_{Flags::decode_buffer_size()},
       counter_{
@@ -82,7 +82,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
       latency_{
           .ping = create_metrics(name_, "ping"sv),
       },
-      authenticator_{authenticator}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
+      account_{account}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
 void DropCopy::operator()(Event<Start> const &) {
@@ -126,7 +126,7 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
-      .account = authenticator_.get_account(),
+      .account = account_.get_name(),
       .latency = latency.sample,
   };
   create_trace_and_dispatch(handler_, trace_info, external_latency);
@@ -154,7 +154,7 @@ void DropCopy::operator()(ConnectionStatus status) {
     TraceInfo trace_info;
     auto stream_status = StreamStatus{
         .stream_id = stream_id_,
-        .account = authenticator_.get_account(),
+        .account = account_.get_name(),
         .supports = SUPPORTS,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,

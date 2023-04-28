@@ -94,11 +94,11 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
  private:
   Handler &handler_;
   // config
-  const uint16_t stream_id_;
-  const std::string name_;
-  const size_t index_;
+  uint16_t const stream_id_;
+  std::string const name_;
+  size_t const index_;
   // web socket
-  std::unique_ptr<web::socket::Client> connection_;
+  std::unique_ptr<web::socket::Client> const connection_;
   // buffers
   core::Buffer decode_buffer_;
   // session

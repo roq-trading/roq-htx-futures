@@ -13,7 +13,7 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/huobi_futures/authenticator.hpp"
+#include "roq/huobi_futures/account.hpp"
 #include "roq/huobi_futures/config.hpp"
 #include "roq/huobi_futures/drop_copy.hpp"
 #include "roq/huobi_futures/market_data.hpp"
@@ -83,10 +83,8 @@ struct Gateway final : public server::Handler,
 
  private:
   server::Dispatcher &dispatcher_;
-  // config
-  const std::string master_account_;
-  // authenticator
-  absl::flat_hash_map<Account, std::unique_ptr<Authenticator>> authenticator_;
+  // accounts
+  absl::flat_hash_map<std::string, std::unique_ptr<Account>> const accounts_;
   // io
   io::Context &context_;
   // shared
@@ -95,8 +93,8 @@ struct Gateway final : public server::Handler,
   uint16_t stream_id_ = {};
   // streams
   Rest rest_;
-  absl::flat_hash_map<Account, std::unique_ptr<OrderEntry>> order_entry_;
-  absl::flat_hash_map<Account, std::unique_ptr<DropCopy>> drop_copy_;
+  absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
+  absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
   std::vector<std::unique_ptr<WebSocket>> web_socket_;
   std::vector<std::unique_ptr<WebSocket2>> web_socket_2_;
