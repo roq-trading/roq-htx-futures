@@ -19,6 +19,7 @@
 #include "roq/huobi_futures/market_data.hpp"
 #include "roq/huobi_futures/order_entry.hpp"
 #include "roq/huobi_futures/rest.hpp"
+#include "roq/huobi_futures/settings.hpp"
 #include "roq/huobi_futures/shared.hpp"
 #include "roq/huobi_futures/web_socket.hpp"
 #include "roq/huobi_futures/web_socket_2.hpp"
@@ -33,7 +34,7 @@ struct Gateway final : public server::Handler,
                        public MarketData::Handler,
                        public WebSocket::Handler,
                        public WebSocket2::Handler {
-  Gateway(server::Dispatcher &, Config const &, io::Context &);
+  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
  protected:
   void operator()(Event<Start> const &) override;
