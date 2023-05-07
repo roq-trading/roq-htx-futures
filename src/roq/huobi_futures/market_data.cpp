@@ -46,16 +46,16 @@ auto create_name(auto stream_id) {
   return fmt::format("{}:{}"sv, stream_id, NAME);
 }
 
-auto create_connection(auto &handler, auto &context) {
+auto create_connection(auto &handler, auto &settings, auto &context) {
   auto uri = Flags::ws_market_uri();
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
       .uris = {&uri, 1},
-      .validate_certificate = server::Flags::net_tls_validate_certificate(),
+      .validate_certificate = settings.net.tls_validate_certificate,
       // connection manager
-      .connection_timeout = server::Flags::net_connection_timeout(),
-      .disconnect_on_idle_timeout = server::Flags::net_disconnect_on_idle_timeout(),
+      .connection_timeout = settings.net.connection_timeout,
+      .disconnect_on_idle_timeout = settings.net.disconnect_on_idle_timeout,
       .always_reconnect = true,
       // proxy
       .proxy = {},
@@ -72,8 +72,8 @@ auto create_connection(auto &handler, auto &context) {
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto const &group, auto const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function)
+      : core::metrics::Factory(settings.app.name, group, function) {}
 };
 }  // namespace
 
@@ -81,25 +81,25 @@ struct create_metrics final : public core::metrics::Factory {
 
 MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index},
-      connection_{create_connection(*this, context)}, decode_buffer_{Flags::decode_buffer_size()},
+      connection_{create_connection(*this, shared.settings, context)}, decode_buffer_{Flags::decode_buffer_size()},
       request_id_{static_cast<uint64_t>(stream_id_) * 1000000},  // scale (debugging)
       counter_{
-          .disconnect = create_metrics(name_, "disconnect"sv),
-          .total_bytes_received = create_metrics(name_, "total_bytes_received"sv),
+          .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
+          .total_bytes_received = create_metrics(shared.settings, name_, "total_bytes_received"sv),
       },
       profile_{
-          .parse = create_metrics(name_, "parse"sv),
-          .ping = create_metrics(name_, "ping"sv),
-          .error = create_metrics(name_, "error"sv),
-          .subbed = create_metrics(name_, "subbed"sv),
-          .bbo = create_metrics(name_, "bbo"sv),
-          .depth = create_metrics(name_, "depth"sv),
-          .trade = create_metrics(name_, "trade"sv),
-          .detail = create_metrics(name_, "detail"sv),
+          .parse = create_metrics(shared.settings, name_, "parse"sv),
+          .ping = create_metrics(shared.settings, name_, "ping"sv),
+          .error = create_metrics(shared.settings, name_, "error"sv),
+          .subbed = create_metrics(shared.settings, name_, "subbed"sv),
+          .bbo = create_metrics(shared.settings, name_, "bbo"sv),
+          .depth = create_metrics(shared.settings, name_, "depth"sv),
+          .trade = create_metrics(shared.settings, name_, "trade"sv),
+          .detail = create_metrics(shared.settings, name_, "detail"sv),
       },
       latency_{
-          .ping = create_metrics(name_, "ping"sv),
-          .heartbeat = create_metrics(name_, "heartbeat"sv),
+          .ping = create_metrics(shared.settings, name_, "ping"sv),
+          .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
       shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }

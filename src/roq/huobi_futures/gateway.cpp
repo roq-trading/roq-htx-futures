@@ -34,34 +34,35 @@ R create_accounts(auto &config) {
 }
 
 template <typename R>
-R create_order_entry(Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto has_real_accounts) {
+R create_order_entry(
+    Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts)
-      result.try_emplace(name, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account));
+      result.try_emplace(name, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
   }
   return result;
 }
 
 template <typename R>
-R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts) {
+R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   for (auto &[name, account] : accounts)
-    result.try_emplace(name, std::make_unique<DropCopy>(gateway, context, ++stream_id, *account));
+    result.try_emplace(name, std::make_unique<DropCopy>(gateway, context, ++stream_id, *account, shared));
   return result;
 }
 }  // namespace
 
 // === IMPLEMENTATION ===
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &, Config const &config, io::Context &context)
+Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
-      shared_{dispatcher}, rest_{*this, context_, ++stream_id_, shared_},
+      shared_{dispatcher, settings}, rest_{*this, context_, ++stream_id_, shared_},
       order_entry_{create_order_entry<decltype(order_entry_)>(
-          *this, context_, stream_id_, accounts_, !std::empty(config.accounts))},
-      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_)} {
+          *this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
+      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
   if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }

@@ -9,8 +9,9 @@ namespace huobi_futures {
 
 // === IMPLEMENTATION ===
 
-Shared::Shared(server::Dispatcher &dispatcher)
-    : api{API::create()}, dispatcher_{dispatcher}, symbols{Flags::ws_max_subscriptions_per_stream()} {
+Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
+    : api{API::create()}, dispatcher_{dispatcher}, settings{settings},
+      symbols{Flags::ws_max_subscriptions_per_stream()} {
 }
 
 }  // namespace huobi_futures

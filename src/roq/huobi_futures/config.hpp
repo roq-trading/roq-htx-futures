@@ -16,11 +16,13 @@
 #include "roq/server/config/dispatcher.hpp"
 #include "roq/server/config/reader.hpp"
 
+#include "roq/huobi_futures/settings.hpp"
+
 namespace roq {
 namespace huobi_futures {
 
 struct Config final : public server::config::Dispatcher, public server::config::Reader::Handler {
-  Config();
+  explicit Config(Settings const &);
 
   Account const &get_master_account() const;
 
@@ -40,6 +42,9 @@ struct Config final : public server::config::Dispatcher, public server::config::
   void operator()(server::config::RateLimit &&) override;
   void operator()(server::config::RequestTemplate, std::string_view const &label, toml::table &) override;
   void operator()(std::string_view const &key, toml::node &) override;
+
+ private:
+  GatewaySettings const gateway_settings_;
 
  public:
   server::config::Users users;
