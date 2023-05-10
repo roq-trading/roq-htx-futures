@@ -1,0 +1,68 @@
+{
+  "name": "REST",
+  "type": "flags",
+  "prefix": "rest_",
+  "values": [
+    {
+      "name": "uri",
+      "type": "roq::io::web::URI",
+      "validator": "roq::core::flags::URI",
+      "default": "https://api.hbdm.com",
+      "description": "REST end-point (URI)"
+    },
+    {
+      "name": "proxy",
+      "type": "roq::io::web::URI",
+      "validator": "roq::core::flags::URI",
+      "description": "proxy end-point (URI)"
+    },
+    {
+      "name": "ping_freq",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "5s",
+      "description": "ping frequency"
+    },
+    {
+      "name": "ping_path",
+      "type": "std::string",
+      "validator": "roq::core::flags::Path",
+      "default": "/api/v1/contract_api_state",
+      "description": "URI path used for REST connection keep-alive messages"
+    },
+    {
+      "name": "request_timeout",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "30s",
+      "description": "request: timeout"
+    },
+    {
+      "name": "listen_key_refresh",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "1800s",
+      "description": "listen key refresh period"
+    },
+    {
+      "name": "order_recv_window",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "5000ms",
+      "description": "receive window, please refer to Binance documentation!"
+    },
+    {
+      "name": "cancel_on_disconnect",
+      "type": "bool",
+      "default": false,
+      "description": "cancel orders on disconnect? (bool)"
+    },
+    {
+      "name": "download_refresh",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "600s",
+      "description": "download refresh period"
+    }
+  ]
+}

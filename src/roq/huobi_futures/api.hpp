@@ -4,6 +4,8 @@
 
 #include <string_view>
 
+#include "roq/huobi_futures/settings.hpp"
+
 namespace roq {
 namespace huobi_futures {
 
@@ -18,7 +20,7 @@ struct API final {
   bool has_index = {};
   bool has_funding_rate = {};
   // factory
-  static API create();
+  static API create(Settings const &);
 };
 
 }  // namespace huobi_futures

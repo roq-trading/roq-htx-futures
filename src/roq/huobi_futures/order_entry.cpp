@@ -12,8 +12,6 @@
 
 #include "roq/web/rest/client_factory.hpp"
 
-#include "roq/huobi_futures/flags.hpp"
-
 #include "roq/huobi_futures/json/utils.hpp"
 
 using namespace std::literals;
@@ -44,7 +42,7 @@ auto create_name(auto stream_id, auto const &account) {
 }
 
 auto create_connection(auto &handler, auto &settings, auto &context) {
-  auto uri = Flags::rest_uri();
+  auto uri = settings.rest.uri;
   auto config = web::rest::Client::Config{
       // connection
       .interface = {},
@@ -55,16 +53,16 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
       .disconnect_on_idle_timeout = {},
       .connection = web::http::Connection::KEEP_ALIVE,
       // proxy
-      .proxy = Flags::rest_proxy(),
+      .proxy = settings.rest.proxy,
       // http
       .query = {},
       .user_agent = ROQ_PACKAGE_NAME,
-      .request_timeout = Flags::rest_request_timeout(),
-      .ping_frequency = Flags::rest_ping_freq(),
-      .ping_path = Flags::rest_ping_path(),
+      .request_timeout = settings.rest.request_timeout,
+      .ping_frequency = settings.rest.ping_freq,
+      .ping_path = settings.rest.ping_path,
       // implementation
-      .decode_buffer_size = Flags::decode_buffer_size(),
-      .encode_buffer_size = Flags::encode_buffer_size(),
+      .decode_buffer_size = settings.common.decode_buffer_size,
+      .encode_buffer_size = settings.common.encode_buffer_size,
       .allow_pipelining = true,
   };
   return web::rest::ClientFactory::create(handler, context, config);
@@ -80,7 +78,8 @@ struct create_metrics final : public core::metrics::Factory {
 
 OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())},
-      connection_{create_connection(*this, shared.settings, context)}, decode_buffer_{Flags::decode_buffer_size()},
+      connection_{create_connection(*this, shared.settings, context)},
+      decode_buffer_{shared.settings.common.decode_buffer_size},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -99,7 +98,8 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, download_{Flags::rest_request_timeout(), [this](auto state) { return download(state); }} {
+      account_{account},
+      download_{shared.settings.rest.request_timeout, [this](auto state) { return download(state); }} {
 }
 
 void OrderEntry::operator()(Event<Start> const &) {

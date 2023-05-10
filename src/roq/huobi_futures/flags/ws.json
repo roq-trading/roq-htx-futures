@@ -1,0 +1,61 @@
+{
+  "name": "WS",
+  "type": "flags",
+  "prefix": "ws_",
+  "values": [
+    {
+      "name": "market_uri",
+      "type": "roq::io::web::URI",
+      "validator": "roq::core::flags::URI",
+      "default": "wss://api.hbdm.com/ws",
+      "description": "WebSocket end-point (URI) for market data"
+    },
+    {
+      "name": "index_uri",
+      "type": "roq::io::web::URI",
+      "validator": "roq::core::flags::URI",
+      "default": "wss://api.hbdm.com/ws_index",
+      "description": "WebSocket end-point (URI) for market data"
+    },
+    {
+      "name": "order_uri",
+      "type": "roq::io::web::URI",
+      "validator": "roq::core::flags::URI",
+      "default": "wss://api.hbdm.com/notification",
+      "description": "WebSocket end-point (URI) for order management"
+    },
+    {
+      "name": "ping_freq",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "5s",
+      "description": "ping frequency"
+    },
+    {
+      "name": "max_subscriptions_per_stream",
+      "type": "uint32_t",
+      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "default": 32,
+      "description": "max symbols per connection (count)"
+    },
+    {
+      "name": "subscribe_depth_levels",
+      "type": "uint32_t",
+      "default": 0,
+      "description": "depth levels (count)"
+    },
+    {
+      "name": "subscribe_depth_freq",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "100ms",
+      "description": "depth update frequency"
+    },
+    {
+      "name": "subscribe_trade_details",
+      "type": "bool",
+      "default": false,
+      "description": "report individual matches for trade summary? (bool)"
+    }
+  ]
+}

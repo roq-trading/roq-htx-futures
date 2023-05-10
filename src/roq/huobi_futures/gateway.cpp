@@ -12,8 +12,6 @@
 #include "roq/core/charconv.hpp"
 #include "roq/core/utils.hpp"
 
-#include "roq/huobi_futures/flags.hpp"
-
 #include "roq/huobi_futures/json/utils.hpp"
 
 using namespace std::literals;
@@ -63,7 +61,7 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
       order_entry_{create_order_entry<decltype(order_entry_)>(
           *this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
-  if (Flags::rest_cancel_on_disconnect())
+  if (settings.rest.cancel_on_disconnect)
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }
 

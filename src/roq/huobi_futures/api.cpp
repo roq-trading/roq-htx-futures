@@ -4,8 +4,6 @@
 
 #include "roq/exceptions.hpp"
 
-#include "roq/huobi_futures/flags.hpp"
-
 using namespace std::literals;
 
 namespace roq {
@@ -13,8 +11,8 @@ namespace huobi_futures {
 
 // === IMPLEMENTATION ===
 
-API API::create() {
-  auto api = Flags::api();
+API API::create(Settings const &settings) {
+  auto api = settings.app.api;
   if (std::empty(api)) {
     return {
         .get_contract_info = "/api/v1/contract_contract_info"sv,

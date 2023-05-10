@@ -2,6 +2,8 @@
 
 #include "roq/huobi_futures/settings.hpp"
 
+#include "roq/logging.hpp"
+
 #include "roq/huobi_futures/flags/flags.hpp"
 
 using namespace std::literals;
@@ -9,10 +11,10 @@ using namespace std::literals;
 namespace roq {
 namespace huobi_futures {
 
-Settings Settings::create(server::Type type) {
-  auto api = flags::Flags::api();
-  auto settings = server::create_settings(type, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER, api);
-  return {settings};
+Settings::Settings(server::Type type)
+    : server::Settings{server::create_settings(type, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER, flags::Flags::api())},
+      exchange{flags::Flags::exchange()} {
+  log::debug("settings={}"sv, *this);
 }
 
 }  // namespace huobi_futures
