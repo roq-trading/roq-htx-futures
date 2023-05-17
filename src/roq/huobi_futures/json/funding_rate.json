@@ -16,7 +16,7 @@
     },
     {
       "name": "data",
-      "type": "std::span<FundingRateItem>"
+      "type": "std::span<FundingRateItem const>"
     }
   ]
 }

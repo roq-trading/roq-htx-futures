@@ -12,7 +12,7 @@
     },
     {
       "name": "data",
-      "type": "std::span<TradeTickItem>"
+      "type": "std::span<TradeTickItem const>"
     }
   ]
 }

@@ -8,7 +8,7 @@
     },
     {
       "name": "data",
-      "type": "std::span<ContractInfoItem>"
+      "type": "std::span<ContractInfoItem const>"
     },
     {
       "name": "ts",

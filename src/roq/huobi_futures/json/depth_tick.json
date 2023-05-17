@@ -4,11 +4,11 @@
   "values": [
     {
       "name": "asks",
-      "type": "std::span<Quotation>"
+      "type": "std::span<Quotation const>"
     },
     {
       "name": "bids",
-      "type": "std::span<Quotation>"
+      "type": "std::span<Quotation const>"
     },
     {
       "name": "ch",
