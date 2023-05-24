@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi_futures/json/estimated_rate.hpp"
 
 using namespace roq;
@@ -29,7 +27,6 @@ TEST_CASE("json_estimated_rate_simple_swap", "[json_estimated_rate]") {
                  R"("count":"0")"
                  R"(})"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::EstimatedRate>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::EstimatedRate::create(message, buffer);
 }

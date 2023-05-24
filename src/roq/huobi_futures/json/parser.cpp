@@ -23,9 +23,9 @@ namespace json {
 bool Parser::dispatch(
     Parser::Handler &handler,
     std::string_view const &message,
-    core::json::Buffer &buffer,
+    std::span<std::byte> const &buffer,
     TraceInfo const &trace_info) {
-  Frame frame{message, buffer};
+  auto frame = Frame::create(message, buffer);
   if (!frame.ping.count()) {
     switch (frame.status) {
       using enum Status::type_t;
@@ -34,42 +34,42 @@ bool Parser::dispatch(
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            json::BBO bbo{message, buffer};
+            auto bbo = BBO::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case DEPTH: {
-            Depth depth{message, buffer};
+            auto depth = Depth::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, depth);
             return true;
           }
           case TRADE: {
-            Trade trade{message, buffer};
+            auto trade = Trade::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            Detail detail{message, buffer};
+            auto detail = Detail::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case ESTIMATED_RATE: {
-            EstimatedRate estimated_rate{message, buffer};
+            auto estimated_rate = EstimatedRate::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, estimated_rate);
             return true;
           }
           case PREMIUM_INDEX: {
-            PremiumIndex premium_index{message, buffer};
+            auto premium_index = PremiumIndex::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, premium_index);
             return true;
           }
           case BASIS: {
-            Basis basis{message, buffer};
+            auto basis = Basis::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, basis);
             return true;
           }
           case INDEX: {
-            Index index{message, buffer};
+            auto index = Index::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, index);
             return true;
           }

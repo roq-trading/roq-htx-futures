@@ -69,7 +69,7 @@ struct create_metrics final : public core::metrics::Factory {
 DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)},
       connection_{create_connection(*this, shared.settings, context)},
-      decode_buffer_{shared.settings.common.decode_buffer_size},
+      decode_buffer_(shared.settings.common.decode_buffer_size),
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -185,8 +185,7 @@ void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       TraceInfo trace_info;
-      core::json::Buffer buffer{decode_buffer_};
-      json::Parser2::dispatch(*this, message, buffer, trace_info);
+      json::Parser2::dispatch(*this, message, decode_buffer_, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
       core::tools::UnhandledException::terminate();

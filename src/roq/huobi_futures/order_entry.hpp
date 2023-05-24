@@ -8,7 +8,6 @@
 #include <string_view>
 #include <vector>
 
-#include "roq/core/buffer.hpp"
 #include "roq/core/download.hpp"
 
 #include "roq/core/metrics/counter.hpp"
@@ -82,7 +81,7 @@ struct OrderEntry final : public web::rest::Client::Handler {
   // connection
   std::unique_ptr<web::rest::Client> const connection_;
   // buffers
-  core::Buffer decode_buffer_;
+  std::vector<std::byte> decode_buffer_;
   // metrics
   struct {
     core::metrics::Counter disconnect;

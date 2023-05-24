@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi_futures/json/bbo.hpp"
 
 using namespace roq;
@@ -28,9 +26,8 @@ TEST_CASE("json_bbo_simple", "[json_bbo]") {
                  R"("ch":"market.TRX211224.bbo")"
                  R"(})"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::BBO>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::BBO::create(message, buffer);
   CHECK(obj.ch == "market.TRX211224.bbo"sv);
   CHECK(obj.ts == 1639583658324ms);
   auto &tick = obj.tick;

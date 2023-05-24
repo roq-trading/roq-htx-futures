@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi_futures/json/detail.hpp"
 
 using namespace roq;
@@ -32,9 +30,8 @@ TEST_CASE("json_detail_simple_inverse", "[json_detail]") {
                  R"("bid":[37.783,4])"
                  R"(})"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::Detail::create(message, buffer);
   CHECK(obj.ch == "market.FIL211231.detail"sv);
   CHECK(obj.ts == 1639628009780ms);
   auto &tick = obj.tick;
@@ -74,9 +71,8 @@ TEST_CASE("json_detail_simple_linear", "[json_detail]") {
                  R"("bid":[0.89738,235])"
                  R"(})"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::Detail::create(message, buffer);
   CHECK(obj.ch == "market.WOO-USDT.detail"sv);
   CHECK(obj.ts == 1640775846213ms);
   auto &tick = obj.tick;
@@ -115,7 +111,6 @@ TEST_CASE("json_detail_crash_20220603", "[json_detail]") {
                  R"("bid":null)"
                  R"(})"
                  R"(})"sv;
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  [[maybe_unused]] auto obj = core::json::Parser::create<json::Detail>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::Detail::create(message, buffer);
 }

@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi_futures/json/premium_index.hpp"
 
 using namespace roq;
@@ -29,9 +27,8 @@ TEST_CASE("json_premium_index_simple_swap", "[json_premium_index]") {
                  R"("count":"0")"
                  R"(})"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::PremiumIndex>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::PremiumIndex::create(message, buffer);
   CHECK(obj.ch == "market.BTC-USD.premium_index.1min"sv);
   CHECK(obj.ts == 1642657680747ms);
   auto &tick = obj.tick;

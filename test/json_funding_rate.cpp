@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi_futures/json/funding_rate.hpp"
 
 using namespace roq;
@@ -31,9 +29,8 @@ TEST_CASE("json_funding_rate_simple_swap", "[json_funding_rate]") {
                  R"(})"
                  R"(])"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::FundingRate>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::FundingRate::create(message, buffer);
   CHECK(obj.op == json::Operator::NOTIFY);
   CHECK(obj.topic == "public.BTC-USDT.funding_rate"sv);
   CHECK(obj.ts == 1643960260995ms);

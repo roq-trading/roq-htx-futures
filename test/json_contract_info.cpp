@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi_futures/json/contract_info.hpp"
 
 using namespace roq;
@@ -44,9 +42,8 @@ TEST_CASE("json_contract_info_simple_inverse", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1639583414002)"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::ContractInfo>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::ContractInfo::create(message, buffer);
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 2);
@@ -124,7 +121,6 @@ TEST_CASE("json_contract_info_simple_linear", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1640774191619)"
                  R"(})";
-  core::Buffer buffer(8192);
-  core::json::Buffer buffer_(buffer);
-  /*auto obj =*/core::json::Parser::create<json::ContractInfo>(message, buffer_);
+  std::vector<std::byte> buffer(8192);
+  /*auto obj =*/json::ContractInfo::create(message, buffer);
 }
