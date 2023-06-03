@@ -113,4 +113,5 @@ TEST_CASE("json_detail_crash_20220603", "[json_detail]") {
                  R"(})"sv;
   std::vector<std::byte> buffer(8192);
   auto obj = json::Detail::create(message, buffer);
+  CHECK(obj.ch == "market.ETH220603.detail"sv);
 }
