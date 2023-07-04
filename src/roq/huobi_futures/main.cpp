@@ -2,6 +2,9 @@
 
 #include "roq/huobi_futures/application.hpp"
 
+#include "roq/logging/flags/parser.hpp"
+#include "roq/logging/flags/settings.hpp"
+
 using namespace std::literals;
 
 // === CONSTANTS ===
@@ -19,5 +22,7 @@ auto const INFO = roq::Service::Info{
 }  // namespace
 
 int main(int argc, char **argv) {
-  return roq::huobi_futures::Application{argc, argv, INFO}.run();
+  roq::logging::flags::Parser parser{argc, argv, INFO.description, INFO.build_version};
+  auto settings = roq::logging::flags::create_settings();
+  return roq::huobi_futures::Application{parser, settings, INFO}.run();
 }
