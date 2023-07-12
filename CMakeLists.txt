@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 # cmake
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-                      "${CMAKE_CURRENT_SOURCE_DIR}/autogen/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_CURRENT_SOURCE_DIR}/autogen/cmake
+                      ${CMAKE_MODULE_PATH})
 
 # version (using git tag)
 
@@ -74,13 +74,13 @@ find_program(CLANG_FORMAT clang-format REQUIRED)
 # include
 
 include_directories(
-  "${CMAKE_SOURCE_DIR}/src"
+  ${CMAKE_SOURCE_DIR}/src
   # >>> autogen >>>
-  "${CMAKE_BINARY_DIR}/src")
+  ${CMAKE_BINARY_DIR}/src)
 
 # sub-projects
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/roq/huobi_futures")
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/roq/huobi_futures)
 
 # test
 
@@ -90,7 +90,7 @@ endif()
 
 if(BUILD_TESTING)
   find_package(Catch2 REQUIRED)
-  add_subdirectory("${CMAKE_SOURCE_DIR}/test")
+  add_subdirectory(${CMAKE_SOURCE_DIR}/test)
 endif(BUILD_TESTING)
 
 # benchmark
@@ -99,13 +99,12 @@ option(BUILD_BENCHMARK "Enable benchmark" ON)
 
 if(BUILD_BENCHMARK)
   find_package(benchmark REQUIRED)
-  add_subdirectory("${CMAKE_SOURCE_DIR}/benchmark")
+  add_subdirectory(${CMAKE_SOURCE_DIR}/benchmark)
 endif(BUILD_BENCHMARK)
 
 # install
 
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/share/"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/ DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
 
-install(FILES "${CMAKE_SOURCE_DIR}/CHANGELOG.md"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/${PROJECT_NAME}")
+install(FILES ${CMAKE_SOURCE_DIR}/CHANGELOG.md
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/${PROJECT_NAME})
