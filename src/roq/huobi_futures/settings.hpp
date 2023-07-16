@@ -8,6 +8,7 @@
 #include "roq/server/flags/settings.hpp"
 
 #include "roq/huobi_futures/flags/common.hpp"
+#include "roq/huobi_futures/flags/flags.hpp"
 #include "roq/huobi_futures/flags/rest.hpp"
 #include "roq/huobi_futures/flags/ws.hpp"
 
@@ -19,9 +20,12 @@ struct Settings final : public server::flags::Settings {
 
   std::string_view exchange;
 
-  flags::Common__flags common;
-  flags::REST__flags rest;
-  flags::WS__flags ws;
+  flags::Common common;
+  flags::REST rest;
+  flags::WS ws;
+
+ private:
+  Settings(args::Parser const &, flags::Flags const &);
 };
 
 }  // namespace huobi_futures
