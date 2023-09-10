@@ -4,6 +4,8 @@
 
 #include <chrono>
 
+#include "roq/utils/patterns.hpp"
+
 #include "roq/core/json/parser.hpp"
 
 #include "roq/core/charconv/datetime.hpp"
@@ -22,7 +24,7 @@ inline void update(T &result, core::json::Value const &value) {
 template <>
 inline void update(std::chrono::milliseconds &result, core::json::Value const &value) {
   return std::visit(
-      overloaded{
+      utils::overloaded{
           [&](core::json::Null const &) { result = std::chrono::milliseconds{}; },
           [](bool) { throw std::bad_cast{}; },
           [&](int64_t val) { result = std::chrono::milliseconds{val}; },

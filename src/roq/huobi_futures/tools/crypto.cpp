@@ -4,7 +4,7 @@
 
 #include <fmt/core.h>
 
-#include "roq/core/codec/hex.hpp"
+#include "roq/utils/codec/hex.hpp"
 
 using namespace std::literals;
 
@@ -23,7 +23,7 @@ std::pair<std::string, std::string> Crypto::create_signature(std::chrono::nanose
   mac_.update(timestamp);
   auto digest = mac_.final(digest_);
   std::string signature;
-  core::codec::Hex::encode(signature, digest);
+  utils::codec::Hex::encode(signature, digest);
   return {timestamp, signature};
 }
 
