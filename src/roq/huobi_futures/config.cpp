@@ -29,6 +29,7 @@ auto const SUPPORTS = Mask{
     SupportType::FUNDS,
 };
 auto const OMS_REQUEST_ID_TYPE = RequestIdType::BASE64;
+auto const OMS_CANCEL_ALL_ORDERS = Mask<CancelAllOrdersFilter>{};
 }  // namespace
 
 // === HELPERS ===
@@ -46,6 +47,7 @@ auto create_gateway_settings(auto &settings) -> GatewaySettings {
       .oms_download_has_state = {},
       .oms_download_has_routing_id = {},
       .oms_request_id_type = OMS_REQUEST_ID_TYPE,
+      .oms_cancel_all_orders = OMS_CANCEL_ALL_ORDERS,
   };
 }
 }  // namespace
