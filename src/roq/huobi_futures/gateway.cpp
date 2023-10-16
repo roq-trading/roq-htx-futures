@@ -85,10 +85,7 @@ void Gateway::operator()(Event<Timer> const &event) {
 void Gateway::operator()(Event<Connected> const &) {
 }
 
-void Gateway::operator()(Event<Disconnected> const &event) {
-  auto const &[message_info, disconnected] = event;
-  if (disconnected.order_cancel_policy != OrderCancelPolicy{})
-    log::warn("*** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"sv);
+void Gateway::operator()(Event<Disconnected> const &) {
 }
 
 void Gateway::operator()(Trace<StreamStatus> const &event) {
