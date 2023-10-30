@@ -20,7 +20,7 @@
     },
     {
       "name": "id",
-      "type": "int64_t"
+      "type": "uint64_t"
     },
     {
       "name": "price",

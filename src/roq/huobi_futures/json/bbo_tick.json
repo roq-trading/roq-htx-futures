@@ -8,7 +8,7 @@
     },
     {
       "name": "id",
-      "type": "int64_t"
+      "type": "uint64_t"
     },
     {
       "name": "bid",
@@ -24,7 +24,7 @@
     },
     {
       "name": "version",
-      "type": "int64_t"
+      "type": "uint64_t"
     },
     {
       "name": "ch",
