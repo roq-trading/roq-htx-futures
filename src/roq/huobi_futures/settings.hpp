@@ -33,13 +33,9 @@ struct Settings final : public server::flags::Settings {
 
 template <>
 struct fmt::formatter<roq::huobi_futures::Settings> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::huobi_futures::Settings const &value, Context &context) const {
-    using namespace fmt::literals;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::huobi_futures::Settings const &value, format_context &context) const {
+    using namespace std::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -48,7 +44,7 @@ struct fmt::formatter<roq::huobi_futures::Settings> {
         R"(rest={}, )"
         R"(ws={}, )"
         R"(server={})"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.exchange,
         value.common,
         value.rest,
