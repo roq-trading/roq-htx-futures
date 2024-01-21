@@ -3,8 +3,11 @@
 #include "roq/huobi_futures/web_socket_2.hpp"
 
 #include "roq/mask.hpp"
+
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
+
+#include "roq/utils/metrics/const.hpp"
 
 #include "roq/core/metrics/factory.hpp"
 
@@ -102,13 +105,13 @@ void WebSocket2::operator()(Event<Timer> const &event) {
 void WebSocket2::operator()(metrics::Writer &writer) {
   writer
       // counter
-      .write(counter_.disconnect, metrics::COUNTER)
-      .write(counter_.total_bytes_received, metrics::COUNTER)
+      .write(counter_.disconnect, utils::metrics::COUNTER)
+      .write(counter_.total_bytes_received, utils::metrics::COUNTER)
       // profile
-      .write(profile_.parse, metrics::PROFILE)
-      .write(profile_.funding_rate, metrics::PROFILE)
+      .write(profile_.parse, utils::metrics::PROFILE)
+      .write(profile_.funding_rate, utils::metrics::PROFILE)
       // latency
-      .write(latency_.ping, metrics::LATENCY);
+      .write(latency_.ping, utils::metrics::LATENCY);
 }
 
 void WebSocket2::subscribe(size_t start_from) {
