@@ -6,8 +6,6 @@
 
 #include "roq/utils/update.hpp"
 
-#include "roq/utils/metrics/const.hpp"
-
 #include "roq/core/metrics/factory.hpp"
 
 #include "roq/web/socket/client_factory.hpp"
@@ -102,11 +100,11 @@ void DropCopy::operator()(Event<Timer> const &event) {
 void DropCopy::operator()(metrics::Writer &writer) {
   writer
       // counter
-      .write(counter_.disconnect, utils::metrics::COUNTER)
+      .write(counter_.disconnect, metrics::Type::COUNTER)
       // profile
-      .write(profile_.parse, utils::metrics::PROFILE)
+      .write(profile_.parse, metrics::Type::PROFILE)
       // latency
-      .write(latency_.ping, utils::metrics::LATENCY);
+      .write(latency_.ping, metrics::Type::LATENCY);
 }
 
 void DropCopy::operator()(web::socket::Client::Connected const &) {

@@ -7,8 +7,6 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/utils/metrics/const.hpp"
-
 #include "roq/core/metrics/factory.hpp"
 
 #include "roq/web/socket/client_factory.hpp"
@@ -105,13 +103,13 @@ void WebSocket2::operator()(Event<Timer> const &event) {
 void WebSocket2::operator()(metrics::Writer &writer) {
   writer
       // counter
-      .write(counter_.disconnect, utils::metrics::COUNTER)
-      .write(counter_.total_bytes_received, utils::metrics::COUNTER)
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      .write(counter_.total_bytes_received, metrics::Type::COUNTER)
       // profile
-      .write(profile_.parse, utils::metrics::PROFILE)
-      .write(profile_.funding_rate, utils::metrics::PROFILE)
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.funding_rate, metrics::Type::PROFILE)
       // latency
-      .write(latency_.ping, utils::metrics::LATENCY);
+      .write(latency_.ping, metrics::Type::LATENCY);
 }
 
 void WebSocket2::subscribe(size_t start_from) {

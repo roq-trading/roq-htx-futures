@@ -10,8 +10,6 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/utils/metrics/const.hpp"
-
 #include "roq/core/charconv.hpp"
 
 #include "roq/core/tools/exception.hpp"
@@ -121,19 +119,19 @@ void MarketData::operator()(Event<Timer> const &event) {
 void MarketData::operator()(metrics::Writer &writer) {
   writer
       // counter
-      .write(counter_.disconnect, utils::metrics::COUNTER)
-      .write(counter_.total_bytes_received, utils::metrics::COUNTER)
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      .write(counter_.total_bytes_received, metrics::Type::COUNTER)
       // profile
-      .write(profile_.parse, utils::metrics::PROFILE)
-      .write(profile_.error, utils::metrics::PROFILE)
-      .write(profile_.subbed, utils::metrics::PROFILE)
-      .write(profile_.bbo, utils::metrics::PROFILE)
-      .write(profile_.depth, utils::metrics::PROFILE)
-      .write(profile_.trade, utils::metrics::PROFILE)
-      .write(profile_.detail, utils::metrics::PROFILE)
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.error, metrics::Type::PROFILE)
+      .write(profile_.subbed, metrics::Type::PROFILE)
+      .write(profile_.bbo, metrics::Type::PROFILE)
+      .write(profile_.depth, metrics::Type::PROFILE)
+      .write(profile_.trade, metrics::Type::PROFILE)
+      .write(profile_.detail, metrics::Type::PROFILE)
       // latency
-      .write(latency_.ping, utils::metrics::LATENCY)
-      .write(latency_.heartbeat, utils::metrics::LATENCY);
+      .write(latency_.ping, metrics::Type::LATENCY)
+      .write(latency_.heartbeat, metrics::Type::LATENCY);
 }
 
 void MarketData::subscribe(size_t start_from) {
