@@ -70,7 +70,7 @@ target_link_libraries(
           fmt::fmt
           absl::flat_hash_map
           absl::flat_hash_set
-          ${ZLIB_LIBRARIES}
+          ${ZLIB_NG_LIBRARIES}
           ${RT_LIBRARIES})
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")

@@ -42,7 +42,7 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(ZLIB REQUIRED zlib)
+pkg_check_modules(ZLIB_NG REQUIRED zlib-ng)
 
 find_program(CLANG_FORMAT clang-format REQUIRED)
 

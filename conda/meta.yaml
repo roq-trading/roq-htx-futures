@@ -37,10 +37,10 @@ requirements:
     - roq-oss-catch2  # [osx]
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
+    - roq-oss-zlib-ng
     - roq-server
     - roq-utils
     - roq-web
-    - zlib
 
 about:
   home: https://roq-trading.com
