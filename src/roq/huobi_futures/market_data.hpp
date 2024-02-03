@@ -6,17 +6,17 @@
 #include <string_view>
 #include <vector>
 
-#include "roq/core/download.hpp"
-
-#include "roq/core/metrics/counter.hpp"
-#include "roq/core/metrics/latency.hpp"
-#include "roq/core/metrics/profile.hpp"
+#include "roq/utils/metrics/counter.hpp"
+#include "roq/utils/metrics/latency.hpp"
+#include "roq/utils/metrics/profile.hpp"
 
 #include "roq/io/context.hpp"
 
 #include "roq/web/socket/client.hpp"
 
 #include "roq/core/zlib/inflate.hpp"
+
+#include "roq/core/download.hpp"
 
 #include "roq/server.hpp"
 
@@ -105,13 +105,13 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   uint64_t request_id_ = {};
   // metrics
   struct {
-    core::metrics::Counter disconnect, total_bytes_received;
+    utils::metrics::Counter disconnect, total_bytes_received;
   } counter_;
   struct {
-    core::metrics::Profile parse, ping, error, subbed, bbo, depth, trade, detail;
+    utils::metrics::Profile parse, ping, error, subbed, bbo, depth, trade, detail;
   } profile_;
   struct {
-    core::metrics::Latency ping, heartbeat;
+    utils::metrics::Latency ping, heartbeat;
   } latency_;
   // cache
   Shared &shared_;
