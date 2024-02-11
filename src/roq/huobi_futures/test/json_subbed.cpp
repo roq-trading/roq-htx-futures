@@ -22,6 +22,6 @@ TEST_CASE("json_subbed_simple", "[json_subbed]") {
                  R"("ts":1639584082288,)"
                  R"("status":"ok")"
                  R"(})";
-  // auto obj = core::json::Parser::create<json::Subbed>(message, buffer_);
+  json::Subbed obj{message, buffer_};
   */
 }

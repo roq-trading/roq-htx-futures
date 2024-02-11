@@ -27,7 +27,7 @@ TEST_CASE("json_bbo_simple", "[json_bbo]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::BBO::create(message, buffer);
+  json::BBO obj{message, buffer};
   CHECK(obj.ch == "market.TRX211224.bbo"sv);
   CHECK(obj.ts == 1639583658324ms);
   auto &tick = obj.tick;

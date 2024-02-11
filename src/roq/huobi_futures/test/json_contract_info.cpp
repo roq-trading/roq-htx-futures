@@ -43,7 +43,7 @@ TEST_CASE("json_contract_info_simple_inverse", "[json_contract_info]") {
                  R"("ts":1639583414002)"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::ContractInfo::create(message, buffer);
+  json::ContractInfo obj{message, buffer};
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 2);
@@ -122,5 +122,5 @@ TEST_CASE("json_contract_info_simple_linear", "[json_contract_info]") {
                  R"("ts":1640774191619)"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  /*auto obj =*/json::ContractInfo::create(message, buffer);
+  [[maybe_unused]] json::ContractInfo obj{message, buffer};
 }

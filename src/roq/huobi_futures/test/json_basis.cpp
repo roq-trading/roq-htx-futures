@@ -24,7 +24,7 @@ TEST_CASE("json_basis_simple_swap", "[json_basis]") {
                  R"("basis_rate":"-0.0156867382010838518425939816818336619"})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::Basis::create(message, buffer);
+  json::Basis obj{message, buffer};
   CHECK(obj.ch == "market.WOO-USDT.basis.1min.open"sv);
   CHECK(obj.ts == 1642659617542ms);
   auto &tick = obj.tick;

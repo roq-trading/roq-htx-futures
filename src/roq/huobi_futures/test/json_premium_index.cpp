@@ -28,7 +28,7 @@ TEST_CASE("json_premium_index_simple_swap", "[json_premium_index]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::PremiumIndex::create(message, buffer);
+  json::PremiumIndex obj{message, buffer};
   CHECK(obj.ch == "market.BTC-USD.premium_index.1min"sv);
   CHECK(obj.ts == 1642657680747ms);
   auto &tick = obj.tick;

@@ -31,7 +31,7 @@ TEST_CASE("json_trade_simple_inverse", "[json_trade]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::Trade::create(message, buffer);
+  json::Trade obj{message, buffer};
   CHECK(obj.ch == "market.BTC220325.trade.detail"sv);
   CHECK(obj.ts == 1639629424053ms);
   auto &tick = obj.tick;
@@ -76,7 +76,7 @@ TEST_CASE("json_trade_simple_linear", "[json_trade]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::Trade::create(message, buffer);
+  json::Trade obj{message, buffer};
   CHECK(obj.ch == "market.BTC-USDT.trade.detail"sv);
   CHECK(obj.ts == 1640775632524ms);
   auto &tick = obj.tick;

@@ -28,5 +28,5 @@ TEST_CASE("json_estimated_rate_simple_swap", "[json_estimated_rate]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::EstimatedRate::create(message, buffer);
+  [[maybe_unused]] json::EstimatedRate obj{message, buffer};
 }

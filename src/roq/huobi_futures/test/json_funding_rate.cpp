@@ -30,7 +30,7 @@ TEST_CASE("json_funding_rate_simple_swap", "[json_funding_rate]") {
                  R"(])"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::FundingRate::create(message, buffer);
+  json::FundingRate obj{message, buffer};
   CHECK(obj.op == json::Operator::NOTIFY);
   CHECK(obj.topic == "public.BTC-USDT.funding_rate"sv);
   CHECK(obj.ts == 1643960260995ms);

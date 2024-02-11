@@ -28,7 +28,7 @@ bool Parser2::dispatch(
     std::string_view const &message,
     std::span<std::byte> const &buffer,
     TraceInfo const &trace_info) {
-  auto frame = Frame2::create(message, buffer);
+  Frame2 frame{message, buffer};
   switch (frame.op) {
     using enum Operator::type_t;
     case UNDEFINED__:
@@ -58,7 +58,7 @@ bool Parser2::dispatch(
         case UNKNOWN__:
           break;
         case FUNDING_RATE: {
-          auto funding_rate = FundingRate::create(message, buffer);
+          FundingRate funding_rate{message, buffer};
           create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;
         }

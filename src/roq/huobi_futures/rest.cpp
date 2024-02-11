@@ -225,7 +225,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        auto contract_info = json::ContractInfo::create(body, decode_buffer_);
+        json::ContractInfo contract_info{body, decode_buffer_};
         // XXX debug -- saw something 20220603 -- maybe like this
         if (std::empty(contract_info.data)) {
           log::warn(R"(DEBUG: body="{}")"sv, body);
