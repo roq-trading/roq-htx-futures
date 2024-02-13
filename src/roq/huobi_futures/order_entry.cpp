@@ -7,7 +7,7 @@
 
 #include "roq/mask.hpp"
 
-#include "roq/oms/exceptions.hpp"
+#include "roq/server/oms/exceptions.hpp"
 
 #include "roq/utils/update.hpp"
 
@@ -139,28 +139,28 @@ void OrderEntry::operator()(metrics::Writer &writer) {
 }
 
 uint16_t OrderEntry::operator()(
-    Event<CreateOrder> const &, oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
-  throw oms::NotSupported{"not supported"sv};
+    Event<CreateOrder> const &, server::oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
+  throw server::oms::NotSupported{"not supported"sv};
 }
 
 uint16_t OrderEntry::operator()(
     Event<ModifyOrder> const &,
-    oms::Order const &,
+    server::oms::Order const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
-  throw oms::NotSupported{"not supported"sv};
+  throw server::oms::NotSupported{"not supported"sv};
 }
 
 uint16_t OrderEntry::operator()(
     Event<CancelOrder> const &,
-    oms::Order const &,
+    server::oms::Order const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
-  throw oms::NotSupported{"not supported"sv};
+  throw server::oms::NotSupported{"not supported"sv};
 }
 
 uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &, [[maybe_unused]] std::string_view const &request_id) {
-  throw oms::NotSupported{"not supported"sv};
+  throw server::oms::NotSupported{"not supported"sv};
 }
 
 void OrderEntry::operator()(Trace<web::rest::Client::Connected> const &) {
