@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <absl/container/flat_hash_set.h>
-
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "roq/utils/container.hpp"
 
 #include "roq/utils/metrics/counter.hpp"
 #include "roq/utils/metrics/latency.hpp"
@@ -92,7 +92,7 @@ struct Rest final : public web::rest::Client::Handler {
   } latency_;
   // cache
   Shared &shared_;
-  absl::flat_hash_set<Symbol> all_symbols_;
+  utils::unordered_set<std::string> all_symbols_;
   // state
   ConnectionStatus status_ = {};
   core::Download<RestState> download_;

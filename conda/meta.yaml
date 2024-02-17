@@ -36,6 +36,7 @@ requirements:
     - roq-oss-brotli
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
+    - roq-oss-unordered_dense
     - roq-oss-zlib-ng
     - roq-server
     - roq-utils

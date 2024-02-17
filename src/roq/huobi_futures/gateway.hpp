@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include <absl/container/flat_hash_map.h>
-
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "roq/server.hpp"
+
+#include "roq/utils/container.hpp"
 
 #include "roq/io/context.hpp"
 
@@ -86,7 +86,7 @@ struct Gateway final : public server::Handler,
  private:
   server::Dispatcher &dispatcher_;
   // accounts
-  absl::flat_hash_map<std::string, std::unique_ptr<Account>> const accounts_;
+  utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
   // io
   io::Context &context_;
   // shared
@@ -95,8 +95,8 @@ struct Gateway final : public server::Handler,
   uint16_t stream_id_ = {};
   // streams
   Rest rest_;
-  absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
-  absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
+  utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
+  utils::unordered_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
   std::vector<std::unique_ptr<WebSocket>> web_socket_;
   std::vector<std::unique_ptr<WebSocket2>> web_socket_2_;
