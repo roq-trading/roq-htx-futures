@@ -365,8 +365,8 @@ void MarketData::operator()(Trace<json::Depth> const &event) {
         .exchange_time_utc = depth.ts,
         .exchange_sequence = {},
         .sending_time_utc = {},
-        .price_decimals = {},
-        .quantity_decimals = {},
+        .price_precision = {},
+        .quantity_precision = {},
         .checksum = {},
     };
     log::info<3>("market_by_price_update={}"sv, market_by_price_update);
