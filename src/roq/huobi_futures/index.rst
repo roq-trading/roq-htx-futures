@@ -5,18 +5,6 @@
 roq-huobi-futures
 =================
 
-.. important::
-   This gateway needs sponsorship to complete certain features.
-
-.. important::
-   There are different network end-points required for linear and inverse
-   perpetuals/futures.
-   The API's are different but sufficiently similar to allow this gateway to
-   support both.
-   The implication of this is that you will need more instances of this gateway
-   if you need support for both product groups.
-
-
 
 Links
 -----
@@ -26,16 +14,7 @@ Links
 * `API <https://huobiapi.github.io/docs/dm/v1/en/>`__
 
 
-Purpose
--------
-
-* Maintain network connectivity with the Huobi Futures exchange
-* Route exchange updates to connected clients
-* Route client requests to the relevant exchange accounts
-* Stream all messages to an event-log
-
-
-Overview
+Supports
 --------
 
 .. grid::  2
@@ -52,6 +31,8 @@ Overview
         - |checkmark|
       * - Options
         -
+      * - Combos
+        -
 
   .. grid-item-card::  Market Data
 
@@ -64,9 +45,9 @@ Overview
         -
       * - Top of Book
         - |checkmark|
-      * - Market by Price (L2)
+      * - Market by Price
         - |checkmark|
-      * - Market by Order (L3)
+      * - Market by Order
         -
       * - Trade Summary
         - |checkmark|
@@ -86,7 +67,7 @@ Overview
         - |checkmark|
       * - Cancel All
         - |checkmark|
-      * - Auto Cancellation
+      * - Auto-Cancel
         -
 
   .. grid-item-card::  Account Management
@@ -99,74 +80,56 @@ Overview
       * - Funds
         - |checkmark|
 
-* Data center located in Singapore (to be confirmed)
-* No test environment
 
-
-Conda
------
+Installing
+----------
 
 * :ref:`Using Conda <tutorial-conda>`
 
-.. tab:: Install
+.. tab:: Stable
 
-  .. code-block:: bash
+  .. code-block:: shell
 
-    $ mamba install \
-      --channel https://roq-trading.com/conda/stable \
-      roq-huobi-futures
+     $ mamba install \
+           --channel https://roq-trading.com/conda/stable \
+           roq-huobi-futures
 
-.. tab:: Configure
+.. tab:: Unstable
 
-  .. code-block:: bash
+  .. code-block:: shell
 
-    $ cp $CONDA_PREFIX/share/roq-huobi-futures/config.toml $CONFIG_FILE_PATH
-
-    # Then modify $CONFIG_FILE_PATH to match your specific configuration
-
-.. tab:: Run
-
-  .. code-block:: bash
-
-    $ roq-huobi-futures \
-          --name "huobi-futures" \
-          --config_file "$CONFIG_FILE_PATH" \
-          --client_listen_address "$UNIX_SOCKET_PATH" \
-          --service_listen_address "$TCP_LISTEN_PORT" \
-          --flagfile "$FLAG_FILE"
+     $ mamba install \
+           --channel https://roq-trading.com/conda/unstable \
+           roq-huobi-futures
 
 
-Config
-------
+Using
+-----
 
-* :ref:`Common Config <gateway-config>`
+.. code-block:: shell
 
+   $ roq-huobi-futures \
+         --name "huobi-futures" \
+         --config_file $CONFIG_FILE_PATH \
+         --client_listen_address $UNIX_SOCKET_PATH \
+         --flagfile $ENVIRONMENT_FLAGFILE
+
+
+.. _roq-huobi-futures-flags:
 
 Flags
 -----
 
 * :ref:`Using Flags <abseil-cpp>`
-* :ref:`Common Flags <gateway-flags>`
+* :ref:`Gateway Flags <gateway-flags>`
 
-.. code-block:: bash
+.. code-block:: shell
 
    $ roq-huobi-futures --help
-
-.. tab:: Rest
-
-  .. list-table::
-     :widths: auto
-
-     * - :code:`--rest_download_refresh`
-       - Periodic refresh
 
 .. tab:: Flags
 
    .. include:: flags/flags.rstinc
-
-.. tab:: Common
-
-   .. include:: flags/common.rstinc
 
 .. tab:: REST
 
@@ -176,41 +139,59 @@ Flags
 
    .. include:: flags/ws.rstinc
 
+.. tab:: Misc
+
+   .. include:: flags/misc.rstinc
+
 
 Environments
 ------------
 
-.. code-block:: bash
-
-  $ $CONDA_PREFIX/share/roq-huobi-futures/flags
-
-COIN-M Futures
-~~~~~~~~~~~~~~
-
 .. tab:: Prod
+
+   .. code-block:: shell
+
+      $ $CONDA_PREFIX/share/roq-huobi-futures/flags/prod/flags.cfg
 
    .. include:: flags/prod/flags.cfg
-     :code: ini
+     :code: shell
 
-.. note::
-   You may also specify :code:`--api=""` (the default).
+.. tab:: Prod (swap)
 
-COIN-M Swaps
-~~~~~~~~~~~~
+   .. code-block:: shell
 
-.. tab:: Prod
+      $ $CONDA_PREFIX/share/roq-huobi-futures/flags/prod/flags-swap.cfg
 
    .. include:: flags/prod/flags-swap.cfg
-     :code: ini
+     :code: shell
 
+.. tab:: Prod (linear-swap)
 
-USDT-M
-~~~~~~
+   .. code-block:: shell
 
-.. tab:: Prod
+      $ $CONDA_PREFIX/share/roq-huobi-futures/flags/prod/flags-linear-swap.cfg
 
    .. include:: flags/prod/flags-linear-swap.cfg
-     :code: ini
+     :code: shell
+
+
+Configuration
+-------------
+
+* :ref:`Gateway Config <gateway-config>`
+
+.. code-block:: shell
+
+   $ $CONDA_PREFIX/share/roq-huobi-futures/config.toml
+
+.. important::
+
+   The template will be replaced when the software is upgraded.
+   Make a copy and modify to your needs.
+
+.. include:: config.toml
+   :code: toml
+
 
 
 Market Data

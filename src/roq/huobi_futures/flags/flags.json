@@ -7,13 +7,13 @@
       "type": "std::string",
       "required": true,
       "default": "huobi-futures",
-      "description": "exchange identifier (string)"
+      "description": "Exchange identifier"
     },
     {
       "name": "api",
       "type": "std::string",
       "default": "",
-      "description": "what api to use (<empty>, swap, linear-swap)"
+      "description": "API (<empty>, :code:`swap`, :code:`linear-swap`)"
     }
   ]
 }
