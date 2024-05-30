@@ -4,15 +4,17 @@
   "values": [
     {
       "name": "asks",
-      "type": "std::span<Quotation const>"
+      "type": "Quotation",
+      "array": "std/span"
     },
     {
       "name": "bids",
-      "type": "std::span<Quotation const>"
+      "type": "Quotation",
+      "array": "std/span"
     },
     {
       "name": "ch",
-      "type": "std::string_view"
+      "type": "std/string_view"
     },
     {
       "name": "event",
@@ -20,19 +22,19 @@
     },
     {
       "name": "id",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "mrid",
-      "type": "int64_t"
+      "type": "std/int64"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "version",
-      "type": "uint64_t"
+      "type": "std/uint64"
     }
   ]
 }

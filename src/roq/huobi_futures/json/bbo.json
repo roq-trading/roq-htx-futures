@@ -4,11 +4,11 @@
   "values": [
     {
       "name": "ch",
-      "type": "std::string_view"
+      "type": "std/string_view"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "tick",

@@ -4,7 +4,7 @@
   "values": [
     {
       "name": "timestamp",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     }
   ]
 }

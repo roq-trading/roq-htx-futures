@@ -8,15 +8,16 @@
     },
     {
       "name": "topic",
-      "type": "std::string_view"
+      "type": "std/string_view"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "data",
-      "type": "std::span<FundingRateItem const>"
+      "type": "FundingRateItem",
+      "array": "std/span"
     }
   ]
 }

@@ -4,27 +4,27 @@
   "values": [
     {
       "name": "amount",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "quantity",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "trade_turnover",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "id",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "price",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "direction",

@@ -4,11 +4,11 @@
   "values": [
     {
       "name": "mrid",
-      "type": "int64_t"
+      "type": "std/int64"
     },
     {
       "name": "id",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "bid",
@@ -20,15 +20,15 @@
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "version",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "ch",
-      "type": "std::string_view"
+      "type": "std/string_view"
     }
   ]
 }

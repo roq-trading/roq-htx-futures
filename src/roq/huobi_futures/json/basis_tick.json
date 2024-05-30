@@ -4,23 +4,23 @@
   "values": [
     {
       "name": "id",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "index_price",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "contract_price",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "basis",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "basis_rate",
-      "type": "double"
+      "type": "std/double"
     }
   ]
 }

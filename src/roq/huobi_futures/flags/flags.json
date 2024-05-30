@@ -4,14 +4,14 @@
   "values": [
     {
       "name": "exchange",
-      "type": "std::string",
+      "type": "std/string",
       "required": true,
       "default": "huobi-futures",
       "description": "Exchange identifier"
     },
     {
       "name": "api",
-      "type": "std::string",
+      "type": "std/string",
       "default": "",
       "description": "API (<empty>, :code:`swap`, :code:`linear-swap`)"
     }

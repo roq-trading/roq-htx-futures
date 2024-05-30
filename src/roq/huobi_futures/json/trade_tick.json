@@ -4,15 +4,16 @@
   "values": [
     {
       "name": "id",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "data",
-      "type": "std::span<TradeTickItem const>"
+      "type": "TradeTickItem",
+      "array": "std/span"
     }
   ]
 }

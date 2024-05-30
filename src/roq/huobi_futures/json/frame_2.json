@@ -8,19 +8,19 @@
     },
     {
       "name": "topic",
-      "type": "std::string_view"
+      "type": "std/string_view"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "err-code",
-      "type": "int32_t"
+      "type": "std/int32"
     },
     {
       "name": "err-msg",
-      "type": "std::string_view"
+      "type": "std/string_view"
     },
     {
       "name": "data"

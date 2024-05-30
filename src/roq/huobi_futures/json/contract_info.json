@@ -4,15 +4,16 @@
   "values": [
     {
       "name": "status",
-      "type": "std::string_view"
+      "type": "std/string_view"
     },
     {
       "name": "data",
-      "type": "std::span<ContractInfoItem const>"
+      "type": "ContractInfoItem",
+      "array": "std/span"
     },
     {
       "name": "ts",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     }
   ]
 }
