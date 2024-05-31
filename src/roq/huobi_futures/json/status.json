@@ -1,5 +1,5 @@
 {
-  "name": "Status",
+  "name": "roq/huobi_futures/json/Status",
   "type": "enum",
   "values": [
     {

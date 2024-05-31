@@ -1,5 +1,5 @@
 {
-  "name": "IndexTick",
+  "name": "roq/huobi_futures/json/IndexTick",
   "type": "comp",
   "values": [
     {

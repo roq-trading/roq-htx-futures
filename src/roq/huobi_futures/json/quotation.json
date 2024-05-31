@@ -1,5 +1,5 @@
 {
-  "name": "Quotation",
+  "name": "roq/huobi_futures/json/Quotation",
   "type": "array_item",
   "values": [
     {

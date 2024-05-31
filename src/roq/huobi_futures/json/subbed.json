@@ -1,5 +1,5 @@
 {
-  "name": "Subbed",
+  "name": "roq/huobi_futures/json/Subbed",
   "type": "struct",
   "values": [
     {
@@ -16,7 +16,7 @@
     },
     {
       "name": "status",
-      "type": "Status"
+      "type": "roq/huobi_futures/json/Status"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "TradeTick",
+  "name": "roq/huobi_futures/json/TradeTick",
   "type": "comp",
   "values": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "data",
-      "type": "TradeTickItem",
+      "type": "roq/huobi_futures/json/TradeTickItem",
       "array": "std/span"
     }
   ]

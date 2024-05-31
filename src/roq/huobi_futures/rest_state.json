@@ -1,5 +1,5 @@
 {
-  "name": "RestState",
+  "name": "roq/huobi_futures/RestState",
   "type": "enum",
   "values": [
     {

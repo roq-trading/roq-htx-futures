@@ -1,10 +1,10 @@
 {
-  "name": "Frame2",
+  "name": "roq/huobi_futures/json/Frame2",
   "type": "comp",
   "values": [
     {
       "name": "op",
-      "type": "Operator"
+      "type": "roq/huobi_futures/json/Operator"
     },
     {
       "name": "topic",

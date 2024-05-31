@@ -1,5 +1,5 @@
 {
-  "name": "ContractInfo",
+  "name": "roq/huobi_futures/json/ContractInfo",
   "type": "comp",
   "values": [
     {
@@ -8,7 +8,7 @@
     },
     {
       "name": "data",
-      "type": "ContractInfoItem",
+      "type": "roq/huobi_futures/json/ContractInfoItem",
       "array": "std/span"
     },
     {

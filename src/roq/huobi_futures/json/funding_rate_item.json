@@ -1,5 +1,5 @@
 {
-  "name": "FundingRateItem",
+  "name": "roq/huobi_futures/json/FundingRateItem",
   "type": "item",
   "values": [
     {

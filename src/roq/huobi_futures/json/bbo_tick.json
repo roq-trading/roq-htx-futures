@@ -1,5 +1,5 @@
 {
-  "name": "BBOTick",
+  "name": "roq/huobi_futures/json/BBOTick",
   "type": "comp",
   "values": [
     {
@@ -12,11 +12,11 @@
     },
     {
       "name": "bid",
-      "type": "Quotation"
+      "type": "roq/huobi_futures/json/Quotation"
     },
     {
       "name": "ask",
-      "type": "Quotation"
+      "type": "roq/huobi_futures/json/Quotation"
     },
     {
       "name": "ts",

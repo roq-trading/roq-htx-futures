@@ -1,5 +1,5 @@
 {
-  "name": "DetailTick",
+  "name": "roq/huobi_futures/json/DetailTick",
   "type": "comp",
   "values": [
     {
@@ -44,11 +44,11 @@
     },
     {
       "name": "ask",
-      "type": "Quotation"
+      "type": "roq/huobi_futures/json/Quotation"
     },
     {
       "name": "bid",
-      "type": "Quotation"
+      "type": "roq/huobi_futures/json/Quotation"
     }
   ]
 }

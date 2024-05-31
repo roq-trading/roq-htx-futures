@@ -1,5 +1,5 @@
 {
-  "name": "EstimatedRate",
+  "name": "roq/huobi_futures/json/EstimatedRate",
   "type": "comp",
   "values": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "tick",
-      "type": "EstimatedRateTick"
+      "type": "roq/huobi_futures/json/EstimatedRateTick"
     }
   ]
 }

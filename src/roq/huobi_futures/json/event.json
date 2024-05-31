@@ -1,5 +1,5 @@
 {
-  "name": "Event",
+  "name": "roq/huobi_futures/json/Event",
   "type": "enum",
   "values": [
     {

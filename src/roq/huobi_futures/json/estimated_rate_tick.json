@@ -1,5 +1,5 @@
 {
-  "name": "EstimatedRateTick",
+  "name": "roq/huobi_futures/json/EstimatedRateTick",
   "type": "comp",
   "values": [
     {

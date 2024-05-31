@@ -1,5 +1,5 @@
 {
-  "name": "PremiumIndex",
+  "name": "roq/huobi_futures/json/PremiumIndex",
   "type": "comp",
   "values": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "tick",
-      "type": "PremiumIndexTick"
+      "type": "roq/huobi_futures/json/PremiumIndexTick"
     }
   ]
 }

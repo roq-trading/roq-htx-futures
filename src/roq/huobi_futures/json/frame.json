@@ -1,5 +1,5 @@
 {
-  "name": "Frame",
+  "name": "roq/huobi_futures/json/Frame",
   "type": "comp",
   "values": [
     {
@@ -8,7 +8,7 @@
     },
     {
       "name": "status",
-      "type": "Status"
+      "type": "roq/huobi_futures/json/Status"
     },
     {
       "name": "err-code",

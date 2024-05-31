@@ -1,5 +1,5 @@
 {
-  "name": "Operator",
+  "name": "roq/huobi_futures/json/Operator",
   "type": "enum",
   "values": [
     {

@@ -1,25 +1,25 @@
 {
-  "name": "WS",
+  "name": "roq/huobi_futures/flags/WS",
   "type": "flags",
   "prefix": "ws_",
   "values": [
     {
       "name": "market_uri",
-      "type": "roq::io::web::URI",
+      "type": "roq/io/web/URI",
       "validator": "roq::core::flags::URI",
       "default": "wss://api.hbdm.com/ws",
       "description": "Exchange end-point"
     },
     {
       "name": "index_uri",
-      "type": "roq::io::web::URI",
+      "type": "roq/io/web/URI",
       "validator": "roq::core::flags::URI",
       "default": "wss://api.hbdm.com/ws_index",
       "description": "Exchange end-point"
     },
     {
       "name": "order_uri",
-      "type": "roq::io::web::URI",
+      "type": "roq/io/web/URI",
       "validator": "roq::core::flags::URI",
       "default": "wss://api.hbdm.com/notification",
       "description": "Exchange end-point"

@@ -1,5 +1,5 @@
 {
-  "name": "Close",
+  "name": "roq/huobi_futures/json/Close",
   "type": "struct",
   "values": [
     {

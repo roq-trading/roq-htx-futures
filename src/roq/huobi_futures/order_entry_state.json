@@ -1,5 +1,5 @@
 {
-  "name": "OrderEntryState",
+  "name": "roq/huobi_futures/OrderEntryState",
   "type": "enum",
   "values": [
     {

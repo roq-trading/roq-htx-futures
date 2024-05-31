@@ -1,5 +1,5 @@
 {
-  "name": "Detail",
+  "name": "roq/huobi_futures/json/Detail",
   "type": "comp",
   "values": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "tick",
-      "type": "DetailTick"
+      "type": "roq/huobi_futures/json/DetailTick"
     }
   ]
 }

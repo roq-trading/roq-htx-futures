@@ -1,10 +1,10 @@
 {
-  "name": "FundingRate",
+  "name": "roq/huobi_futures/json/FundingRate",
   "type": "comp",
   "values": [
     {
       "name": "op",
-      "type": "Operator"
+      "type": "roq/huobi_futures/json/Operator"
     },
     {
       "name": "topic",
@@ -16,7 +16,7 @@
     },
     {
       "name": "data",
-      "type": "FundingRateItem",
+      "type": "roq/huobi_futures/json/FundingRateItem",
       "array": "std/span"
     }
   ]
