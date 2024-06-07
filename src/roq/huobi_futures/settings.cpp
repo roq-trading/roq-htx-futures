@@ -13,8 +13,8 @@ Settings::Settings(args::Parser const &args) : Settings{args, flags::Flags::crea
 }
 
 Settings::Settings(args::Parser const &args, flags::Flags const &flags)
-    : server::flags::Settings{args, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER, flags.api}, exchange{flags.exchange},
-      misc{flags::Misc::create()}, rest{flags::REST::create()}, ws{flags::WS::create()} {
+    : server::flags::Settings{args, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER, flags.api}, exchange{flags.exchange}, misc{flags::Misc::create()},
+      rest{flags::REST::create()}, ws{flags::WS::create()} {
   log::info("settings={}"sv, *this);
 }
 

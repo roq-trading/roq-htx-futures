@@ -72,16 +72,14 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto &settings, auto const &group, auto const &function)
-      : core::metrics::Factory(settings.app.name, group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function) : core::metrics::Factory(settings.app.name, group, function) {}
 };
 }  // namespace
 
 // === IMPLEMENTATION ===
 
 Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)},
-      connection_{create_connection(*this, shared.settings, context)},
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_(shared.settings.misc.decode_buffer_size),
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -309,8 +307,7 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
 }
 
 template <typename SuccessHandler, typename ErrorHandler>
-void Rest::process_response(
-    web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {
+void Rest::process_response(web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {
   try {
     auto [status, category, body] = response.result();
     log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);

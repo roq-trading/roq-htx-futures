@@ -29,9 +29,7 @@ inline void update(std::chrono::milliseconds &result, core::json::Value const &v
           [](bool) { throw std::bad_cast{}; },
           [&](int64_t val) { result = std::chrono::milliseconds{val}; },
           [&](double val) { result = std::chrono::milliseconds{static_cast<int64_t>(val)}; },
-          [&](std::string_view const &val) {
-            result = core::charconv::datetime_from_string<std::remove_reference<decltype(result)>::type>(val);
-          },
+          [&](std::string_view const &val) { result = core::charconv::datetime_from_string<std::remove_reference<decltype(result)>::type>(val); },
           [](core::json::Object const &) { throw std::bad_cast{}; },
           [](core::json::Array const &) { throw std::bad_cast{}; },
       },

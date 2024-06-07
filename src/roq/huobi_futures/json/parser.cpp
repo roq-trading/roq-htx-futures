@@ -20,11 +20,7 @@ namespace roq {
 namespace huobi_futures {
 namespace json {
 
-bool Parser::dispatch(
-    Parser::Handler &handler,
-    std::string_view const &message,
-    std::span<std::byte> const &buffer,
-    TraceInfo const &trace_info) {
+bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message, std::span<std::byte> const &buffer, TraceInfo const &trace_info) {
   Frame frame{message, buffer};
   if (!frame.ping.count()) {
     switch (frame.status) {

@@ -72,18 +72,15 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto &settings, auto const &group, auto const &function)
-      : core::metrics::Factory(settings.app.name, group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function) : core::metrics::Factory(settings.app.name, group, function) {}
 };
 }  // namespace
 
 // === IMPLEMENTATION ===
 
 MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index},
-      connection_{create_connection(*this, shared.settings, context)},
-      decode_buffer_(shared.settings.misc.decode_buffer_size),
-      request_id_{static_cast<uint64_t>(stream_id_) * 1000000},  // scale (debugging)
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index}, connection_{create_connection(*this, shared.settings, context)},
+      decode_buffer_(shared.settings.misc.decode_buffer_size), request_id_{static_cast<uint64_t>(stream_id_) * 1000000},  // scale (debugging)
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
           .total_bytes_received = create_metrics(shared.settings, name_, "total_bytes_received"sv),
@@ -214,8 +211,7 @@ void MarketData::subscribe(std::span<Symbol const> const &symbols) {
   subscribe(symbols, "market"sv, "detail"sv);
 }
 
-void MarketData::subscribe(
-    std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
+void MarketData::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
     auto id = ++request_id_;
@@ -234,10 +230,7 @@ void MarketData::subscribe(
 }
 
 void MarketData::subscribe_with_data_type(
-    std::span<Symbol const> const &symbols,
-    std::string_view const &source,
-    std::string_view const &theme,
-    std::string_view const &data_type) {
+    std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme, std::string_view const &data_type) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
     auto id = ++request_id_;

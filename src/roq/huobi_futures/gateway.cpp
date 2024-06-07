@@ -32,15 +32,12 @@ R create_accounts(auto &config) {
 }
 
 template <typename R>
-R create_order_entry(
-    Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
+R create_order_entry(Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts)
-      result.try_emplace(
-          static_cast<std::string_view>(name),
-          std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
   }
   return result;
 }
@@ -50,9 +47,7 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   for (auto &[name, account] : accounts)
-    result.try_emplace(
-        static_cast<std::string_view>(name),
-        std::make_unique<DropCopy>(gateway, context, ++stream_id, *account, shared));
+    result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy>(gateway, context, ++stream_id, *account, shared));
   return result;
 }
 }  // namespace
@@ -60,10 +55,9 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
-    : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
-      shared_{dispatcher, settings}, rest_{*this, context_, ++stream_id_, shared_},
-      order_entry_{create_order_entry<decltype(order_entry_)>(
-          *this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
+    : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context}, shared_{dispatcher, settings},
+      rest_{*this, context_, ++stream_id_, shared_},
+      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
   if (settings.rest.cancel_on_disconnect)
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
@@ -176,27 +170,20 @@ void Gateway::ensure_symbol_slices(size_t size) {
   }
 }
 
-uint16_t Gateway::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+uint16_t Gateway::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
   return get_order_entry(event.value.account)(event, order, request_id);
 }
 
 uint16_t Gateway::operator()(
-    Event<ModifyOrder> const &event,
-    server::oms::Order const &order,
-    std::string_view const &request_id,
-    std::string_view const &previous_request_id) {
+    Event<ModifyOrder> const &event, server::oms::Order const &order, std::string_view const &request_id, std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
   return get_order_entry(event.value.account)(event, order, request_id, previous_request_id);
 }
 
 uint16_t Gateway::operator()(
-    Event<CancelOrder> const &event,
-    server::oms::Order const &order,
-    std::string_view const &request_id,
-    std::string_view const &previous_request_id) {
+    Event<CancelOrder> const &event, server::oms::Order const &order, std::string_view const &request_id, std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
   return get_order_entry(event.value.account)(event, order, request_id, previous_request_id);

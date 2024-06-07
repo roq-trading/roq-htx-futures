@@ -64,16 +64,14 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto &settings, auto const &group, auto const &function)
-      : core::metrics::Factory(settings.app.name, group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function) : core::metrics::Factory(settings.app.name, group, function) {}
 };
 }  // namespace
 
 // === IMPLEMENTATION ===
 
 WebSocket2::WebSocket2(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index},
-      connection_{create_connection(*this, shared.settings, context)},
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_(shared.settings.misc.decode_buffer_size),
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -192,8 +190,7 @@ void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
     subscribe(symbols, "public"sv, "funding_rate"sv);
 }
 
-void WebSocket2::subscribe(
-    std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
+void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
     auto message = fmt::format(
