@@ -39,7 +39,6 @@ requirements:
     - roq-oss-tomlplusplus
     - roq-oss-unordered_dense
     - roq-oss-zlib-ng
-    - roq-schema
     - roq-server
     - roq-utils
     - roq-web
