@@ -44,8 +44,6 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(ZLIB_NG REQUIRED zlib-ng)
 
-find_program(CLANG_FORMAT clang-format REQUIRED)
-
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
 endif()
@@ -59,6 +57,16 @@ option(BUILD_BENCHMARK "Enable benchmark" ON)
 if(BUILD_BENCHMARK)
   find_package(benchmark REQUIRED)
 endif()
+
+# autogen
+
+find_program(ROQ_AUTOGEN roq-autogen REQUIRED)
+
+set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/autogen)
+
+# clang-format
+
+find_program(CLANG_FORMAT clang-format REQUIRED)
 
 # include
 
