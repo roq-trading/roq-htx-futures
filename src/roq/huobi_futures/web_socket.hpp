@@ -36,7 +36,7 @@ struct WebSocket final : public web::socket::Client::Handler, public json::Parse
 
   WebSocket(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  WebSocket(WebSocket &&) = delete;
+  WebSocket(WebSocket &&) = default;
   WebSocket(WebSocket const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
