@@ -36,7 +36,6 @@ struct Gateway final : public server::Handler,
                        public WebSocket2::Handler {
   Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
-  Gateway(Gateway &&) = default;
   Gateway(Gateway const &) = delete;
 
  protected:

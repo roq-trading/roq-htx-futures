@@ -35,7 +35,6 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
 
   WebSocket2(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  WebSocket2(WebSocket2 &&) = default;
   WebSocket2(WebSocket2 const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }

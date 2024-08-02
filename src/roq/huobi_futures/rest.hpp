@@ -44,7 +44,6 @@ struct Rest final : public web::rest::Client::Handler {
 
   Rest(Handler &, io::Context &context, uint16_t stream_id, Shared &);
 
-  Rest(Rest &&) = default;
   Rest(Rest const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
