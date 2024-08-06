@@ -18,6 +18,7 @@
 
 #include "roq/web/socket/client.hpp"
 
+#include "roq/huobi_futures/json/map.hpp"
 #include "roq/huobi_futures/json/utils.hpp"
 
 using namespace std::literals;
@@ -382,7 +383,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
     shared_.trades.clear();
     auto emplace_back = [](auto &result, auto &value) {
       auto trade = Trade{
-          .side = json::map(value.direction),
+          .side = json::Map{value.direction},
           .price = value.price,
           .quantity = value.amount,
           .trade_id = {},
