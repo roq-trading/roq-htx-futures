@@ -270,6 +270,7 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
         .margin_currency = {},
         .commission_currency = {},
         .tick_size = item.price_tick,
+        .tick_size_steps = {},
         .multiplier = item.contract_size,
         .min_notional = NaN,
         .min_trade_vol = 1.0,  // lots
