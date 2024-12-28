@@ -90,7 +90,7 @@ Installing
 
   .. code-block:: shell
 
-     $ mamba install \
+     $ conda install \
            --channel https://roq-trading.com/conda/stable \
            roq-huobi-futures
 
@@ -98,7 +98,7 @@ Installing
 
   .. code-block:: shell
 
-     $ mamba install \
+     $ conda install \
            --channel https://roq-trading.com/conda/unstable \
            roq-huobi-futures
 
