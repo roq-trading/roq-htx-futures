@@ -12,11 +12,11 @@
 
 #include "roq/utils/charconv/to_string.hpp"
 
+#include "roq/utils/exceptions/unhandled.hpp"
+
 #include "roq/utils/metrics/factory.hpp"
 
 #include "roq/web/socket/client.hpp"
-
-#include "roq/core/tools/exception.hpp"
 
 #include "roq/huobi_futures/json/map.hpp"
 #include "roq/huobi_futures/json/utils.hpp"
@@ -272,7 +272,7 @@ void MarketData::parse(std::string_view const &message) {
       }
     } catch (...) {
       log::fatal(R"(message="{}")"sv, message);
-      core::tools::UnhandledException::terminate();
+      utils::exceptions::Unhandled::terminate();
     }
   });
 }

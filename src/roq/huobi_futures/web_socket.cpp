@@ -9,9 +9,9 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/utils/metrics/factory.hpp"
+#include "roq/utils/exceptions/unhandled.hpp"
 
-#include "roq/core/tools/exception.hpp"
+#include "roq/utils/metrics/factory.hpp"
 
 #include "roq/web/socket/client.hpp"
 
@@ -244,7 +244,7 @@ void WebSocket::parse(std::string_view const &message) {
       }
     } catch (...) {
       log::fatal(R"(message="{}")"sv, message);
-      core::tools::UnhandledException::terminate();
+      utils::exceptions::Unhandled::terminate();
     }
   });
 }
