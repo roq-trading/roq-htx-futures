@@ -40,8 +40,9 @@ inline std::string_view extract_symbol(std::string_view const &channel) {
   auto sep1 = channel.find_first_of('.');
   if (sep1 != channel.npos) {
     auto sep2 = channel.find_first_of('.', sep1 + 1);
-    if (sep2 != channel.npos)
+    if (sep2 != channel.npos) {
       return channel.substr(sep1 + 1, sep2 - sep1 - 1);
+    }
     return channel.substr(sep1 + 1);
   }
   return channel;
@@ -53,8 +54,9 @@ inline std::string_view extract_topic(std::string_view const &channel) {
     auto sep2 = channel.find_first_of('.', sep1 + 1);
     if (sep2 != channel.npos) {
       auto sep3 = channel.find_first_of('.', sep2 + 1);
-      if (sep3 != channel.npos)
+      if (sep3 != channel.npos) {
         return channel.substr(sep2 + 1, sep3 - sep2 - 1);
+      }
       return channel.substr(sep2 + 1);
     }
     return channel.substr(sep1 + 1);

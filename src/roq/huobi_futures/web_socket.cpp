@@ -126,8 +126,9 @@ void WebSocket::operator()(metrics::Writer &writer) {
 }
 
 void WebSocket::subscribe(size_t start_from) {
-  if (ready())
+  if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
+  }
 }
 
 void WebSocket::operator()(web::socket::Client::Connected const &) {
@@ -196,13 +197,16 @@ void WebSocket::operator()(ConnectionStatus status) {
 }
 
 void WebSocket::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols))
+  if (std::empty(symbols)) {
     return;
+  }
   subscribe(symbols, "market"sv, "basis.1min.open"sv);
-  if (shared_.api.has_estimated_rate)
+  if (shared_.api.has_estimated_rate) {
     subscribe(symbols, "market"sv, "estimated_rate.1min"sv);
-  if (shared_.api.has_index)
+  }
+  if (shared_.api.has_index) {
     subscribe(symbols, "market"sv, "index.1min"sv);
+  }
 }
 
 void WebSocket::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {

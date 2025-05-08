@@ -172,8 +172,9 @@ void OrderEntry::operator()(Trace<web::rest::Client::Connected> const &) {
 void OrderEntry::operator()(Trace<web::rest::Client::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
-  if (!download_.downloading())
+  if (!download_.downloading()) {
     download_.reset();
+  }
 }
 
 void OrderEntry::operator()(Trace<web::rest::Client::Latency> const &event) {

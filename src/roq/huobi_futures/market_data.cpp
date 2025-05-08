@@ -134,8 +134,9 @@ void MarketData::operator()(metrics::Writer &writer) {
 }
 
 void MarketData::subscribe(size_t start_from) {
-  if (ready())
+  if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
+  }
 }
 
 void MarketData::operator()(web::socket::Client::Connected const &) {
@@ -204,8 +205,9 @@ void MarketData::operator()(ConnectionStatus status) {
 }
 
 void MarketData::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols))
+  if (std::empty(symbols)) {
     return;
+  }
   subscribe(symbols, "market"sv, "bbo"sv);
   subscribe_with_data_type(symbols, "market"sv, shared_.api.market_depth, "incremental"sv);
   subscribe(symbols, "market"sv, "trade.detail"sv);
@@ -345,10 +347,12 @@ void MarketData::operator()(Trace<json::Depth> const &event) {
       };
       result.emplace_back(std::move(mbp_update));
     };
-    for (auto &item : tick.bids)
+    for (auto &item : tick.bids) {
       emplace_back(shared_.bids, item);
-    for (auto &item : tick.asks)
+    }
+    for (auto &item : tick.asks) {
       emplace_back(shared_.asks, item);
+    }
     // XXX HANS validate checksum
     auto market_by_price_update = MarketByPriceUpdate{
         .stream_id = stream_id_,
@@ -393,8 +397,9 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
       utils::charconv::to_string(std::back_inserter(trade.trade_id), value.id);
       result.emplace_back(std::move(trade));
     };
-    for (auto &item : tick.data)
+    for (auto &item : tick.data) {
       emplace_back(shared_.trades, item);
+    }
     auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = shared_.settings.exchange,

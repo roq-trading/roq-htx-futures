@@ -114,8 +114,9 @@ void WebSocket2::operator()(metrics::Writer &writer) {
 }
 
 void WebSocket2::subscribe(size_t start_from) {
-  if (ready())
+  if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
+  }
 }
 
 void WebSocket2::operator()(web::socket::Client::Connected const &) {
@@ -184,10 +185,12 @@ void WebSocket2::operator()(ConnectionStatus status) {
 }
 
 void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols))
+  if (std::empty(symbols)) {
     return;
-  if (shared_.api.has_funding_rate)
+  }
+  if (shared_.api.has_funding_rate) {
     subscribe(symbols, "public"sv, "funding_rate"sv);
+  }
 }
 
 void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {

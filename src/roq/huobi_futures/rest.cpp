@@ -155,8 +155,9 @@ void Rest::operator()(Trace<web::rest::Client::Connected> const &) {
 void Rest::operator()(Trace<web::rest::Client::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
-  if (!download_.downloading())
+  if (!download_.downloading()) {
     download_.reset();
+  }
   next_refresh_ = {};
 }
 
@@ -291,10 +292,12 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
         .discard = discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-    if (discard)
+    if (discard) {
       continue;
-    if (all_symbols_.emplace(symbol).second)  // only include new
+    }
+    if (all_symbols_.emplace(symbol).second) {  // only include new
       symbols.emplace_back(symbol);
+    }
     ++counter;
   }
   if (!std::empty(symbols)) {
@@ -303,8 +306,9 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
     };
     handler_(symbols_update);
   }
-  if (counter > 0) [[unlikely]]
+  if (counter > 0) [[unlikely]] {
     log::info("Symbols {} / {}"sv, counter, std::size(contract_info.data));
+  }
 }
 
 template <typename SuccessHandler, typename ErrorHandler>
