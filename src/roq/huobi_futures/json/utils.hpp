@@ -21,15 +21,14 @@ inline void update(T &result, core::json::Value const &value) {
 
 template <>
 inline void update(std::chrono::milliseconds &result, core::json::Value const &value) {
+  using result_type = std::remove_cvref_t<decltype(result)>;
   return std::visit(
       utils::overloaded{
-          [&](core::json::Null const &) { result = std::chrono::milliseconds{}; },
+          [&](core::json::Null const &) { result = result_type{}; },
           [](bool) { throw std::bad_cast{}; },
-          [&](int64_t val) { result = std::chrono::milliseconds{val}; },
-          [&](double val) { result = std::chrono::milliseconds{static_cast<int64_t>(val)}; },
-          [&](std::string_view const &val) {
-            result = utils::charconv::from_chars<std::remove_reference<decltype(result)>::type>(val, utils::charconv::Format::DATETIME);
-          },
+          [&](int64_t val) { result = result_type{val}; },
+          [&](double val) { result = result_type{static_cast<int64_t>(val)}; },
+          [&](std::string_view const &val) { result = utils::charconv::from_chars<result_type>(val, utils::charconv::Format::DATETIME); },
           [](core::json::Object const &) { throw std::bad_cast{}; },
           [](core::json::Array const &) { throw std::bad_cast{}; },
       },

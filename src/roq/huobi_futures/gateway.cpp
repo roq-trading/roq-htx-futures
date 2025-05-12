@@ -24,7 +24,7 @@ namespace huobi_futures {
 namespace {
 template <typename R>
 R create_accounts(auto &config) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
     result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name));
@@ -34,7 +34,7 @@ R create_accounts(auto &config) {
 
 template <typename R>
 R create_order_entry(Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts) {
@@ -46,7 +46,7 @@ R create_order_entry(Gateway &gateway, auto &context, auto &stream_id, auto &acc
 
 template <typename R>
 R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[name, account] : accounts) {
     result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy>(gateway, context, ++stream_id, *account, shared));
