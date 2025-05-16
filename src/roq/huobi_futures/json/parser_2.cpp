@@ -27,8 +27,8 @@ bool Parser2::dispatch(Parser2::Handler &handler, std::string_view const &messag
   Frame2 frame{message, buffer};
   switch (frame.op) {
     using enum Operator::type_t;
-    case UNDEFINED__:
-    case UNKNOWN__:
+    case _UNDEFINED:
+    case _UNKNOWN:
       break;
     case PING: {
       auto ping = Ping{
@@ -50,8 +50,8 @@ bool Parser2::dispatch(Parser2::Handler &handler, std::string_view const &messag
       auto topic = extract_topic(frame.topic);
       switch (topic) {
         using enum Topic2::type_t;
-        case UNDEFINED__:
-        case UNKNOWN__:
+        case _UNDEFINED:
+        case _UNKNOWN:
           break;
         case FUNDING_RATE: {
           FundingRate funding_rate{message, buffer};

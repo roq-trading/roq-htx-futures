@@ -35,9 +35,9 @@ template <>
 constexpr Helper<Side>::operator roq::Side() {
   switch (std::get<0>(args_)) {
     using enum Side::type_t;
-    case UNDEFINED__:
+    case _UNDEFINED:
       return {};
-    case UNKNOWN__:
+    case _UNKNOWN:
       break;
     case BUY:
       return roq::Side::BUY;
@@ -47,7 +47,7 @@ constexpr Helper<Side>::operator roq::Side() {
   roq::log::fatal("Unexpected"sv);
 }
 
-static_assert(static_cast<roq::Side>(Helper{Side{Side::UNDEFINED__}}) == roq::Side::UNDEFINED);
+static_assert(static_cast<roq::Side>(Helper{Side{Side::_UNDEFINED}}) == roq::Side::UNDEFINED);
 static_assert(static_cast<roq::Side>(Helper{Side{Side::BUY}}) == roq::Side::BUY);
 static_assert(static_cast<roq::Side>(Helper{Side{Side::SELL}}) == roq::Side::SELL);
 
@@ -70,7 +70,7 @@ constexpr Helper<roq::Side>::operator Side() {
   roq::log::fatal("Unexpected"sv);
 }
 
-static_assert(static_cast<Side>(Helper{roq::Side::UNDEFINED}) == Side{Side::UNDEFINED__});
+static_assert(static_cast<Side>(Helper{roq::Side::UNDEFINED}) == Side{Side::_UNDEFINED});
 static_assert(static_cast<Side>(Helper{roq::Side::BUY}) == Side{Side::BUY});
 static_assert(static_cast<Side>(Helper{roq::Side::SELL}) == Side{Side::SELL});
 }  // namespace
