@@ -98,7 +98,7 @@ void DropCopy::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void DropCopy::operator()(metrics::Writer &writer) {
+void DropCopy::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)

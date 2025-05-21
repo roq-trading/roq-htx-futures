@@ -43,7 +43,7 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
 
-  void operator()(metrics::Writer &);
+  void operator()(metrics::Writer &) const;
 
   void subscribe(size_t start_from = 0);
 

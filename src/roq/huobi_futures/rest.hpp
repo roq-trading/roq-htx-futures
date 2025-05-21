@@ -52,7 +52,7 @@ struct Rest final : public web::rest::Client::Handler {
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
 
-  void operator()(metrics::Writer &);
+  void operator()(metrics::Writer &) const;
 
  protected:
   void operator()(Trace<web::rest::Client::Connected> const &) override;

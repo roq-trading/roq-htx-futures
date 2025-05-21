@@ -101,7 +101,7 @@ void WebSocket2::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void WebSocket2::operator()(metrics::Writer &writer) {
+void WebSocket2::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
