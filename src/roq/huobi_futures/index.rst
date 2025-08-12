@@ -53,6 +53,8 @@ Supports
         - |checkmark|
       * - Statistics
         - |checkmark|
+      * - Time Series
+        -
 
   .. grid-item-card::  Order Management
 
