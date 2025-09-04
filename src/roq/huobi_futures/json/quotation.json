@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi_futures/json/Quotation",
-  "type": "array_item",
+  "type": "by_index",
   "values": [
     {
       "name": "price",

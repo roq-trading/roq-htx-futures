@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi_futures/json/Frame2",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "op",

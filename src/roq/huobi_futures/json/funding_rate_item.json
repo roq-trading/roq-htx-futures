@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi_futures/json/FundingRateItem",
-  "type": "item",
+  "type": "dictionary",
   "values": [
     {
       "name": "symbol",

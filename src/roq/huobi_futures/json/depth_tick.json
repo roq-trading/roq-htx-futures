@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi_futures/json/DepthTick",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "asks",

@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi_futures/json/Detail",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "ch",
