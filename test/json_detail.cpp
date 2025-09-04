@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi_futures/json/detail.hpp"
 
 using namespace roq;
@@ -30,7 +32,7 @@ TEST_CASE("json_detail_simple_inverse", "[json_detail]") {
                  R"("bid":[37.783,4])"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::Detail obj{message, buffer};
   CHECK(obj.ch == "market.FIL211231.detail"sv);
   CHECK(obj.ts == 1639628009780ms);
@@ -71,7 +73,7 @@ TEST_CASE("json_detail_simple_linear", "[json_detail]") {
                  R"("bid":[0.89738,235])"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::Detail obj{message, buffer};
   CHECK(obj.ch == "market.WOO-USDT.detail"sv);
   CHECK(obj.ts == 1640775846213ms);
@@ -111,7 +113,7 @@ TEST_CASE("json_detail_crash_20220603", "[json_detail]") {
                  R"("bid":null)"
                  R"(})"
                  R"(})"sv;
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::Detail obj{message, buffer};
   CHECK(obj.ch == "market.ETH220603.detail"sv);
 }

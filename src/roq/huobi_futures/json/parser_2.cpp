@@ -23,8 +23,8 @@ auto extract_topic(std::string_view const &topic) {
 }
 }  // namespace
 
-bool Parser2::dispatch(Parser2::Handler &handler, std::string_view const &message, std::span<std::byte> const &buffer, TraceInfo const &trace_info) {
-  Frame2 frame{message, buffer};
+bool Parser2::dispatch(Parser2::Handler &handler, std::string_view const &message, core::json::BufferStack &buffer_stack, TraceInfo const &trace_info) {
+  Frame2 frame{message, buffer_stack};
   switch (frame.op) {
     using enum Operator::type_t;
     case UNDEFINED_INTERNAL:
@@ -54,7 +54,7 @@ bool Parser2::dispatch(Parser2::Handler &handler, std::string_view const &messag
         case UNKNOWN_INTERNAL:
           break;
         case FUNDING_RATE: {
-          FundingRate funding_rate{message, buffer};
+          FundingRate funding_rate{message, buffer_stack};
           create_trace_and_dispatch(handler, trace_info, funding_rate);
           return true;
         }

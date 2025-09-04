@@ -27,6 +27,6 @@ TEST_CASE("json_estimated_rate_simple_swap", "[json_estimated_rate]") {
                  R"("count":"0")"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::EstimatedRate obj{message, buffer};
 }

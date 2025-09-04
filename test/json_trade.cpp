@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi_futures/json/trade.hpp"
 
 using namespace roq;
@@ -30,7 +32,7 @@ TEST_CASE("json_trade_simple_inverse", "[json_trade]") {
                  R"(])"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::Trade obj{message, buffer};
   CHECK(obj.ch == "market.BTC220325.trade.detail"sv);
   CHECK(obj.ts == 1639629424053ms);
@@ -75,7 +77,7 @@ TEST_CASE("json_trade_simple_linear", "[json_trade]") {
                  R"(])"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::Trade obj{message, buffer};
   CHECK(obj.ch == "market.BTC-USDT.trade.detail"sv);
   CHECK(obj.ts == 1640775632524ms);

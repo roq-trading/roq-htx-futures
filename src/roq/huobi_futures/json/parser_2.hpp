@@ -6,6 +6,8 @@
 
 #include "roq/trace_info.hpp"
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi_futures/json/close.hpp"
 #include "roq/huobi_futures/json/funding_rate.hpp"
 #include "roq/huobi_futures/json/ping.hpp"
@@ -21,7 +23,7 @@ struct Parser2 final {
     virtual void operator()(Trace<FundingRate> const &) = 0;
   };
 
-  static bool dispatch(Handler &, std::string_view const &message, std::span<std::byte> const &, TraceInfo const &);
+  static bool dispatch(Handler &, std::string_view const &message, core::json::BufferStack &, TraceInfo const &);
 };
 
 }  // namespace json

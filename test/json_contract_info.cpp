@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi_futures/json/contract_info.hpp"
 
 using namespace roq;
@@ -42,7 +44,7 @@ TEST_CASE("json_contract_info_simple_inverse", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1639583414002)"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::ContractInfo obj{message, buffer};
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
@@ -121,6 +123,6 @@ TEST_CASE("json_contract_info_simple_linear", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1640774191619)"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::ContractInfo obj{message, buffer};
 }

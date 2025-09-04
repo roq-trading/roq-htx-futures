@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi_futures/json/depth.hpp"
 
 using namespace roq;
@@ -34,7 +36,7 @@ TEST_CASE("json_depth_simple", "[json_depth]") {
                  R"(},)"
                  R"("ts":1639630955318)"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   json::Depth obj{message, buffer};
   CHECK(obj.ch == "market.FIL211231.depth.size_150.high_freq"sv);
   auto &tick = obj.tick;

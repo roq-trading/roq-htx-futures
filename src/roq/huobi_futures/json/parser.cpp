@@ -20,8 +20,8 @@ namespace roq {
 namespace huobi_futures {
 namespace json {
 
-bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message, std::span<std::byte> const &buffer, TraceInfo const &trace_info) {
-  Frame frame{message, buffer};
+bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message, core::json::BufferStack &buffer_stack, TraceInfo const &trace_info) {
+  Frame frame{message, buffer_stack};
   if (!frame.ping.count()) {
     switch (frame.status) {
       using enum Status::type_t;
@@ -30,42 +30,42 @@ bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message,
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            json::BBO bbo{message, buffer};
+            json::BBO bbo{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case DEPTH: {
-            Depth depth{message, buffer};
+            Depth depth{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, depth);
             return true;
           }
           case TRADE: {
-            Trade trade{message, buffer};
+            Trade trade{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            Detail detail{message, buffer};
+            Detail detail{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case ESTIMATED_RATE: {
-            EstimatedRate estimated_rate{message, buffer};
+            EstimatedRate estimated_rate{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, estimated_rate);
             return true;
           }
           case PREMIUM_INDEX: {
-            PremiumIndex premium_index{message, buffer};
+            PremiumIndex premium_index{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, premium_index);
             return true;
           }
           case BASIS: {
-            Basis basis{message, buffer};
+            Basis basis{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, basis);
             return true;
           }
           case INDEX: {
-            Index index{message, buffer};
+            Index index{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, index);
             return true;
           }
