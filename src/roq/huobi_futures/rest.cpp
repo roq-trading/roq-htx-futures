@@ -330,7 +330,7 @@ void Rest::process_response(web::rest::Response const &response, SuccessHandler 
       }
       case SERVER_ERROR: {  // 5xx
         auto text = fmt::format("{}"sv, status);
-        error_handler(Origin::EXCHANGE, RequestStatus::ERROR, Error::UNKNOWN, text);
+        error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN, text);
         break;
       }
       default:
