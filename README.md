@@ -1,1 +1,1 @@
-Huobi Futures
+HTX Futures

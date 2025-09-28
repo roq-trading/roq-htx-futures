@@ -1,0 +1,18 @@
+{
+  "name": "roq/htx_futures/json/Operator",
+  "type": "enum",
+  "values": [
+    {
+      "name": "ping"
+    },
+    {
+      "name": "close"
+    },
+    {
+      "name": "sub"
+    },
+    {
+      "name": "notify"
+    }
+  ]
+}

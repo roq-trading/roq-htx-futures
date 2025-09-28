@@ -1,0 +1,38 @@
+{
+  "name": "roq/htx_futures/json/FundingRateItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "fee_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "funding_time",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "funding_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "estimated_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "settlement_time",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    }
+  ]
+}

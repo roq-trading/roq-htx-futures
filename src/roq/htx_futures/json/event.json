@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx_futures/json/Event",
+  "type": "enum",
+  "values": [
+    {
+      "name": "snapshot"
+    },
+    {
+      "name": "update"
+    }
+  ]
+}

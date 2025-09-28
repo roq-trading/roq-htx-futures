@@ -1,0 +1,10 @@
+{
+  "name": "roq/htx_futures/json/Close",
+  "type": "struct",
+  "values": [
+    {
+      "name": "timestamp",
+      "type": "std/milliseconds"
+    }
+  ]
+}

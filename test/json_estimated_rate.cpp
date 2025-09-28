@@ -2,10 +2,10 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/huobi_futures/json/estimated_rate.hpp"
+#include "roq/htx_futures/json/estimated_rate.hpp"
 
 using namespace roq;
-using namespace roq::huobi_futures;
+using namespace roq::htx_futures;
 
 using namespace std::literals;
 using namespace std::chrono_literals;

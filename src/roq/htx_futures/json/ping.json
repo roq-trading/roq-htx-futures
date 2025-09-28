@@ -1,0 +1,10 @@
+{
+  "name": "roq/htx_futures/json/Ping",
+  "type": "struct",
+  "values": [
+    {
+      "name": "timestamp",
+      "type": "std/milliseconds"
+    }
+  ]
+}

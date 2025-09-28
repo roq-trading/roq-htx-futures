@@ -1,0 +1,34 @@
+{
+  "name": "roq/htx_futures/json/TradeTickItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "amount",
+      "type": "std/double"
+    },
+    {
+      "name": "quantity",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_turnover",
+      "type": "std/double"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "id",
+      "type": "std/uint64"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "direction",
+      "type": "roq/htx_futures/json/Side"
+    }
+  ]
+}

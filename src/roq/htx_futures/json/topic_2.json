@@ -1,0 +1,9 @@
+{
+  "name": "roq/htx_futures/json/Topic2",
+  "type": "enum",
+  "values": [
+    {
+      "name": "funding_rate"
+    }
+  ]
+}

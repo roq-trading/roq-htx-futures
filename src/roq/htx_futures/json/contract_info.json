@@ -1,0 +1,19 @@
+{
+  "name": "roq/htx_futures/json/ContractInfo",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "std/string_view"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx_futures/json/ContractInfoItem",
+      "array": "std/span"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    }
+  ]
+}

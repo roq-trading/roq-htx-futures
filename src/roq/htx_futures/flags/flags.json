@@ -1,0 +1,19 @@
+{
+  "name": "roq/htx_futures/flags/Flags",
+  "type": "flags",
+  "values": [
+    {
+      "name": "exchange",
+      "type": "std/string",
+      "required": true,
+      "default": "htx-futures",
+      "description": "Exchange identifier"
+    },
+    {
+      "name": "api",
+      "type": "std/string",
+      "default": "",
+      "description": "API (<empty>, :code:`swap`, :code:`linear-swap`)"
+    }
+  ]
+}

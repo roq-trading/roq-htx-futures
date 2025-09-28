@@ -1,0 +1,29 @@
+{
+  "name": "roq/htx_futures/json/Frame2",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "op",
+      "type": "roq/htx_futures/json/Operator"
+    },
+    {
+      "name": "topic",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "err-code",
+      "type": "std/int32"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
+    },
+    {
+      "name": "data"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "roq/htx_futures/json/DepthTick",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "asks",
+      "type": "roq/htx_futures/json/Quotation",
+      "array": "std/span"
+    },
+    {
+      "name": "bids",
+      "type": "roq/htx_futures/json/Quotation",
+      "array": "std/span"
+    },
+    {
+      "name": "ch",
+      "type": "std/string_view"
+    },
+    {
+      "name": "event",
+      "type": "roq/htx_futures/json/Event"
+    },
+    {
+      "name": "id",
+      "type": "std/uint64"
+    },
+    {
+      "name": "mrid",
+      "type": "std/int64"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "version",
+      "type": "std/uint64"
+    }
+  ]
+}

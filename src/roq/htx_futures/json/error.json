@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx_futures/json/Error",
+  "type": "struct",
+  "values": [
+    {
+      "name": "id",
+      "type": "std/uint64"
+    },
+    {
+      "name": "err-code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    }
+  ]
+}

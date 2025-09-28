@@ -1,5 +1,5 @@
 package:
-  name: roq-huobi-futures
+  name: roq-htx-futures
   version: {{ GIT_DESCRIBE_TAG }}
 
 source:
@@ -49,4 +49,4 @@ about:
   license: Commercial
   license_family: PROPRIETARY
   license_file: LICENSE
-  summary: Roq Huobi Futures Gateway
+  summary: Roq HTX Futures Gateway

@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx_futures/json/Side",
+  "type": "enum",
+  "values": [
+    {
+      "name": "buy"
+    },
+    {
+      "name": "sell"
+    }
+  ]
+}

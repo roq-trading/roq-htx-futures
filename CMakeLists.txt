@@ -16,7 +16,7 @@ message("Using GIT_REPO_VERSION=${GIT_REPO_VERSION}")
 
 # project
 
-project(roq-huobi-futures VERSION ${GIT_REPO_VERSION})
+project(roq-htx-futures VERSION ${GIT_REPO_VERSION})
 
 # language
 
@@ -83,7 +83,7 @@ include_directories(
 
 # sub-projects
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/roq/huobi_futures)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/roq/htx_futures)
 
 if(BUILD_TESTING)
   add_subdirectory(${CMAKE_SOURCE_DIR}/test)

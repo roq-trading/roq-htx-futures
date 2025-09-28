@@ -4,10 +4,10 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/huobi_futures/json/trade.hpp"
+#include "roq/htx_futures/json/trade.hpp"
 
 using namespace roq;
-using namespace roq::huobi_futures;
+using namespace roq::htx_futures;
 
 using namespace std::literals;
 using namespace std::chrono_literals;

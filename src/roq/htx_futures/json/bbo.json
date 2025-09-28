@@ -1,0 +1,18 @@
+{
+  "name": "roq/htx_futures/json/BBO",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "ch",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "tick",
+      "type": "roq/htx_futures/json/BBOTick"
+    }
+  ]
+}
