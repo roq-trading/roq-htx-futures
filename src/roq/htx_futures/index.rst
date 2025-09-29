@@ -6,6 +6,37 @@ roq-htx-futures
 ===============
 
 
+.. tab:: Unstable
+
+  .. code-block:: shell
+
+     $ conda install \
+           --channel https://roq-trading.com/conda/unstable \
+           roq-htx-futures
+
+.. tab:: Stable
+
+  .. code-block:: shell
+
+     $ conda install \
+           --channel https://roq-trading.com/conda/stable \
+           roq-htx-futures
+
+
+:code:`roq-htx-futures`
+-----------------------
+
+.. code-block:: shell
+
+   $ roq-htx-futures [FLAGS]
+
+
+Description
+~~~~~~~~~~~
+
+:code:`roq-htx-futures` is a gateway
+
+
 Supports
 --------
 
@@ -75,47 +106,10 @@ Supports
         - |checkmark|
 
 
-Installing
-----------
-
-* :ref:`Using Conda <tutorial-conda>`
-
-.. tab:: Unstable
-
-  .. code-block:: shell
-
-     $ conda install \
-           --channel https://roq-trading.com/conda/unstable \
-           roq-htx-futures
-
-.. tab:: Stable
-
-  .. code-block:: shell
-
-     $ conda install \
-           --channel https://roq-trading.com/conda/stable \
-           roq-htx-futures
-
-
-Using
------
-
-.. code-block:: shell
-
-   $ roq-htx-futures \
-         --name "htx-futures" \
-         --config_file $CONFIG_FILE_PATH \
-         --client_listen_address $UNIX_SOCKET_PATH \
-         --flagfile $ENVIRONMENT_FLAGFILE
-
-
 .. _roq-htx-futures-flags:
 
 Flags
 -----
-
-* :ref:`Using Flags <abseil-cpp>`
-* :ref:`Gateway Flags <gateway-flags>`
 
 .. code-block:: shell
 
