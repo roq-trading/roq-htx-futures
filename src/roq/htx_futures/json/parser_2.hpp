@@ -23,7 +23,7 @@ struct Parser2 final {
     virtual void operator()(Trace<FundingRate> const &) = 0;
   };
 
-  static bool dispatch(Handler &, std::string_view const &message, core::json::BufferStack &, TraceInfo const &);
+  static bool dispatch(Handler &, std::string_view const &message, core::json::BufferStack &, TraceInfo const &, bool allow_unknown_event_types);
 };
 
 }  // namespace json

@@ -85,7 +85,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
+      account_{account}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
 void DropCopy::operator()(Event<Start> const &) {
@@ -187,11 +187,14 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
 
 void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
+    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      json::Parser2::dispatch(*this, message, decode_buffer_, trace_info);
+      if (!json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+        log_message();
+      }
     } catch (...) {
-      log::warn(R"(message="{}")"sv, message);
+      log_message();
       utils::exceptions::Unhandled::terminate();
     }
   });
