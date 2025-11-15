@@ -5,13 +5,24 @@
 namespace roq {
 namespace htx_futures {
 
+// === HELPERS ===
+
+namespace {
+template <typename R>
+auto create_crypto(auto &config, auto &name, auto &uri) {
+  using result_type = std::remove_cvref_t<R>;
+  return result_type{config.get_api_key(name), config.get_secret(name), uri.get_host()};
+}
+}  // namespace
+
 // === IMPLEMENTATION ===
 
-Account::Account(Config const &config, std::string_view const &name) : name_{name}, key_{config.get_api_key(name_)}, crypto_{config.get_secret(name_)} {
+Account::Account(Config const &config, std::string_view const &name, roq::io::web::URI const &uri)
+    : name{name}, crypto_{create_crypto<decltype(crypto_)>(config, name, uri)} {
 }
 
-std::pair<std::string, std::string> Account::create_signature(std::chrono::nanoseconds now) {
-  return crypto_.create_signature(now);
+std::string_view Account::create_query(web::http::Method method, std::string_view const &path, std::chrono::seconds now_utc) {
+  return crypto_.create_query(method, path, now_utc);
 }
 
 }  // namespace htx_futures

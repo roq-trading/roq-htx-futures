@@ -1,0 +1,84 @@
+{
+  "name": "roq/htx_futures/json/AccountInfoDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "futures_contract_detail",
+      "type": "roq/htx_futures/json/AccountInfoDataItemFuturesContractDetailItem",
+      "array": "std/span"
+    },
+    {
+      "name": "contract_detail",
+      "type": "roq/htx_futures/json/AccountInfoDataItemContractDetailItem",
+      "array": "std/span"
+    },
+    {
+      "name": "margin_mode",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_balance",
+      "type": "std/double"
+    },
+    {
+      "name": "money_in",
+      "type": "std/double"
+    },
+    {
+      "name": "money_out",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_static",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_position",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_unreal",
+      "type": "std/double"
+    },
+    {
+      "name": "withdraw_available",
+      "type": "std/double"
+    },
+    {
+      "name": "risk_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "new_risk_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "position_mode",
+      "type": "std/string_view"
+    },
+    {
+      "name": "fixed_margin_position",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_available",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_unreal",
+      "type": "std/double"
+    }
+  ]
+}

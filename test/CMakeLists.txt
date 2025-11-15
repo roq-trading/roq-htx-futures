@@ -3,6 +3,8 @@ include(RoqAutogen)
 set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
+    crypto.cpp
+    json_account_info.cpp
     json_basis.cpp
     json_bbo.cpp
     json_contract_info.cpp

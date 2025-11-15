@@ -129,7 +129,7 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
-      .account = account_.get_name(),
+      .account = account_.name,
       .latency = latency.sample,
   };
   create_trace_and_dispatch(handler_, trace_info, external_latency);
@@ -157,7 +157,7 @@ void DropCopy::operator()(ConnectionStatus status) {
     TraceInfo trace_info;
     auto stream_status = StreamStatus{
         .stream_id = stream_id_,
-        .account = account_.get_name(),
+        .account = account_.name,
         .supports = SUPPORTS,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,

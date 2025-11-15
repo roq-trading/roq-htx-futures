@@ -15,18 +15,17 @@ namespace roq {
 namespace htx_futures {
 
 struct Account final {
-  Account(Config const &, std::string_view const &name);
+  Account(Config const &, std::string_view const &name, roq::io::web::URI const &uri);
 
   Account(Account const &) = delete;
 
-  std::string_view get_name() const { return name_; }
-  std::string_view get_api_key() const { return key_; }
+  std::string_view get_api_key() const { return crypto_.key; }
 
-  std::pair<std::string, std::string> create_signature(std::chrono::nanoseconds now);
+  std::string_view create_query(web::http::Method, std::string_view const &path, std::chrono::seconds now_utc);
+
+  std::string const name;
 
  private:
-  std::string const name_;
-  std::string const key_;
   tools::Crypto crypto_;
 };
 

@@ -1,5 +1,9 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-htx-futures-json
+account_info_data_item_contract_detail_item.hpp
+account_info_data_item_futures_contract_detail_item.hpp
+account_info_data_item.hpp
+account_info.hpp
 basis.hpp
 basis_tick.hpp
 bbo.hpp
@@ -15,10 +19,10 @@ error.hpp
 estimated_rate.hpp
 estimated_rate_tick.hpp
 event.hpp
-frame.hpp
 frame_2.hpp
-funding_rate.hpp
+frame.hpp
 funding_rate_item.hpp
+funding_rate.hpp
 index.hpp
 index_tick.hpp
 operator.hpp
@@ -29,11 +33,15 @@ quotation.hpp
 side.hpp
 status.hpp
 subbed.hpp
-topic.hpp
 topic_2.hpp
+topic.hpp
 trade.hpp
 trade_tick_item.hpp
 trade_tick.hpp
+account_info_data_item_contract_detail_item.cpp
+account_info_data_item_futures_contract_detail_item.cpp
+account_info_data_item.cpp
+account_info.cpp
 basis.cpp
 basis_tick.cpp
 bbo.cpp
@@ -49,10 +57,10 @@ error.cpp
 estimated_rate.cpp
 estimated_rate_tick.cpp
 event.cpp
-frame.cpp
 frame_2.cpp
-funding_rate.cpp
+frame.cpp
 funding_rate_item.cpp
+funding_rate.cpp
 index.cpp
 index_tick.cpp
 operator.cpp
@@ -63,8 +71,8 @@ quotation.cpp
 side.cpp
 status.cpp
 subbed.cpp
-topic.cpp
 topic_2.cpp
+topic.cpp
 trade.cpp
 trade_tick_item.cpp
 trade_tick.cpp

@@ -1,10 +1,14 @@
 set(TARGET_NAME ${PROJECT_NAME}-json)
 
-set(SOURCES map.cpp parser.cpp parser_2.cpp)
+set(SOURCES encoder.cpp map.cpp parser.cpp parser_2.cpp utils.cpp)
 
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
+    account_info_data_item_contract_detail_item.json
+    account_info_data_item_futures_contract_detail_item.json
+    account_info_data_item.json
+    account_info.json
     basis.json
     basis_tick.json
     bbo.json
@@ -20,10 +24,10 @@ set(AUTOGEN_SCHEMAS
     estimated_rate.json
     estimated_rate_tick.json
     event.json
-    frame.json
     frame_2.json
-    funding_rate.json
+    frame.json
     funding_rate_item.json
+    funding_rate.json
     index.json
     index_tick.json
     operator.json
@@ -34,8 +38,8 @@ set(AUTOGEN_SCHEMAS
     side.json
     status.json
     subbed.json
-    topic.json
     topic_2.json
+    topic.json
     trade.json
     trade_tick_item.json
     trade_tick.json)

@@ -23,11 +23,11 @@ namespace htx_futures {
 
 namespace {
 template <typename R>
-R create_accounts(auto &config) {
+R create_accounts(auto &config, auto &settings) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
-    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name));
+    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, settings.rest.uri));
   }
   return result;
 }
@@ -58,7 +58,7 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
-    : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context}, shared_{dispatcher, settings},
+    : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config, settings)}, context_{context}, shared_{dispatcher, settings},
       rest_{*this, context_, ++stream_id_, shared_},
       order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {

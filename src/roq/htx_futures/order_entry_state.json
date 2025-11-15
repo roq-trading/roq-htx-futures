@@ -3,6 +3,12 @@
   "type": "enum",
   "values": [
     {
+      "name": "account_info_isolated"
+    },
+    {
+      "name": "account_info_cross"
+    },
+    {
       "name": "done"
     }
   ]

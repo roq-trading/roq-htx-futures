@@ -24,6 +24,8 @@
 #include "roq/htx_futures/order_entry_state.hpp"
 #include "roq/htx_futures/shared.hpp"
 
+#include "roq/htx_futures/json/account_info.hpp"
+
 namespace roq {
 namespace htx_futures {
 
@@ -55,6 +57,7 @@ struct OrderEntry final : public web::rest::Client::Handler {
   uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id);
 
  protected:
+  // web::rest::client::Handler
   void operator()(Trace<web::rest::Client::Connected> const &) override;
   void operator()(Trace<web::rest::Client::Disconnected> const &) override;
   void operator()(Trace<web::rest::Client::Latency> const &) override;
@@ -62,6 +65,21 @@ struct OrderEntry final : public web::rest::Client::Handler {
   void operator()(ConnectionStatus);
 
   uint32_t download(OrderEntryState state);
+
+  void get_account_info_isolated();
+  void get_account_info_cross();
+  void get_account_info_ack(Trace<web::rest::Response> const &, uint32_t sequence, MarginMode);
+  void operator()(Trace<json::AccountInfo> const &, MarginMode);
+
+  void cancel_all_orders(Event<CancelAllOrders> const &, std::string_view const &request_id);
+  void cancel_all_orders_ack(Trace<web::rest::Response> const &, std::string_view const &request_id);
+
+  void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
+
+  template <typename... Args>
+  void operator()(Trace<server::oms::Response> const &, uint8_t user_id, uint64_t order_id, Args &&...);
+
+  void operator()(Trace<server::oms::OrderUpdate> const &, std::string_view const &client_order_id);
 
  private:
   Handler &handler_;
@@ -77,20 +95,25 @@ struct OrderEntry final : public web::rest::Client::Handler {
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile listen_key, listen_key_ack,  //
-        account, account_ack,                            //
-        exchange_info, exchange_info_ack,                //
-        new_order, new_order_ack,                        //
-        cancel_order, cancel_order_ack;
+    utils::metrics::Profile  //
+        account_info,
+        account_info_ack,                //
+        create_order, create_order_ack,  //
+        cancel_order, cancel_order_ack,  //
+        cancel_all_orders, cancel_all_orders_ack;
   } profile_;
   struct {
     utils::metrics::Latency ping;
   } latency_;
   // account
   Account &account_;
+  // shared
+  Shared &shared_;
   // state
   ConnectionStatus status_ = {};
   core::Download<OrderEntryState> download_;
+  // buffers
+  std::string encode_buffer_;
 };
 
 }  // namespace htx_futures

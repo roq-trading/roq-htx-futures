@@ -19,6 +19,8 @@ struct API final {
   bool has_estimated_rate = {};
   bool has_index = {};
   bool has_funding_rate = {};
+  // order management
+  std::string_view cancel_all_orders = {};
   // factory
   static API create(Settings const &);
 };

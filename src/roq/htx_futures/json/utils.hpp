@@ -63,6 +63,8 @@ inline std::string_view extract_topic(std::string_view const &channel) {
   return channel;
 }
 
+extern roq::Error guess_error(std::string_view const &message);
+
 }  // namespace json
 }  // namespace htx_futures
 }  // namespace roq
