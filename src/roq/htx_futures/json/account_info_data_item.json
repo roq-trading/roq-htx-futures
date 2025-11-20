@@ -79,6 +79,33 @@
     {
       "name": "profit_unreal",
       "type": "std/double"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "liquidation_price",
+      "type": "std/double"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "adjust_factor",
+      "type": "std/double"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    },
+    {
+      "name": "positionList"
     }
   ]
 }
