@@ -12,9 +12,9 @@ CONFIG="${CONFIG:-$NAME}"
 
 CONFIG_FILE="$ROQ_CONFIG_PATH/roq-htx-futures/$CONFIG.toml"
 
-API=""
+API="coin-m-perpetual"
 
-FLAGFILE="../../../share/flags/prod/flags.cfg"
+FLAGFILE="../../../share/flags/prod/flags-$API.cfg"
 
 $PREFIX ./roq-htx-futures \
   --name "htx-futures" \

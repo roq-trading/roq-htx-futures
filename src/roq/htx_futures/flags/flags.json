@@ -13,7 +13,7 @@
       "name": "api",
       "type": "std/string",
       "default": "",
-      "description": "API (<empty>, :code:`swap`, :code:`linear-swap`)"
+      "description": "API (:code:`USDT-M-FUTURES`, :code:`COIN-M-DELIVERY`, :code:`COIN-M-PERPETUAL`)"
     }
   ]
 }

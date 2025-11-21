@@ -176,31 +176,31 @@ Flags
 Environments
 ------------
 
-.. tab:: Prod
+.. tab:: Prod (USDT-M-FUTURES)
 
    .. code-block:: shell
 
-      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags.cfg
+      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-usdt-m-futures.cfg
 
-   .. include:: flags/prod/flags.cfg
+   .. include:: flags/prod/flags-usdt-m-futures.cfg
      :code: shell
 
-.. tab:: Prod (swap)
+.. tab:: Prod (COIN-M-DELIVERY)
 
    .. code-block:: shell
 
-      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-swap.cfg
+      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-coin-m-delivery.cfg
 
-   .. include:: flags/prod/flags-swap.cfg
+   .. include:: flags/prod/flags-coin-m-delivery.cfg
      :code: shell
 
-.. tab:: Prod (linear-swap)
+.. tab:: Prod (COIN-M-PERPETUAL)
 
    .. code-block:: shell
 
-      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-linear-swap.cfg
+      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-coin-m-perpetual.cfg
 
-   .. include:: flags/prod/flags-linear-swap.cfg
+   .. include:: flags/prod/flags-coin-m-perpetual.cfg
      :code: shell
 
 
@@ -297,7 +297,7 @@ Comments
 
 * Symbols are only processed when :code:`contract_status==1`
 * The channels :code:`premium_index` and :code:`estimated_rate` are not available
-  when :code:`--api` is :code:`inverse` (or missing, the default).
+  when :code:`--api` is one of :code:`USDT-M-FUTURES`, :code:`COIN-M-DELIVERY`, :code:`COIN-M-PERPETUAL`.
 
 
 References

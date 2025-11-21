@@ -70,14 +70,9 @@ std::string_view Crypto::create_query(web::http::Method method, std::string_view
       hms.minutes().count(),
       hms.seconds().count());
   auto tmp4 = std::string_view{encode_buffer_}.substr(1);
-  log::warn("DEBUG {}"sv, magic_enum::enum_name(method));
-  log::warn("DEBUG {}"sv, hostname_);
-  log::warn("DEBUG {}"sv, path);
-  log::warn("DEBUG {}"sv, tmp4);
   digest_.clear();
   context_.reset();
   auto payload = fmt::format("{}\n{}\n{}\n{}"sv, magic_enum::enum_name(method), hostname_, path, tmp4);
-  log::warn("DEBUG {}"sv, payload);
   pkey_.sign(digest_, payload, context_);
   std::string signature;
   utils::codec::Base64::encode(signature, digest_, true, false);
@@ -97,10 +92,6 @@ std::string_view Crypto::create_query(web::http::Method method, std::string_view
       hms.minutes().count(),
       hms.seconds().count());
   auto tmp4 = std::string_view{encode_buffer_}.substr(1);
-  log::warn("DEBUG {}"sv, magic_enum::enum_name(method));
-  log::warn("DEBUG {}"sv, hostname_);
-  log::warn("DEBUG {}"sv, path);
-  log::warn("DEBUG {}"sv, tmp4);
   mac_.clear();
   mac_.update(magic_enum::enum_name(method));
   mac_.update("\n"sv);
@@ -112,10 +103,8 @@ std::string_view Crypto::create_query(web::http::Method method, std::string_view
   auto digest = mac_.final(digest_);
   std::string signature;
   utils::codec::Base64::encode(signature, digest, false, false);
-  log::warn("DEBUG {}"sv, signature);
   std::string buffer_2;
   auto signature_2 = utils::codec::URL::encode(buffer_2, signature);
-  log::warn("DEBUG {}"sv, signature_2);
   fmt::format_to(std::back_inserter(encode_buffer_), "&Signature={}"sv, signature_2);
 #endif
   return encode_buffer_;
