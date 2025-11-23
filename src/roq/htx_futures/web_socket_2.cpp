@@ -81,8 +81,10 @@ WebSocket2::WebSocket2(Handler &handler, io::Context &context, uint16_t stream_i
       },
       profile_{
           .parse = create_metrics(shared.settings, name_, "parse"sv),
-          .ping = create_metrics(shared.settings, name_, "ping"sv),
           .close = create_metrics(shared.settings, name_, "close"sv),
+          .error = create_metrics(shared.settings, name_, "error"sv),
+          .ping = create_metrics(shared.settings, name_, "ping"sv),
+          .sub = create_metrics(shared.settings, name_, "sub"sv),
           .funding_rate = create_metrics(shared.settings, name_, "funding_rate"sv),
       },
       latency_{
@@ -110,6 +112,10 @@ void WebSocket2::operator()(metrics::Writer &writer) const {
       .write(counter_.total_bytes_received, metrics::Type::COUNTER)
       // profile
       .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.close, metrics::Type::PROFILE)
+      .write(profile_.error, metrics::Type::PROFILE)
+      .write(profile_.ping, metrics::Type::PROFILE)
+      .write(profile_.sub, metrics::Type::PROFILE)
       .write(profile_.funding_rate, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY);
@@ -190,7 +196,7 @@ void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
   if (std::empty(symbols)) {
     return;
   }
-  if (shared_.api.has_funding_rate) {
+  if (shared_.api.market_data.has_funding_rate) {
     subscribe(symbols, "public"sv, "funding_rate"sv);
   }
 }
@@ -201,7 +207,8 @@ void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_v
     auto message = fmt::format(
         R"({{)"
         R"("op":"sub",)"
-        R"("topic":"{}.{}.{}")"
+        R"("topic":"{}.{}.{}",)"
+        R"("cid":"xxx")"
         R"(}})"sv,
         source,
         symbol,
@@ -237,6 +244,20 @@ void WebSocket2::parse(std::string_view const &message) {
   });
 }
 
+void WebSocket2::operator()(Trace<json::Close> const &) {
+  profile_.close([&]() {
+    log::warn("Exchange requested connection closed"sv);
+    (*connection_).close();
+  });
+}
+
+void WebSocket2::operator()(Trace<json::Error2> const &) {
+  profile_.close([&]() {
+    log::warn("*** ERROR ***"sv);
+    (*connection_).close();
+  });
+}
+
 void WebSocket2::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
@@ -245,11 +266,16 @@ void WebSocket2::operator()(Trace<json::Ping> const &event) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Close> const &event) {
-  profile_.close([&]() {
-    auto &[trace_info, close] = event;
-    log::warn("trace_info={}, close={}"sv, trace_info, close);
-    (*connection_).close();
+void WebSocket2::operator()(Trace<json::Auth> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::Sub> const &event) {
+  profile_.sub([&]() {
+    auto &[trace_info, sub] = event;
+    if (sub.err_code != 0) {
+      log::error(R"(Subscription failed: code={}, msg="{}")"sv, sub.err_code, sub.err_msg);
+    }
   });
 }
 
@@ -286,6 +312,14 @@ void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
       create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
     }
   });
+}
+
+void WebSocket2::operator()(Trace<json::Accounts> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::Positions> const &) {
+  log::fatal("Unexpected"sv);
 }
 
 }  // namespace htx_futures

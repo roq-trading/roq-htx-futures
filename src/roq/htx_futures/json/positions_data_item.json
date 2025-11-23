@@ -1,0 +1,66 @@
+{
+  "name": "roq/htx_futures/json/PositionsDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "volume",
+      "type": "std/double"
+    },
+    {
+      "name": "available",
+      "type": "std/double"
+    },
+    {
+      "name": "frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "cost_open",
+      "type": "std/double"
+    },
+    {
+      "name": "cost_hold",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_unreal",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "profit",
+      "type": "std/double"
+    },
+    {
+      "name": "position_margin",
+      "type": "std/double"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "direction",
+      "type": "roq/htx_futures/json/Side"
+    },
+    {
+      "name": "last_price",
+      "type": "std/double"
+    },
+    {
+      "name": "adl_risk_percent",
+      "type": "std/double"
+    }
+  ]
+}

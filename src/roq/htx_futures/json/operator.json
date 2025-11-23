@@ -3,10 +3,16 @@
   "type": "enum",
   "values": [
     {
+      "name": "close"
+    },
+    {
+      "name": "error"
+    },
+    {
       "name": "ping"
     },
     {
-      "name": "close"
+      "name": "auth"
     },
     {
       "name": "sub"

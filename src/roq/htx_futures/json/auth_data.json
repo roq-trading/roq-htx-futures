@@ -1,0 +1,10 @@
+{
+  "name": "roq/htx_futures/json/AuthData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "user-id",
+      "type": "std/string_view"
+    }
+  ]
+}

@@ -9,17 +9,22 @@ set(AUTOGEN_SCHEMAS
     account_info_data_item_futures_contract_detail_item.json
     account_info_data_item.json
     account_info.json
+    accounts_data_item.json
+    accounts.json
+    auth_data.json
+    auth.json
     basis.json
     basis_tick.json
     bbo.json
     bbo_tick.json
     close.json
-    contract_info_item.json
+    contract_info_data_item.json
     contract_info.json
     depth.json
     depth_tick.json
     detail.json
     detail_tick.json
+    error_2.json
     error.json
     estimated_rate.json
     estimated_rate_tick.json
@@ -30,14 +35,20 @@ set(AUTOGEN_SCHEMAS
     funding_rate.json
     index.json
     index_tick.json
+    offset.json
     operator.json
+    order_price_type.json
     ping.json
+    place_order_ack.json
+    positions_data_item.json
+    positions.json
     premium_index.json
     premium_index_tick.json
     quotation.json
     side.json
     status.json
     subbed.json
+    sub.json
     topic_2.json
     topic.json
     trade.json

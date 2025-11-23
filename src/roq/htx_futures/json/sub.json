@@ -1,13 +1,10 @@
 {
-  "name": "roq/htx_futures/json/Frame2",
+  "name": "roq/htx_futures/json/Sub",
   "type": "dictionary",
   "values": [
     {
       "name": "op",
       "type": "roq/htx_futures/json/Operator"
-    },
-    {
-      "name": "type"
     },
     {
       "name": "topic",
@@ -26,16 +23,8 @@
       "type": "std/string_view"
     },
     {
-      "name": "data"
-    },
-    {
-      "name": "event"
-    },
-    {
-      "name": "uid"
-    },
-    {
-      "name": "cid"
+      "name": "cid",
+      "type": "std/string_view"
     }
   ]
 }

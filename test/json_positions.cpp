@@ -1,0 +1,93 @@
+/* Copyright (c) 2017-2025, Hans Erik Thrane */
+
+#include <catch2/catch_all.hpp>
+
+#include "roq/core/json/buffer_stack.hpp"
+
+#include "roq/htx_futures/json/positions.hpp"
+
+using namespace roq;
+using namespace roq::htx_futures;
+
+using namespace std::literals;
+using namespace std::chrono_literals;
+
+using namespace Catch::literals;
+
+TEST_CASE("coin_m_perpetual", "[json_positions]") {
+  auto message = R"({)"
+                 R"("op":"notify",)"
+                 R"("topic":"positions",)"
+                 R"("ts":1763811216435,)"
+                 R"("event":"init",)"
+                 R"("data":[{)"
+                 R"("symbol":"BTC",)"
+                 R"("contract_code":"BTC-USD",)"
+                 R"("volume":0,)"
+                 R"("available":0,)"
+                 R"("frozen":0,)"
+                 R"("cost_open":0,)"
+                 R"("cost_hold":0,)"
+                 R"("profit_unreal":0,)"
+                 R"("profit_rate":0,)"
+                 R"("profit":0,)"
+                 R"("position_margin":0,)"
+                 R"("lever_rate":5,)"
+                 R"("direction":"buy",)"
+                 R"("last_price":84097.8,)"
+                 R"("adl_risk_percent":null)"
+                 R"(},{)"
+                 R"("symbol":"BTC",)"
+                 R"("contract_code":"BTC-USD",)"
+                 R"("volume":0,)"
+                 R"("available":0,)"
+                 R"("frozen":0,)"
+                 R"("cost_open":0,)"
+                 R"("cost_hold":0,)"
+                 R"("profit_unreal":0,)"
+                 R"("profit_rate":0,)"
+                 R"("profit":0,)"
+                 R"("position_margin":0,)"
+                 R"("lever_rate":5,)"
+                 R"("direction":"sell",)"
+                 R"("last_price":84097.8,)"
+                 R"("adl_risk_percent":null)"
+                 R"(},{)"
+                 R"("symbol":"ETH",)"
+                 R"("contract_code":"ETH-USD",)"
+                 R"("volume":0,)"
+                 R"("available":0,)"
+                 R"("frozen":0,)"
+                 R"("cost_open":0,)"
+                 R"("cost_hold":0,)"
+                 R"("profit_unreal":0,)"
+                 R"("profit_rate":0,)"
+                 R"("profit":0,)"
+                 R"("position_margin":0,)"
+                 R"("lever_rate":5,)"
+                 R"("direction":"buy",)"
+                 R"("last_price":2736.21,)"
+                 R"("adl_risk_percent":null)"
+                 R"(},{)"
+                 R"("symbol":"ETH",)"
+                 R"("contract_code":"ETH-USD",)"
+                 R"("volume":0,)"
+                 R"("available":0,)"
+                 R"("frozen":0,)"
+                 R"("cost_open":0,)"
+                 R"("cost_hold":0,)"
+                 R"("profit_unreal":0,)"
+                 R"("profit_rate":0,)"
+                 R"("profit":0,)"
+                 R"("position_margin":0,)"
+                 R"("lever_rate":5,)"
+                 R"("direction":"sell",)"
+                 R"("last_price":2736.21,)"
+                 R"("adl_risk_percent":null)"
+                 R"(})"
+                 R"(],)"
+                 R"("uid":"573242943")"
+                 R"(})";
+  core::json::BufferStack buffers{8192, 1};
+  [[maybe_unused]] json::Positions obj{message, buffers};
+}

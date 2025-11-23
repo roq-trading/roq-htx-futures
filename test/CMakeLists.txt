@@ -5,14 +5,20 @@ set(TARGET_NAME ${PROJECT_NAME}-test)
 set(SOURCES
     crypto.cpp
     json_account_info.cpp
+    json_accounts.cpp
+    json_auth.cpp
     json_basis.cpp
     json_bbo.cpp
     json_contract_info.cpp
     json_depth.cpp
     json_detail.cpp
+    json_error.cpp
     json_funding_rate.cpp
+    json_place_order_ack.cpp
+    json_positions.cpp
     json_premium_index.cpp
     json_subbed.cpp
+    json_sub.cpp
     json_trade.cpp
     json_utils.cpp
     main.cpp)

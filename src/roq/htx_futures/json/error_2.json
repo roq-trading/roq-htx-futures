@@ -1,0 +1,14 @@
+{
+  "name": "roq/htx_futures/json/Error2",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "op",
+      "type": "roq/htx_futures/json/Operator"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    }
+  ]
+}

@@ -4,6 +4,12 @@
   "values": [
     {
       "name": "funding_rate"
+    },
+    {
+      "name": "accounts"
+    },
+    {
+      "name": "positions"
     }
   ]
 }

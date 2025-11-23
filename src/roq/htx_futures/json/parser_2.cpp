@@ -49,13 +49,6 @@ bool Parser2::dispatch(
         return false;
       }
       break;
-    case PING: {
-      auto ping = Ping{
-          .timestamp = frame.ts,
-      };
-      create_trace_and_dispatch(handler, trace_info, ping);
-      return true;
-    }
     case CLOSE: {
       auto close = Close{
           .timestamp = frame.ts,
@@ -63,9 +56,25 @@ bool Parser2::dispatch(
       create_trace_and_dispatch(handler, trace_info, close);
       return true;
     }
-    case SUB:
-      // drop
+    case ERROR: {
+      dispatch_helper<Error2>(handler, message, buffer_stack, trace_info);
       return true;
+    }
+    case PING: {
+      auto ping = Ping{
+          .timestamp = frame.ts,
+      };
+      create_trace_and_dispatch(handler, trace_info, ping);
+      return true;
+    }
+    case AUTH: {
+      dispatch_helper<Auth>(handler, message, buffer_stack, trace_info);
+      return true;
+    }
+    case SUB: {
+      dispatch_helper<Sub>(handler, message, buffer_stack, trace_info);
+      return true;
+    }
     case NOTIFY: {
       auto topic = extract_topic(frame.topic);
       switch (topic) {
@@ -79,6 +88,12 @@ bool Parser2::dispatch(
           break;
         case FUNDING_RATE:
           dispatch_helper<FundingRate>(handler, message, buffer_stack, trace_info);
+          return true;
+        case ACCOUNTS:
+          dispatch_helper<Accounts>(handler, message, buffer_stack, trace_info);
+          return true;
+        case POSITIONS:
+          dispatch_helper<Positions>(handler, message, buffer_stack, trace_info);
           return true;
       }
       break;

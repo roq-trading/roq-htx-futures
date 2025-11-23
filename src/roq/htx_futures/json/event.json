@@ -3,6 +3,9 @@
   "type": "enum",
   "values": [
     {
+      "name": "init"
+    },
+    {
       "name": "snapshot"
     },
     {

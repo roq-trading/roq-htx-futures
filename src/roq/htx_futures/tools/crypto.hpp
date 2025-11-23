@@ -29,6 +29,8 @@ struct Crypto final {
   Crypto(Crypto &&) = delete;
   Crypto(Crypto const &) = delete;
 
+  std::string_view create_ws_auth(std::string_view const &path, std::chrono::seconds now_utc);
+
   std::string_view create_query(web::http::Method, std::string_view const &path, std::chrono::seconds now_utc);
 
   std::string const key;

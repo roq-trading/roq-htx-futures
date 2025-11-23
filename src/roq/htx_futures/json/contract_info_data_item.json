@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx_futures/json/ContractInfoItem",
+  "name": "roq/htx_futures/json/ContractInfoDataItem",
   "type": "dictionary",
   "values": [
     {
@@ -61,6 +61,16 @@
     {
       "name": "trade_partition",
       "type": "std/string_view"
+    },
+    {
+      "name": "adjust"
+    },
+    {
+      "name": "price_estimated"
+    },
+    {
+      "name": "open_type",
+      "type": "std/int32"
     }
   ]
 }

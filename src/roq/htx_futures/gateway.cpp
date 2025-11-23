@@ -12,6 +12,9 @@
 
 #include "roq/server/oms/exceptions.hpp"
 
+#include "roq/htx_futures/order_entry_rest.hpp"
+#include "roq/htx_futures/order_entry_ws.hpp"
+
 #include "roq/htx_futures/json/utils.hpp"
 
 using namespace std::literals;
@@ -38,7 +41,11 @@ R create_order_entry(Gateway &gateway, auto &context, auto &stream_id, auto &acc
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts) {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
+      if (shared.settings.ws_api) {
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS>(gateway, context, ++stream_id, *account, shared));
+      } else {
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST>(gateway, context, ++stream_id, *account, shared));
+      }
     }
   }
   return result;
@@ -140,6 +147,10 @@ void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
 }
 
 void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<PositionUpdate> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
@@ -264,6 +275,5 @@ OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
   }
   throw RuntimeError{R"(Unknown account="{}")"sv, account};
 }
-
 }  // namespace htx_futures
 }  // namespace roq

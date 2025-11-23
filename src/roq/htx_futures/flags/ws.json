@@ -25,6 +25,13 @@
       "description": "Exchange end-point"
     },
     {
+      "name": "order2_uri",
+      "type": "roq/io/web/URI",
+      "validator": "roq/core/flags/URI",
+      "default": "wss://api.hbdm.com/notification",
+      "description": "Exchange end-point"
+    },
+    {
       "name": "ping_freq",
       "type": "std/nanoseconds",
       "validator": "roq/flags/validators/TimePeriod",

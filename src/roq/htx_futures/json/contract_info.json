@@ -4,11 +4,11 @@
   "values": [
     {
       "name": "status",
-      "type": "std/string_view"
+      "type": "roq/htx_futures/json/Status"
     },
     {
       "name": "data",
-      "type": "roq/htx_futures/json/ContractInfoItem",
+      "type": "roq/htx_futures/json/ContractInfoDataItem",
       "array": "std/span"
     },
     {

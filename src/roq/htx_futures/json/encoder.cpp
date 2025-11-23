@@ -2,6 +2,8 @@
 
 #include "roq/htx_futures/json/encoder.hpp"
 
+#include "roq/decimal.hpp"
+
 #include "roq/htx_futures/json/map.hpp"
 #include "roq/htx_futures/json/utils.hpp"
 
@@ -13,33 +15,61 @@ namespace json {
 
 // === IMPLEMENTATION ===
 
-std::string_view Encoder::place_order(std::string &buffer, CreateOrder const &create_order, server::oms::Order const &, std::string_view const &request_id) {
+// lever_rate
+// self_match_prevent
+// stop-loss ??? => sl_
+std::string_view Encoder::create_order(
+    std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
   buffer.clear();
-  return buffer;
-}
-
-std::string_view Encoder::modify_order(
-    std::string &buffer,
-    ModifyOrder const &modify_order,
-    server::oms::Order const &,
-    std::string_view const &request_id,
-    std::string_view const &previous_request_id) {
-  buffer.clear();
+  auto direction = map(create_order.side).template get<json::Side>();
+  auto offset = map(create_order.position_effect).template get<json::Offset>();
+  auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("contract_code":"{}",)"
+      R"("client_order_id":"{}",)"
+      R"("direction":"{}",)"
+      R"("offset":"{}",)"
+      R"("order_price_type":"{}",)"
+      R"("volume":"{}")"sv,
+      create_order.symbol,
+      "1234"sv,  // request_id,
+      direction.as_raw_text(),
+      offset.as_raw_text(),
+      order_price_type.as_raw_text(),
+      Decimal{create_order.quantity, order.quantity_precision.precision});
+  if (!std::isnan(create_order.price)) {
+    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, order.price_precision.precision});
+  }
+  if (!std::isnan(create_order.leverage)) {
+    fmt::format_to(std::back_inserter(buffer), R"(,"lever_rate":{})"sv, create_order.leverage);
+  } else {
+    fmt::format_to(std::back_inserter(buffer), R"(,"lever_rate":1)"sv);  // XXX FIXME TODO is this correct ???
+  }
+  fmt::format_to(std::back_inserter(buffer), R"(}})"sv);
   return buffer;
 }
 
 std::string_view Encoder::cancel_order(
     std::string &buffer,
     CancelOrder const &,
-    server::oms::Order const &order,
+    server::oms::Order const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   buffer.clear();
   return buffer;
 }
 
-std::string_view Encoder::cancel_all_orders(std::string &buffer, CancelAllOrders const &, [[maybe_unused]] std::string_view const &request_id) {
+std::string_view Encoder::cancel_all_orders(
+    std::string &buffer, CancelAllOrders const &, [[maybe_unused]] std::string_view const &request_id, std::string_view const &symbol) {
   buffer.clear();
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("symbol":"{}")"
+      R"(}})"sv,
+      symbol);
   return buffer;
 }
 

@@ -63,6 +63,7 @@ inline std::string_view extract_topic(std::string_view const &channel) {
   return channel;
 }
 
+extern roq::Error guess_error(int32_t err_code);
 extern roq::Error guess_error(std::string_view const &message);
 
 }  // namespace json

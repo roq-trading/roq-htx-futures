@@ -212,7 +212,7 @@ void MarketData::subscribe(std::span<Symbol const> const &symbols) {
     return;
   }
   subscribe(symbols, "market"sv, "bbo"sv);
-  subscribe_with_data_type(symbols, "market"sv, shared_.api.market_depth, "incremental"sv);
+  subscribe_with_data_type(symbols, "market"sv, shared_.api.market_data.market_depth, "incremental"sv);
   subscribe(symbols, "market"sv, "trade.detail"sv);
   subscribe(symbols, "market"sv, "detail"sv);
 }
@@ -389,7 +389,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
     shared_.trades.clear();
     auto emplace_back = [](auto &result, auto &value) {
       auto trade = Trade{
-          .side = json::Map{value.direction},
+          .side = map(value.direction),
           .price = value.price,
           .quantity = value.amount,
           .trade_id = {},

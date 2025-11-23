@@ -204,10 +204,10 @@ void WebSocket::subscribe(std::span<Symbol const> const &symbols) {
     return;
   }
   subscribe(symbols, "market"sv, "basis.1min.open"sv);
-  if (shared_.api.has_estimated_rate) {
+  if (shared_.api.market_data.has_estimated_rate) {
     subscribe(symbols, "market"sv, "estimated_rate.1min"sv);
   }
-  if (shared_.api.has_index) {
+  if (shared_.api.market_data.has_index) {
     subscribe(symbols, "market"sv, "index.1min"sv);
   }
 }

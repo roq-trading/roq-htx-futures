@@ -35,6 +35,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<PositionUpdate> const &, bool is_last) = 0;
   };
 
   DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
@@ -63,11 +64,21 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
 
   void send_pong(std::chrono::milliseconds timestamp);
 
+  void send_login();
+
+  void subscribe();
+  void subscribe(std::string_view const &topic);
+
   void parse(std::string_view const &message);
 
-  void operator()(Trace<json::Ping> const &) override;
   void operator()(Trace<json::Close> const &) override;
+  void operator()(Trace<json::Error2> const &) override;
+  void operator()(Trace<json::Ping> const &) override;
+  void operator()(Trace<json::Auth> const &) override;
+  void operator()(Trace<json::Sub> const &) override;
   void operator()(Trace<json::FundingRate> const &) override;
+  void operator()(Trace<json::Accounts> const &) override;
+  void operator()(Trace<json::Positions> const &) override;
 
  private:
   Handler &handler_;
@@ -83,7 +94,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, close;
+    utils::metrics::Profile parse, close, error, ping, auth, sub, accounts, positions;
   } profile_;
   struct {
     utils::metrics::Latency ping;

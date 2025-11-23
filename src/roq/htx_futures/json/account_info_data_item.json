@@ -106,6 +106,18 @@
     },
     {
       "name": "positionList"
+    },
+    {
+      "name": "profit_real",
+      "type": "std/double"
+    },
+    {
+      "name": "is_debit",
+      "type": "std/int32"
+    },
+    {
+      "name": "transfer_profit_ratio",
+      "type": "std/double"
     }
   ]
 }

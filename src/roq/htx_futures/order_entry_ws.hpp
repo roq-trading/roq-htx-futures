@@ -14,13 +14,16 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/core/download.hpp"
 #include "roq/core/zlib/inflate.hpp"
+
+#include "roq/core/download.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
 
+#include "roq/htx_futures/account.hpp"
+#include "roq/htx_futures/order_entry.hpp"
 #include "roq/htx_futures/shared.hpp"
 
 #include "roq/htx_futures/json/parser_2.hpp"
@@ -28,26 +31,26 @@
 namespace roq {
 namespace htx_futures {
 
-struct WebSocket2 final : public web::socket::Client::Handler, public json::Parser2::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
-  };
+struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public json::Parser2::Handler {
+  OrderEntryWS(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  WebSocket2(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
-
-  WebSocket2(WebSocket2 const &) = delete;
+  OrderEntryWS(OrderEntryWS const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
 
-  void operator()(metrics::Writer &) const;
+  void operator()(metrics::Writer &) const override;
 
-  void subscribe(size_t start_from = 0);
+  uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, std::string_view const &request_id) override;
+  uint16_t operator()(
+      Event<ModifyOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id) override;
+  uint16_t operator()(
+      Event<CancelOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id) override;
+
+  uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) override;
 
  protected:
   void operator()(web::socket::Client::Connected const &) override;
@@ -61,10 +64,9 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
  private:
   void operator()(ConnectionStatus);
 
-  void subscribe(std::span<Symbol const> const &symbols);
-  void subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme);
-
   void send_pong(std::chrono::milliseconds timestamp);
+
+  void send_login();
 
   void parse(std::string_view const &message);
 
@@ -78,29 +80,34 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   void operator()(Trace<json::Positions> const &) override;
 
  private:
-  Handler &handler_;
+  OrderEntry::Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
-  size_t const index_;
   // web socket
   std::unique_ptr<web::socket::Client> const connection_;
   // buffers
   core::json::BufferStack decode_buffer_;
   // metrics
   struct {
-    utils::metrics::Counter disconnect, total_bytes_received;
+    utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, close, error, ping, sub, funding_rate;
+    utils::metrics::Profile parse,  //
+        close, error, ping, auth,   //
+        create_order, cancel_order, cancel_all_orders;
   } profile_;
   struct {
     utils::metrics::Latency ping;
   } latency_;
+  // account
+  Account &account_;
   // cache
   Shared &shared_;
   // state
   ConnectionStatus status_ = {};
+  // buffers
+  std::string encode_buffer_;
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;

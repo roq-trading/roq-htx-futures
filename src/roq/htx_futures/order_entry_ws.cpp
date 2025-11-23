@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2025, Hans Erik Thrane */
 
-#include "roq/htx_futures/drop_copy.hpp"
+#include "roq/htx_futures/order_entry_ws.hpp"
 
 #include "roq/mask.hpp"
 
@@ -10,8 +10,11 @@
 
 #include "roq/utils/metrics/factory.hpp"
 
+#include "roq/server/oms/exceptions.hpp"
+
 #include "roq/web/socket/client.hpp"
 
+#include "roq/htx_futures/json/encoder.hpp"
 #include "roq/htx_futures/json/map.hpp"
 #include "roq/htx_futures/json/utils.hpp"
 
@@ -23,7 +26,7 @@ namespace htx_futures {
 // === CONSTANTS ===
 
 namespace {
-auto const NAME = "dc"sv;
+auto const NAME = "om"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::FUNDS,
@@ -40,7 +43,7 @@ auto create_name(auto stream_id) {
 }
 
 auto create_connection(auto &handler, auto &settings, auto &context) {
-  auto uri = settings.ws.order_uri;
+  auto uri = settings.ws.order2_uri;
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
@@ -72,7 +75,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+OrderEntryWS::OrderEntryWS(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -84,9 +87,9 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
           .error = create_metrics(shared.settings, name_, "error"sv),
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .auth = create_metrics(shared.settings, name_, "auth"sv),
-          .sub = create_metrics(shared.settings, name_, "sub"sv),
-          .accounts = create_metrics(shared.settings, name_, "accounts"sv),
-          .positions = create_metrics(shared.settings, name_, "positions"sv),
+          .create_order = create_metrics(shared.settings, name_, "create_order"sv),
+          .cancel_order = create_metrics(shared.settings, name_, "cancel_order"sv),
+          .cancel_all_orders = create_metrics(shared.settings, name_, "cancel_all_orders"sv),
       },
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
@@ -94,19 +97,19 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
       account_{account}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
-void DropCopy::operator()(Event<Start> const &) {
+void OrderEntryWS::operator()(Event<Start> const &) {
   (*connection_).start();
 }
 
-void DropCopy::operator()(Event<Stop> const &) {
+void OrderEntryWS::operator()(Event<Stop> const &) {
   (*connection_).stop();
 }
 
-void DropCopy::operator()(Event<Timer> const &event) {
+void OrderEntryWS::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void DropCopy::operator()(metrics::Writer &writer) const {
+void OrderEntryWS::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -116,30 +119,79 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(profile_.error, metrics::Type::PROFILE)
       .write(profile_.ping, metrics::Type::PROFILE)
       .write(profile_.auth, metrics::Type::PROFILE)
-      .write(profile_.sub, metrics::Type::PROFILE)
-      .write(profile_.accounts, metrics::Type::PROFILE)
-      .write(profile_.positions, metrics::Type::PROFILE)
+      .write(profile_.create_order, metrics::Type::PROFILE)
+      .write(profile_.cancel_order, metrics::Type::PROFILE)
+      .write(profile_.cancel_all_orders, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-void DropCopy::operator()(web::socket::Client::Connected const &) {
+uint16_t OrderEntryWS::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+  profile_.create_order([&]() {
+    auto &[message_info, create_order] = event;
+    auto message = json::Encoder::create_order(encode_buffer_, create_order, order, request_id);
+    log::info<2>(R"(message="{}")"sv, message);
+    log::warn(R"(DEBUG message="{}")"sv, message);
+    (*connection_).send_text(message);
+  });
+  return stream_id_;
 }
 
-void DropCopy::operator()(web::socket::Client::Disconnected const &) {
+uint16_t OrderEntryWS::operator()(
+    Event<ModifyOrder> const &,
+    server::oms::Order const &,
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
+  throw server::oms::NotSupported{"not supported"sv};
+  return stream_id_;
+}
+
+uint16_t OrderEntryWS::operator()(
+    Event<CancelOrder> const &event, server::oms::Order const &order, std::string_view const &request_id, std::string_view const &previous_request_id) {
+  profile_.cancel_order([&]() {
+    auto &[message_info, cancel_order] = event;
+    auto message = json::Encoder::cancel_order(encode_buffer_, cancel_order, order, request_id, previous_request_id);
+    log::info<2>(R"(message="{}")"sv, message);
+    log::warn(R"(DEBUG message="{}")"sv, message);
+    (*connection_).send_text(message);
+  });
+  return stream_id_;
+}
+
+uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+  profile_.cancel_all_orders([&]() {
+    auto &[message_info, cancel_all_orders] = event;
+    auto helper = [&](auto &symbol) {
+      auto message = json::Encoder::cancel_all_orders(encode_buffer_, cancel_all_orders, request_id, symbol);
+      log::info<2>(R"(message="{}")"sv, message);
+      log::warn(R"(DEBUG message="{}")"sv, message);
+      (*connection_).send_text(message);
+    };
+    if (shared_.dispatcher.get_all_order_symbols(helper, account_.name)) {
+    } else {
+      log::warn("*** NOT POSSIBLE TO CANCEL ALL OPEN ORDERS (NO SYMBOLS) ***"sv);
+    }
+  });
+  return stream_id_;
+}
+
+void OrderEntryWS::operator()(web::socket::Client::Connected const &) {
+}
+
+void OrderEntryWS::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void DropCopy::operator()(web::socket::Client::Ready const &) {
+void OrderEntryWS::operator()(web::socket::Client::Ready const &) {
   send_login();
   (*this)(ConnectionStatus::LOGIN_SENT);
 }
 
-void DropCopy::operator()(web::socket::Client::Close const &) {
+void OrderEntryWS::operator()(web::socket::Client::Close const &) {
 }
 
-void DropCopy::operator()(web::socket::Client::Latency const &latency) {
+void OrderEntryWS::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -150,11 +202,11 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(web::socket::Client::Text const &) {
+void OrderEntryWS::operator()(web::socket::Client::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(web::socket::Client::Binary const &binary) {
+void OrderEntryWS::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
@@ -166,7 +218,7 @@ void DropCopy::operator()(web::socket::Client::Binary const &binary) {
   }
 }
 
-void DropCopy::operator()(ConnectionStatus status) {
+void OrderEntryWS::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     TraceInfo trace_info;
     auto stream_status = StreamStatus{
@@ -188,7 +240,7 @@ void DropCopy::operator()(ConnectionStatus status) {
   }
 }
 
-void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
+void OrderEntryWS::send_pong(std::chrono::milliseconds timestamp) {
   auto message = fmt::format(
       R"({{)"
       R"("op":"pong",)"
@@ -199,7 +251,7 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
   (*connection_).send_text(message);
 }
 
-void DropCopy::send_login() {
+void OrderEntryWS::send_login() {
   auto now_utc = clock::get_realtime<std::chrono::seconds>();
   auto message = account_.create_ws_auth("/swap-notification"sv, now_utc);
   log::warn("DEBUG {}"sv, message);
@@ -207,26 +259,7 @@ void DropCopy::send_login() {
   (*connection_).send_text(message);
 }
 
-void DropCopy::subscribe() {
-  subscribe("accounts.*"sv);
-  subscribe("positions.*"sv);
-  subscribe("orders.*"sv);
-  subscribe("matchOrders.*"sv);
-}
-
-void DropCopy::subscribe(std::string_view const &topic) {
-  auto message = fmt::format(
-      R"({{)"
-      R"("op":"sub",)"
-      R"("topic":"{}",)"
-      R"("cid":"xxx")"
-      R"(}})"sv,
-      topic);
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
-}
-
-void DropCopy::parse(std::string_view const &message) {
+void OrderEntryWS::parse(std::string_view const &message) {
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
@@ -241,32 +274,31 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Close> const &) {
+void OrderEntryWS::operator()(Trace<json::Close> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
   });
 }
 
-void DropCopy::operator()(Trace<json::Error2> const &) {
-  profile_.error([&]() {
+void OrderEntryWS::operator()(Trace<json::Error2> const &) {
+  profile_.close([&]() {
     log::warn("*** ERROR ***"sv);
     (*connection_).close();
   });
 }
 
-void DropCopy::operator()(Trace<json::Ping> const &event) {
+void OrderEntryWS::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void DropCopy::operator()(Trace<json::Auth> const &event) {
+void OrderEntryWS::operator()(Trace<json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
-      subscribe();
       (*this)(ConnectionStatus::READY);
     } else {
       log::error(R"(Authentication failed: code={}, msg="{}")"sv, auth.err_code, auth.err_msg);
@@ -275,76 +307,20 @@ void DropCopy::operator()(Trace<json::Auth> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Sub> const &event) {
-  profile_.sub([&]() {
-    auto &[trace_info, sub] = event;
-    if (sub.err_code != 0) {
-      log::error(R"(Subscription failed: code={}, msg="{}")"sv, sub.err_code, sub.err_msg);
-    }
-  });
-}
-
-void DropCopy::operator()(Trace<json::FundingRate> const &) {
+void OrderEntryWS::operator()(Trace<json::Sub> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::Accounts> const &event) {
-  profile_.accounts([&]() {
-    auto &[trace_info, accounts] = event;
-    auto update_type = map(accounts.event).template get<UpdateType>();
-    for (auto &item : accounts.data) {
-      auto funds_update = FundsUpdate{
-          .stream_id = stream_id_,
-          .account = account_.name,
-          .currency = item.symbol,
-          .margin_mode = {},
-          .balance = item.margin_balance,
-          .hold = NaN,
-          .borrowed = NaN,
-          .external_account = {},
-          .update_type = update_type,
-          .exchange_time_utc = {},
-          .sending_time_utc = accounts.ts,
-      };
-      create_trace_and_dispatch(handler_, trace_info, funds_update, true);
-    }
-  });
+void OrderEntryWS::operator()(Trace<json::FundingRate> const &) {
+  log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::Positions> const &event) {
-  profile_.positions([&]() {
-    auto &[trace_info, positions] = event;
-    auto update_type = map(positions.event).template get<UpdateType>();
-    for (auto &item : positions.data) {
-      auto direction = map(item.direction).template get<Side>();
-      auto long_quantity = [&]() {
-        if (direction == Side::BUY) {
-          return item.available;  // ???
-        }
-        return NaN;
-      }();
-      auto short_quantity = [&]() {
-        if (direction == Side::SELL) {
-          return item.available;  // ???
-        }
-        return NaN;
-      }();
-      auto position_update = PositionUpdate{
-          .stream_id = stream_id_,
-          .account = account_.name,
-          .exchange = shared_.settings.exchange,
-          .symbol = item.contract_code,
-          .margin_mode = {},
-          .external_account{},
-          .long_quantity = long_quantity,
-          .short_quantity = short_quantity,
-          .update_type = update_type,
-          .exchange_time_utc = {},
-          .sending_time_utc = positions.ts,
-      };
-      create_trace_and_dispatch(handler_, trace_info, position_update, true);
-    }
-  });
+void OrderEntryWS::operator()(Trace<json::Accounts> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void OrderEntryWS::operator()(Trace<json::Positions> const &) {
+  log::fatal("Unexpected"sv);
 }
 
 }  // namespace htx_futures

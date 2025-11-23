@@ -203,7 +203,7 @@ void Rest::get_contract_info() {
   profile_.contract_info([&]() {
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = shared_.api.get_contract_info,
+        .path = shared_.api.market_data.get_contract_info,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},

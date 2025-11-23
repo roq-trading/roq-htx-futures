@@ -2,35 +2,40 @@
 
 #pragma once
 
-#include <tuple>
-
-#include "roq/api.hpp"
-
+#include "roq/htx_futures/json/event.hpp"
+#include "roq/htx_futures/json/offset.hpp"
+#include "roq/htx_futures/json/order_price_type.hpp"
 #include "roq/htx_futures/json/side.hpp"
 
+#include "roq/order_type.hpp"
+#include "roq/position_effect.hpp"
+#include "roq/side.hpp"
+#include "roq/update_type.hpp"
+
+#include "roq/map.hpp"
+
 namespace roq {
-namespace htx_futures {
-namespace json {
 
-template <typename... Args>
-struct Map final {
-  explicit Map(Args &&...args) : args_{std::forward<Args>(args)...} {}
-  explicit Map(Args const &...args) : args_{args...} {}
+template <>
+template <>
+std::optional<UpdateType> Map<htx_futures::json::Event>::helper() const;
 
-  Map(Map const &) = delete;
+template <>
+template <>
+std::optional<Side> Map<htx_futures::json::Side>::helper() const;
 
-  template <typename R>
-  operator R();
+// ===
 
- private:
-  std::tuple<Args...> const args_;
-};
+template <>
+template <>
+std::optional<htx_futures::json::OrderPriceType> Map<roq::OrderType>::helper() const;
 
-template <typename R, typename... Args>
-inline R map(Args &&...args) {
-  return static_cast<R>(Map{std::forward<Args>(args)...});
-}
+template <>
+template <>
+std::optional<htx_futures::json::Offset> Map<roq::PositionEffect>::helper() const;
 
-}  // namespace json
-}  // namespace htx_futures
+template <>
+template <>
+std::optional<htx_futures::json::Side> Map<roq::Side>::helper() const;
+
 }  // namespace roq

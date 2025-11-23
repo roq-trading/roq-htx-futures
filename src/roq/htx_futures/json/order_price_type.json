@@ -1,0 +1,54 @@
+{
+  "name": "roq/htx_futures/json/OrderPriceType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "limit"
+    },
+    {
+      "name": "opponent"
+    },
+    {
+      "name": "post_only"
+    },
+    {
+      "name": "optimal_5"
+    },
+    {
+      "name": "optimal_10"
+    },
+    {
+      "name": "optimal_20"
+    },
+    {
+      "name": "ioc"
+    },
+    {
+      "name": "fok"
+    },
+    {
+      "name": "opponent_ioc"
+    },
+    {
+      "name": "optimal_5_ioc"
+    },
+    {
+      "name": "optimal_10_ioc"
+    },
+    {
+      "name": "optimal_20_ioc"
+    },
+    {
+      "name": "opponent_fok"
+    },
+    {
+      "name": "optimal_5_fok"
+    },
+    {
+      "name": "optimal_10_fok"
+    },
+    {
+      "name": "optimal_20_fok"
+    }
+  ]
+}
