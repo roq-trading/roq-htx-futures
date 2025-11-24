@@ -476,22 +476,24 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
       Trace event_2{trace_info, cancel_all_orders_ack};
       shared_(event_2);
     };
-    auto helper = [&](auto &symbol) {
+    auto helper = [&](auto const &symbol) {
+      auto now_utc = clock::get_realtime<std::chrono::seconds>();
       auto method = web::http::Method::POST;
       auto path = shared_.api.order_management.cancel_all_orders;
+      auto query = account_.create_query(method, path, now_utc);
       auto body = json::Encoder::cancel_all_orders(encode_buffer_, cancel_all_orders, request_id, symbol);
       log::info<2>(R"(body="{}")"sv, body);
-      log::warn(R"(DEBUG body="{}")"sv, body);
       auto request = web::rest::Request{
           .method = method,
           .path = path,
-          .query = {},
+          .query = query,
           .accept = web::http::Accept::APPLICATION_JSON,
           .content_type = web::http::ContentType::APPLICATION_JSON,
           .headers = {},
           .body = body,
           .quality_of_service = {},
       };
+      log::warn(R"(DEBUG request="{}")"sv, request);
       auto callback = [this](auto &request_id, auto &response) {
         TraceInfo trace_info;
         Trace event{trace_info, response};
@@ -500,6 +502,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
       (*connection_)(request_id, request, callback);
       send_ack();
     };
+    helper("BTC-USD"sv);
     if (shared_.dispatcher.get_all_order_symbols(helper, account_.name)) {
     } else {
       log::warn("*** NOT POSSIBLE TO CANCEL ALL OPEN ORDERS (NO SYMBOLS) ***"sv);

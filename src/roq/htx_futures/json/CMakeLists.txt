@@ -40,6 +40,7 @@ set(AUTOGEN_SCHEMAS
     order_price_type.json
     ping.json
     place_order_ack.json
+    place_order_ack_data.json
     positions_data_item.json
     positions.json
     premium_index.json

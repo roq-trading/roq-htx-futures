@@ -34,7 +34,7 @@ std::string_view Encoder::create_order(
       R"("order_price_type":"{}",)"
       R"("volume":"{}")"sv,
       create_order.symbol,
-      "1234"sv,  // request_id,
+      request_id,
       direction.as_raw_text(),
       offset.as_raw_text(),
       order_price_type.as_raw_text(),
@@ -67,7 +67,7 @@ std::string_view Encoder::cancel_all_orders(
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"
-      R"("symbol":"{}")"
+      R"("contract_code":"{}")"
       R"(}})"sv,
       symbol);
   return buffer;

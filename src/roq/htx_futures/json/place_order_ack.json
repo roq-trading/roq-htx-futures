@@ -15,6 +15,10 @@
       "type": "std/string_view"
     },
     {
+      "name": "data",
+      "type": "roq/htx_futures/json/PlaceOrderAckData"
+    },
+    {
       "name": "ts",
       "type": "std/milliseconds"
     }

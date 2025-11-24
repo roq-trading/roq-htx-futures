@@ -28,7 +28,7 @@ auto const SUPPORTS = Mask{
     SupportType::ORDER_ACK,
     SupportType::FUNDS,
 };
-auto const OMS_REQUEST_ID_TYPE = RequestIdType::BASE64;
+auto const OMS_REQUEST_ID_TYPE = RequestIdType::SIMPLE;  // note! 63 bit integer
 auto const OMS_CANCEL_ALL_ORDERS = Mask<Filter>{};
 }  // namespace
 
