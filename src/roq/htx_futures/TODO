@@ -1,0 +1,8 @@
+some issue with download order + cancel => server oms order_cache assertion on duplicate key
+
+have not tested
+
+- trades
+- coin-m-perp buy
+- coin-m-del all
+- usdt-m all
