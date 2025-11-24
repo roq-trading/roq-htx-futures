@@ -355,76 +355,126 @@ void DropCopy::operator()(Trace<json::Positions> const &event) {
 void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
-    /*
-    auto update_type = map(positions.event).template get<UpdateType>();
-    for (auto &item : positions.data) {
-      auto direction = map(item.direction).template get<Side>();
-      auto long_quantity = [&]() {
-        if (direction == Side::BUY) {
-          return item.available;  // ???
-        }
-        return NaN;
-      }();
-      auto short_quantity = [&]() {
-        if (direction == Side::SELL) {
-          return item.available;  // ???
-        }
-        return NaN;
-      }();
-      auto position_update = PositionUpdate{
-          .stream_id = stream_id_,
-          .account = account_.name,
-          .exchange = shared_.settings.exchange,
-          .symbol = item.contract_code,
-          .margin_mode = {},
-          .external_account{},
-          .long_quantity = long_quantity,
-          .short_quantity = short_quantity,
-          .update_type = update_type,
-          .exchange_time_utc = {},
-          .sending_time_utc = positions.ts,
-      };
-      create_trace_and_dispatch(handler_, trace_info, position_update, true);
+    auto client_order_id = fmt::format("{}"sv, match_orders.client_order_id);
+    auto remaining_quantity = [&]() {
+      if (utils::compare(match_orders.volume, 0.0) > 0) {
+        return match_orders.volume - match_orders.trade_volume;  // note! can't modify order
+      }
+      return NaN;
+    }();
+    auto order_update = server::oms::OrderUpdate{
+        .account = account_.name,
+        .exchange = shared_.settings.exchange,
+        .symbol = match_orders.contract_code,
+        .side = map(match_orders.direction),
+        .position_effect = map(match_orders.offset),
+        .margin_mode = {},
+        .max_show_quantity = NaN,
+        .order_type = map(match_orders.order_price_type),
+        .time_in_force = {},
+        .execution_instructions = {},
+        .create_time_utc = {},
+        .update_time_utc = match_orders.created_at,
+        .external_account = {},
+        .external_order_id = match_orders.order_id_str,
+        .client_order_id = client_order_id,
+        .order_status = map(match_orders.status),
+        .quantity = match_orders.volume,
+        .price = match_orders.price,
+        .stop_price = NaN,
+        .leverage = match_orders.lever_rate,
+        .remaining_quantity = remaining_quantity,
+        .traded_quantity = match_orders.trade_volume,
+        .average_traded_price = NaN,
+        .last_traded_quantity = NaN,
+        .last_traded_price = NaN,
+        .last_liquidity = {},
+        .routing_id = {},
+        .max_request_version = {},
+        .max_response_version = {},
+        .max_accepted_version = {},
+        .update_type = UpdateType::INCREMENTAL,
+        .sending_time_utc = match_orders.ts,
+    };
+    auto user_id = SOURCE_NONE;
+    auto order_id = ORDER_ID_NONE;
+    auto strategy_id = STRATEGY_ID_NONE;
+    if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&](auto &order) {
+          user_id = order.user_id;
+          order_id = order.order_id;
+          strategy_id = order.strategy_id;
+        })) {
+    } else {
+      log::warn("*** EXTERNAL ORDER ***"sv);
+      log::warn("match_orders={}"sv, match_orders);
     }
-    */
+    if (std::empty(match_orders.trade)) {
+      return;
+    }
+    // XXX FIXME TODO trades
   });
 }
 
 void DropCopy::operator()(Trace<json::Orders> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
-    /*
-    auto update_type = map(positions.event).template get<UpdateType>();
-    for (auto &item : positions.data) {
-      auto direction = map(item.direction).template get<Side>();
-      auto long_quantity = [&]() {
-        if (direction == Side::BUY) {
-          return item.available;  // ???
-        }
-        return NaN;
-      }();
-      auto short_quantity = [&]() {
-        if (direction == Side::SELL) {
-          return item.available;  // ???
-        }
-        return NaN;
-      }();
-      auto position_update = PositionUpdate{
-          .stream_id = stream_id_,
-          .account = account_.name,
-          .exchange = shared_.settings.exchange,
-          .symbol = item.contract_code,
-          .margin_mode = {},
-          .external_account{},
-          .long_quantity = long_quantity,
-          .short_quantity = short_quantity,
-          .update_type = update_type,
-          .exchange_time_utc = {},
-          .sending_time_utc = positions.ts,
-      };
-      create_trace_and_dispatch(handler_, trace_info, position_update, true);
+    auto client_order_id = fmt::format("{}"sv, orders.client_order_id);
+    auto remaining_quantity = [&]() {
+      if (utils::compare(orders.volume, 0.0) > 0) {
+        return orders.volume - orders.trade_volume;  // note! can't modify order
+      }
+      return NaN;
+    }();
+    auto order_update = server::oms::OrderUpdate{
+        .account = account_.name,
+        .exchange = shared_.settings.exchange,
+        .symbol = orders.contract_code,
+        .side = map(orders.direction),
+        .position_effect = map(orders.offset),
+        .margin_mode = {},
+        .max_show_quantity = NaN,
+        .order_type = map(orders.order_price_type),
+        .time_in_force = {},
+        .execution_instructions = {},
+        .create_time_utc = {},
+        .update_time_utc = orders.created_at,
+        .external_account = {},
+        .external_order_id = orders.order_id_str,
+        .client_order_id = client_order_id,
+        .order_status = map(orders.status),
+        .quantity = orders.volume,
+        .price = orders.price,
+        .stop_price = NaN,
+        .leverage = orders.lever_rate,
+        .remaining_quantity = remaining_quantity,
+        .traded_quantity = orders.trade_volume,
+        .average_traded_price = NaN,
+        .last_traded_quantity = NaN,
+        .last_traded_price = NaN,
+        .last_liquidity = {},
+        .routing_id = {},
+        .max_request_version = {},
+        .max_response_version = {},
+        .max_accepted_version = {},
+        .update_type = UpdateType::INCREMENTAL,
+        .sending_time_utc = orders.ts,
+    };
+    auto user_id = SOURCE_NONE;
+    auto order_id = ORDER_ID_NONE;
+    auto strategy_id = STRATEGY_ID_NONE;
+    if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&](auto &order) {
+          user_id = order.user_id;
+          order_id = order.order_id;
+          strategy_id = order.strategy_id;
+        })) {
+    } else {
+      log::warn("*** EXTERNAL ORDER ***"sv);
+      log::warn("orders={}"sv, orders);
     }
-    */
+    if (std::empty(orders.trade)) {
+      return;
+    }
+    // XXX FIXME TODO trades
   });
 }
 

@@ -22,7 +22,19 @@ std::optional<UpdateType> Map<htx_futures::json::Event>::helper() const;
 
 template <>
 template <>
+std::optional<PositionEffect> Map<htx_futures::json::Offset>::helper() const;
+
+template <>
+template <>
+std::optional<OrderType> Map<htx_futures::json::OrderPriceType>::helper() const;
+
+template <>
+template <>
 std::optional<Side> Map<htx_futures::json::Side>::helper() const;
+
+template <>
+template <>
+std::optional<OrderStatus> Map<std::int32_t>::helper() const;
 
 // ===
 

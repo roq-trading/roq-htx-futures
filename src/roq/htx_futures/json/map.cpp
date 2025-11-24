@@ -51,6 +51,106 @@ std::optional<roq::UpdateType> Map<htx_futures::json::Event>::helper() const {
   return Helper{args_};
 }
 
+// htx_futures::json::Offset ==> roq::PositionEffect
+
+template <>
+template <>
+constexpr Helper<htx_futures::json::Offset>::operator std::optional<roq::PositionEffect>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::json::Offset::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::PositionEffect::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::PositionEffect::UNDEFINED;
+    case OPEN:
+      return roq::PositionEffect::OPEN;
+    case CLOSE:
+      return roq::PositionEffect::CLOSE;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::UNDEFINED_INTERNAL}} == roq::PositionEffect::UNDEFINED);
+static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::OPEN}} == roq::PositionEffect::OPEN);
+static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::CLOSE}} == roq::PositionEffect::CLOSE);
+
+template <>
+template <>
+std::optional<roq::PositionEffect> Map<htx_futures::json::Offset>::helper() const {
+  return Helper{args_};
+}
+
+// htx_futures::json::OrderPriceType ==> roq::OrderType
+
+template <>
+template <>
+constexpr Helper<htx_futures::json::OrderPriceType>::operator std::optional<roq::OrderType>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::json::OrderPriceType::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::OrderType::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::OrderType::UNDEFINED;
+    case LIMIT:
+      return roq::OrderType::LIMIT;
+    case OPPONENT:
+      return roq::OrderType::UNDEFINED;
+    case POST_ONLY:
+      return roq::OrderType::LIMIT;
+    case OPTIMAL_5:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_10:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_20:
+      return roq::OrderType::UNDEFINED;
+    case IOC:
+      return roq::OrderType::LIMIT;
+    case FOK:
+      return roq::OrderType::LIMIT;
+    case OPPONENT_IOC:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_5_IOC:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_10_IOC:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_20_IOC:
+      return roq::OrderType::UNDEFINED;
+    case OPPONENT_FOK:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_5_FOK:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_10_FOK:
+      return roq::OrderType::UNDEFINED;
+    case OPTIMAL_20_FOK:
+      return roq::OrderType::UNDEFINED;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::UNDEFINED_INTERNAL}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::LIMIT}} == roq::OrderType::LIMIT);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPPONENT}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::POST_ONLY}} == roq::OrderType::LIMIT);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_5}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_10}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_20}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::IOC}} == roq::OrderType::LIMIT);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::FOK}} == roq::OrderType::LIMIT);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPPONENT_IOC}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_5_IOC}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_10_IOC}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_20_IOC}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPPONENT_FOK}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_5_FOK}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_10_FOK}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPTIMAL_20_FOK}} == roq::OrderType::UNDEFINED);
+
+template <>
+template <>
+std::optional<roq::OrderType> Map<htx_futures::json::OrderPriceType>::helper() const {
+  return Helper{args_};
+}
+
 // htx_futures::json::Side ==> roq::Side
 
 template <>
@@ -80,6 +180,41 @@ std::optional<roq::Side> Map<htx_futures::json::Side>::helper() const {
   return Helper{args_};
 }
 
+// std::int32_t ==> roq::OrderStatus
+
+template <>
+template <>
+constexpr Helper<std::int32_t>::operator std::optional<roq::OrderStatus>() const {
+  switch (std::get<0>(args_)) {
+    case 1:  // Ready to submit the orders;
+    case 2:  // Ready to submit the orders;
+      return roq::OrderStatus::ACCEPTED;
+    case 3:  // Have sumbmitted the orders;
+    case 4:  // Orders partially matched;
+      return roq::OrderStatus::WORKING;
+    case 5:  // Orders cancelled with partially matched;
+      return roq::OrderStatus::CANCELED;
+    case 6:  // Orders fully matched;
+      return roq::OrderStatus::COMPLETED;
+    case 7:  // Orders cancelled with partially matched;
+      return roq::OrderStatus::CANCELED;
+  }
+  return {};
+}
+
+static_assert(Helper{std::int32_t{1}} == roq::OrderStatus::ACCEPTED);
+static_assert(Helper{std::int32_t{2}} == roq::OrderStatus::ACCEPTED);
+static_assert(Helper{std::int32_t{3}} == roq::OrderStatus::WORKING);
+static_assert(Helper{std::int32_t{4}} == roq::OrderStatus::WORKING);
+static_assert(Helper{std::int32_t{5}} == roq::OrderStatus::CANCELED);
+static_assert(Helper{std::int32_t{6}} == roq::OrderStatus::COMPLETED);
+static_assert(Helper{std::int32_t{7}} == roq::OrderStatus::CANCELED);
+
+template <>
+template <>
+std::optional<roq::OrderStatus> Map<std::int32_t>::helper() const {
+  return Helper{args_};
+}
 // roq ==> htx_futures::json
 
 // roq::OrderType ==> htx_futures::json::OrderPriceType
