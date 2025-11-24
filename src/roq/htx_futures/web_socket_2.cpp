@@ -322,5 +322,13 @@ void WebSocket2::operator()(Trace<json::Positions> const &) {
   log::fatal("Unexpected"sv);
 }
 
+void WebSocket2::operator()(Trace<json::MatchOrders> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::Orders> const &) {
+  log::fatal("Unexpected"sv);
+}
+
 }  // namespace htx_futures
 }  // namespace roq

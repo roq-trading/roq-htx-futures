@@ -1,10 +1,24 @@
 {
   "name": "roq/htx_futures/json/Ping",
-  "type": "struct",
+  "type": "dictionary",
   "values": [
+    {
+      "name": "op",
+      "type": "roq/htx_futures/json/Operator"
+    },
     {
       "name": "timestamp",
       "type": "std/milliseconds"
+    },
+    {
+      "name": "ts",
+      "type": "std/int64",
+      "comment": "???"
+    },
+    {
+      "name": "ping",
+      "type": "std/int64",
+      "comment": "???"
     }
   ]
 }

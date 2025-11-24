@@ -30,6 +30,10 @@ constexpr Helper<htx_futures::json::Event>::operator std::optional<roq::UpdateTy
       return roq::UpdateType::SNAPSHOT;
     case UPDATE:
       return roq::UpdateType::INCREMENTAL;
+    case ORDER_OPEN:
+      return roq::UpdateType::INCREMENTAL;
+    case ORDER_CANCEL:
+      return roq::UpdateType::INCREMENTAL;
   }
   return {};
 }
@@ -38,6 +42,8 @@ static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::UNDEFINE
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::INIT}} == roq::UpdateType::SNAPSHOT);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::SNAPSHOT}} == roq::UpdateType::SNAPSHOT);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::UPDATE}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_OPEN}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_CANCEL}} == roq::UpdateType::INCREMENTAL);
 
 template <>
 template <>

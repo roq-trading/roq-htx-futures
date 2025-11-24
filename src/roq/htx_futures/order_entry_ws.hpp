@@ -78,6 +78,8 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   void operator()(Trace<json::FundingRate> const &) override;
   void operator()(Trace<json::Accounts> const &) override;
   void operator()(Trace<json::Positions> const &) override;
+  void operator()(Trace<json::MatchOrders> const &) override;
+  void operator()(Trace<json::Orders> const &) override;
 
  private:
   OrderEntry::Handler &handler_;

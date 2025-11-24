@@ -54,10 +54,28 @@ std::string_view Encoder::create_order(
 std::string_view Encoder::cancel_order(
     std::string &buffer,
     CancelOrder const &,
-    server::oms::Order const &,
+    server::oms::Order const &order,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   buffer.clear();
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("contract_code":"{}",)"sv,
+      order.symbol);
+  if (std::empty(order.external_order_id)) {
+    fmt::format_to(
+        std::back_inserter(buffer),
+        R"("client_order_id":"{}")"
+        R"(}})"sv,
+        order.client_order_id);
+  } else {
+    fmt::format_to(
+        std::back_inserter(buffer),
+        R"("order_id":"{}")"
+        R"(}})"sv,
+        order.external_order_id);
+  }
   return buffer;
 }
 

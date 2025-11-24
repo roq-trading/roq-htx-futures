@@ -87,6 +87,8 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
           .sub = create_metrics(shared.settings, name_, "sub"sv),
           .accounts = create_metrics(shared.settings, name_, "accounts"sv),
           .positions = create_metrics(shared.settings, name_, "positions"sv),
+          .match_orders = create_metrics(shared.settings, name_, "match_orders"sv),
+          .orders = create_metrics(shared.settings, name_, "orders"sv),
       },
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
@@ -119,6 +121,8 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(profile_.sub, metrics::Type::PROFILE)
       .write(profile_.accounts, metrics::Type::PROFILE)
       .write(profile_.positions, metrics::Type::PROFILE)
+      .write(profile_.match_orders, metrics::Type::PROFILE)
+      .write(profile_.orders, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY);
 }
@@ -210,8 +214,8 @@ void DropCopy::send_login() {
 void DropCopy::subscribe() {
   subscribe("accounts.*"sv);
   subscribe("positions.*"sv);
-  subscribe("orders.*"sv);
   subscribe("matchOrders.*"sv);
+  subscribe("orders.*"sv);
 }
 
 void DropCopy::subscribe(std::string_view const &topic) {
@@ -227,6 +231,7 @@ void DropCopy::subscribe(std::string_view const &topic) {
 }
 
 void DropCopy::parse(std::string_view const &message) {
+  log::warn("DEBUG {}"sv, message);
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
@@ -344,6 +349,82 @@ void DropCopy::operator()(Trace<json::Positions> const &event) {
       };
       create_trace_and_dispatch(handler_, trace_info, position_update, true);
     }
+  });
+}
+
+void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
+  profile_.match_orders([&]() {
+    auto &[trace_info, match_orders] = event;
+    /*
+    auto update_type = map(positions.event).template get<UpdateType>();
+    for (auto &item : positions.data) {
+      auto direction = map(item.direction).template get<Side>();
+      auto long_quantity = [&]() {
+        if (direction == Side::BUY) {
+          return item.available;  // ???
+        }
+        return NaN;
+      }();
+      auto short_quantity = [&]() {
+        if (direction == Side::SELL) {
+          return item.available;  // ???
+        }
+        return NaN;
+      }();
+      auto position_update = PositionUpdate{
+          .stream_id = stream_id_,
+          .account = account_.name,
+          .exchange = shared_.settings.exchange,
+          .symbol = item.contract_code,
+          .margin_mode = {},
+          .external_account{},
+          .long_quantity = long_quantity,
+          .short_quantity = short_quantity,
+          .update_type = update_type,
+          .exchange_time_utc = {},
+          .sending_time_utc = positions.ts,
+      };
+      create_trace_and_dispatch(handler_, trace_info, position_update, true);
+    }
+    */
+  });
+}
+
+void DropCopy::operator()(Trace<json::Orders> const &event) {
+  profile_.orders([&]() {
+    auto &[trace_info, orders] = event;
+    /*
+    auto update_type = map(positions.event).template get<UpdateType>();
+    for (auto &item : positions.data) {
+      auto direction = map(item.direction).template get<Side>();
+      auto long_quantity = [&]() {
+        if (direction == Side::BUY) {
+          return item.available;  // ???
+        }
+        return NaN;
+      }();
+      auto short_quantity = [&]() {
+        if (direction == Side::SELL) {
+          return item.available;  // ???
+        }
+        return NaN;
+      }();
+      auto position_update = PositionUpdate{
+          .stream_id = stream_id_,
+          .account = account_.name,
+          .exchange = shared_.settings.exchange,
+          .symbol = item.contract_code,
+          .margin_mode = {},
+          .external_account{},
+          .long_quantity = long_quantity,
+          .short_quantity = short_quantity,
+          .update_type = update_type,
+          .exchange_time_utc = {},
+          .sending_time_utc = positions.ts,
+      };
+      create_trace_and_dispatch(handler_, trace_info, position_update, true);
+    }
+    */
   });
 }
 

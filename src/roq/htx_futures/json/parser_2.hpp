@@ -17,6 +17,8 @@
 #include "roq/htx_futures/json/funding_rate.hpp"
 
 #include "roq/htx_futures/json/accounts.hpp"
+#include "roq/htx_futures/json/match_orders.hpp"
+#include "roq/htx_futures/json/orders.hpp"
 #include "roq/htx_futures/json/positions.hpp"
 
 namespace roq {
@@ -33,6 +35,8 @@ struct Parser2 final {
     virtual void operator()(Trace<FundingRate> const &) = 0;
     virtual void operator()(Trace<Accounts> const &) = 0;
     virtual void operator()(Trace<Positions> const &) = 0;
+    virtual void operator()(Trace<MatchOrders> const &) = 0;
+    virtual void operator()(Trace<Orders> const &) = 0;
   };
 
   static bool dispatch(Handler &, std::string_view const &message, core::json::BufferStack &, TraceInfo const &, bool allow_unknown_event_types);

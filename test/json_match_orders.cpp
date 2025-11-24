@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/htx_futures/json/match_orders.hpp"
 
 using namespace roq;
@@ -38,7 +40,8 @@ TEST_CASE("coin_m_perpetual_create", "[json_match_orders]") {
                  R"("is_tpsl":0,)"
                  R"("self-match-prevent":1)"
                  R"(})";
-  [[maybe_unused]] json::MatchOrders obj{message};
+  core::json::BufferStack buffers{8192, 1};
+  [[maybe_unused]] json::MatchOrders obj{message, buffers};
 }
 
 TEST_CASE("coin_m_perpetual_cancel", "[json_match_orders]") {
@@ -67,5 +70,6 @@ TEST_CASE("coin_m_perpetual_cancel", "[json_match_orders]") {
                  R"("is_tpsl":0,)"
                  R"("self-match-prevent":1)"
                  R"(})";
-  [[maybe_unused]] json::MatchOrders obj{message};
+  core::json::BufferStack buffers{8192, 1};
+  [[maybe_unused]] json::MatchOrders obj{message, buffers};
 }

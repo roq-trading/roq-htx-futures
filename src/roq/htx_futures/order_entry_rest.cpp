@@ -263,6 +263,7 @@ void OrderEntryREST::create_order_ack(Trace<web::rest::Response> const &event, u
     process_response(event, handle_error, handle_success);
   });
 }
+
 void OrderEntryREST::operator()(Trace<json::PlaceOrderAck> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
   auto &[trace_info, create_order_ack] = event;
   log::info<2>("create_order_ack={}"sv, create_order_ack);
@@ -377,24 +378,23 @@ void OrderEntryREST::cancel_order_ack(Trace<web::rest::Response> const &event, u
     };
     auto handle_success = [&](auto &body) {
       log::warn(R"(DEBUG body="{}")"sv, body);
-      /*
       json::CancelOrderAck cancel_order_ack{body, decode_buffer_};
-      if (cancel_order_ack.code == 0) {
+      if (cancel_order_ack.err_code == 0) {
         Trace event_2{event, cancel_order_ack};
         (*this)(event_2, user_id, order_id, version);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(cancel_order_ack.code), cancel_order_ack.msg);
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(cancel_order_ack.err_code), cancel_order_ack.err_msg);
       }
-      */
     };
     process_response(event, handle_error, handle_success);
   });
 }
-/*
+
 void OrderEntryREST::operator()(Trace<json::CancelOrderAck> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
   auto &[trace_info, cancel_order_ack] = event;
   log::info<2>("cancel_order_ack={}"sv, cancel_order_ack);
   log::warn("DEBUG cancel_order_ack={}"sv, cancel_order_ack);
+  /*
   auto &data = cancel_order_ack.data;
   auto response = server::oms::Response{
       .request_type = RequestType::CANCEL_ORDER,
@@ -443,8 +443,9 @@ void OrderEntryREST::operator()(Trace<json::CancelOrderAck> const &event, uint8_
   };
   Trace event_2{trace_info, response};
   (*this)(event_2, user_id, order_id, order_update);
+  */
 }
-*/
+
 // cancel-all-orders
 
 void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
@@ -502,7 +503,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
       (*connection_)(request_id, request, callback);
       send_ack();
     };
-    helper("BTC-USD"sv);
+    helper("BTC-USD"sv);  // XXX FIXME TODO DEBUG
     if (shared_.dispatcher.get_all_order_symbols(helper, account_.name)) {
     } else {
       log::warn("*** NOT POSSIBLE TO CANCEL ALL OPEN ORDERS (NO SYMBOLS) ***"sv);
@@ -540,8 +541,8 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
     };
     auto handle_success = [&](auto &body) {
       log::warn(R"(DEBUG body="{}")"sv, body);
-      /*
       json::CancelAllOrdersAck cancel_all_orders_ack{body, decode_buffer_};
+      /*
       for (auto &item : cancel_all_orders_ack.data) {
         OrderUpdate{shared_, stream_id_, account_.name}(item, event.trace_info, false);
       }
@@ -550,6 +551,62 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
     };
     process_response(event, handle_error, handle_success);
   });
+}
+
+void OrderEntryREST::operator()(Trace<json::CancelAllOrdersAck> const &event) {
+  auto &[trace_info, cancel_all_orders_ack] = event;
+  log::info<2>("cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
+  log::warn("DEBUG cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
+  /*
+  auto &data = create_order_ack.data;
+  auto response = server::oms::Response{
+      .request_type = RequestType::CREATE_ORDER,
+      .origin = Origin::EXCHANGE,
+      .request_status = RequestStatus::ACCEPTED,
+      .error = {},
+      .text = {},
+      .version = version,
+      .request_id = {},
+      .quantity = data.order_qty,
+      .price = data.price,
+  };
+  auto order_update = server::oms::OrderUpdate{
+      .account = account_.name,
+      .exchange = shared_.settings.exchange,
+      .symbol = data.symbol,
+      .side = map(data.side),
+      .position_effect = {},
+      .margin_mode = {},
+      .max_show_quantity = NaN,
+      .order_type = map(data.order_type),
+      .time_in_force = map(data.time_in_force),
+      .execution_instructions = {},  // ???
+      .create_time_utc = data.transact_time_ns,
+      .update_time_utc = data.transact_time_ns,
+      .external_account = {},
+      .external_order_id = data.order_id,
+      .client_order_id = data.cl_ord_id,
+      .order_status = map(data.ord_status),
+      .quantity = data.order_qty,
+      .price = data.price,
+      .stop_price = data.stop_px,
+      .leverage = NaN,
+      .remaining_quantity = data.leaves_qty,
+      .traded_quantity = data.cum_qty,
+      .average_traded_price = NaN,
+      .last_traded_quantity = NaN,
+      .last_traded_price = NaN,
+      .last_liquidity = {},
+      .routing_id = {},
+      .max_request_version = {},
+      .max_response_version = {},
+      .max_accepted_version = {},
+      .update_type = UpdateType::INCREMENTAL,
+      .sending_time_utc = create_order_ack.request_time,  // ???
+  };
+  Trace event_2{trace_info, response};
+  (*this)(event_2, user_id, order_id, order_update);
+  */
 }
 
 // helpers

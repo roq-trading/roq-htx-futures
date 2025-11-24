@@ -76,6 +76,8 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   void operator()(Trace<json::FundingRate> const &) override;
   void operator()(Trace<json::Accounts> const &) override;
   void operator()(Trace<json::Positions> const &) override;
+  void operator()(Trace<json::MatchOrders> const &) override;
+  void operator()(Trace<json::Orders> const &) override;
 
  private:
   Handler &handler_;

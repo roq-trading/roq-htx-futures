@@ -10,6 +10,14 @@
     },
     {
       "name": "update"
+    },
+    {
+      "raw": "order.open",
+      "name": "order_open"
+    },
+    {
+      "raw": "order.cancel",
+      "name": "order_cancel"
     }
   ]
 }

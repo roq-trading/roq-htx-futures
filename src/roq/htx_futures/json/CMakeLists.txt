@@ -17,6 +17,10 @@ set(AUTOGEN_SCHEMAS
     basis_tick.json
     bbo.json
     bbo_tick.json
+    cancel_all_orders_ack_data.json
+    cancel_all_orders_ack.json
+    cancel_order_ack_data.json
+    cancel_order_ack.json
     close.json
     contract_info_data_item.json
     contract_info.json
@@ -29,18 +33,21 @@ set(AUTOGEN_SCHEMAS
     estimated_rate.json
     estimated_rate_tick.json
     event.json
-    frame_2.json
     frame.json
     funding_rate_item.json
     funding_rate.json
     index.json
     index_tick.json
+    match_orders.json
+    match_orders_trade_item.json
     offset.json
     operator.json
     order_price_type.json
+    orders.json
+    orders_trade_item.json
     ping.json
-    place_order_ack.json
     place_order_ack_data.json
+    place_order_ack.json
     positions_data_item.json
     positions.json
     premium_index.json

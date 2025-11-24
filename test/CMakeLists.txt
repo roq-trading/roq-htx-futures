@@ -10,12 +10,14 @@ set(SOURCES
     json_basis.cpp
     json_bbo.cpp
     json_cancel_all_orders_ack.cpp
+    json_cancel_order_ack.cpp
     json_contract_info.cpp
     json_depth.cpp
     json_detail.cpp
     json_error.cpp
     json_funding_rate.cpp
     json_match_orders.cpp
+    json_orders.cpp
     json_place_order_ack.cpp
     json_positions.cpp
     json_premium_index.cpp

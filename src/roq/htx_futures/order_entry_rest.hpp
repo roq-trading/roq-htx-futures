@@ -22,6 +22,8 @@
 #include "roq/htx_futures/order_entry.hpp"
 #include "roq/htx_futures/shared.hpp"
 
+#include "roq/htx_futures/json/cancel_all_orders_ack.hpp"
+#include "roq/htx_futures/json/cancel_order_ack.hpp"
 #include "roq/htx_futures/json/place_order_ack.hpp"
 
 namespace roq {
@@ -66,12 +68,13 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void cancel_order(Event<CancelOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id);
   void cancel_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
-  // void operator()(Trace<json::CancelOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<json::CancelOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
 
   // cancel-all-orders
 
   void cancel_all_orders(Event<CancelAllOrders> const &, std::string_view const &request_id);
   void cancel_all_orders_ack(Trace<web::rest::Response> const &, std::string_view const &request_id);
+  void operator()(Trace<json::CancelAllOrdersAck> const &);
 
   // helpers
 

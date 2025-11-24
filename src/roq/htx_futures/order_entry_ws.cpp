@@ -323,5 +323,13 @@ void OrderEntryWS::operator()(Trace<json::Positions> const &) {
   log::fatal("Unexpected"sv);
 }
 
+void OrderEntryWS::operator()(Trace<json::MatchOrders> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void OrderEntryWS::operator()(Trace<json::Orders> const &) {
+  log::fatal("Unexpected"sv);
+}
+
 }  // namespace htx_futures
 }  // namespace roq

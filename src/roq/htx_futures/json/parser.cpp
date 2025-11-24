@@ -108,10 +108,7 @@ bool Parser::dispatch(
         return true;
     }
   } else {
-    auto ping = Ping{
-        .timestamp = frame.ping,
-    };
-    create_trace_and_dispatch(handler, trace_info, ping);
+    dispatch_helper<Ping>(handler, message, buffer_stack, trace_info);
     return true;
   }
   log::fatal(R"(Unexpected: message="{}")"sv, message);

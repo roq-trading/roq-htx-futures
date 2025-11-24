@@ -1,0 +1,13 @@
+{
+  "name": "roq/htx_futures/json/CancelOrderAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "errors"
+    },
+    {
+      "name": "successes",
+      "type": "std/string_view"
+    }
+  ]
+}

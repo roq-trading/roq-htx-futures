@@ -1,6 +1,6 @@
 {
   "name": "roq/htx_futures/json/Close",
-  "type": "struct",
+  "type": "dictionary",
   "values": [
     {
       "name": "timestamp",
