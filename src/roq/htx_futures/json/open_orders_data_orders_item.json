@@ -1,0 +1,121 @@
+{
+  "name": "roq/htx_futures/json/OpenOrdersDataOrdersItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "update_time",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "volume",
+      "type": "std/double"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "order_price_type",
+      "type": "roq/htx_futures/json/OrderPriceType"
+    },
+    {
+      "name": "order_type",
+      "type": "std/int32"
+    },
+    {
+      "name": "direction",
+      "type": "roq/htx_futures/json/Side"
+    },
+    {
+      "name": "offset",
+      "type": "roq/htx_futures/json/Offset"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "client_order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "created_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "trade_volume",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_turnover",
+      "type": "std/double"
+    },
+    {
+      "name": "fee",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_avg_price",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "profit",
+      "type": "std/double"
+    },
+    {
+      "name": "status",
+      "type": "std/int32"
+    },
+    {
+      "name": "order_source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "canceled_source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "order_id_str",
+      "type": "std/string_view"
+    },
+    {
+      "name": "fee_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "liquidation_type"
+    },
+    {
+      "name": "canceled_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "is_tpsl",
+      "type": "std/int32"
+    },
+    {
+      "name": "real_profit",
+      "type": "std/double"
+    },
+    {
+      "name": "self_match_prevent",
+      "type": "std/int32"
+    }
+  ]
+}

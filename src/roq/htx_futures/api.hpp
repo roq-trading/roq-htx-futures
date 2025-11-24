@@ -20,6 +20,7 @@ struct API final {
   } market_data;
   struct {
     std::string_view account_info = {};
+    std::string_view open_orders = {};
     std::string_view place_order = {};
     std::string_view cancel_order = {};
     std::string_view cancel_all_orders = {};

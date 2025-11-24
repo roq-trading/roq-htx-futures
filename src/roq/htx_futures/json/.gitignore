@@ -36,6 +36,9 @@ index_tick.hpp
 match_orders.hpp
 match_orders_trade_item.hpp
 offset.hpp
+open_orders_data.hpp
+open_orders_data_orders_item.hpp
+open_orders.hpp
 operator.hpp
 order_price_type.hpp
 orders.hpp
@@ -93,6 +96,9 @@ index_tick.cpp
 match_orders.cpp
 match_orders_trade_item.cpp
 offset.cpp
+open_orders_data.cpp
+open_orders_data_orders_item.cpp
+open_orders.cpp
 operator.cpp
 order_price_type.cpp
 orders.cpp

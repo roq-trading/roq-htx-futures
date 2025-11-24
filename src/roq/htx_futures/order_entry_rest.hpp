@@ -12,6 +12,8 @@
 
 #include "roq/io/context.hpp"
 
+#include "roq/core/download.hpp"
+
 #include "roq/web/rest/client.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
@@ -20,10 +22,12 @@
 
 #include "roq/htx_futures/account.hpp"
 #include "roq/htx_futures/order_entry.hpp"
+#include "roq/htx_futures/order_entry_state.hpp"
 #include "roq/htx_futures/shared.hpp"
 
 #include "roq/htx_futures/json/cancel_all_orders_ack.hpp"
 #include "roq/htx_futures/json/cancel_order_ack.hpp"
+#include "roq/htx_futures/json/open_orders.hpp"
 #include "roq/htx_futures/json/place_order_ack.hpp"
 
 namespace roq {
@@ -57,6 +61,14 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   void operator()(Trace<web::rest::Client::Latency> const &) override;
 
   void operator()(ConnectionStatus);
+
+  uint32_t download(OrderEntryState);
+
+  // open-orders
+
+  void open_orders();
+  void open_orders_ack(Trace<web::rest::Response> const &);
+  void operator()(Trace<json::OpenOrders> const &);
 
   // create-order
 
@@ -100,8 +112,9 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   } counter_;
   struct {
     utils::metrics::Profile  //
-        create_order,
-        create_order_ack,                //
+        open_orders,
+        open_orders_ack,                 //
+        create_order, create_order_ack,  //
         cancel_order, cancel_order_ack,  //
         cancel_all_orders, cancel_all_orders_ack;
   } profile_;
@@ -114,6 +127,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   Shared &shared_;
   // state
   ConnectionStatus status_ = {};
+  core::Download<OrderEntryState> download_;
   // buffers
   std::string encode_buffer_;
 };

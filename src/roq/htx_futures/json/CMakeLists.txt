@@ -41,6 +41,9 @@ set(AUTOGEN_SCHEMAS
     match_orders.json
     match_orders_trade_item.json
     offset.json
+    open_orders_data.json
+    open_orders_data_orders_item.json
+    open_orders.json
     operator.json
     order_price_type.json
     orders.json

@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx_futures/OrderEntryState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "open_orders"
+    },
+    {
+      "name": "done"
+    }
+  ]
+}

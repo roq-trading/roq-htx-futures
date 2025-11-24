@@ -25,10 +25,12 @@ auto const API_USDT_M_FUTURES = API{
     },
     .order_management{
         .account_info = "/linear-swap-api/v1/swap_account_info"sv,
+        .open_orders = "/linear-swap-api/v1/swap_openorders"sv,
         .place_order = "/linear-swap-api/v1/swap_order"sv,
         .cancel_order = "/linear-swap-api/v1/swap_cancel"sv,
         .cancel_all_orders = "/linear-swap-api/v1/swap_cancelall"sv,
         // .account_info = "/linear-swap-api/v1/swap_cross_account_info"sv,
+        // .open_orders = "/linear-swap-api/v1/swap_cross_openorders"sv,
         // .place_order = "/linear-swap-api/v1/swap_cross_order"sv,
         // .cancel_order = "/linear-swap-api/v1/swap_cross_cancel"sv,
         // .cancel_all_orders = "/linear-swap-api/v1/swap_cross_cancelall"sv,
@@ -46,6 +48,7 @@ auto const API_COIN_M_DELIVERY = API{
     },
     .order_management{
         .account_info = "/api/v1/contract_account_info"sv,
+        .open_orders = "/api/v1/contract_openorders"sv,
         .place_order = "/api/v1/contract_order"sv,
         .cancel_order = "/api/v1/contract_cancel"sv,
         .cancel_all_orders = "/api/v1/contract_cancelall"sv,
@@ -63,6 +66,7 @@ auto const API_COIN_M_PERPETUAL = API{
     },
     .order_management{
         .account_info = "/swap-api/v1/swap_account_info"sv,
+        .open_orders = "/swap-api/v1/swap_openorders"sv,
         .place_order = "/swap-api/v1/swap_order"sv,
         .cancel_order = "/swap-api/v1/swap_cancel"sv,
         .cancel_all_orders = "/swap-api/v1/swap_cancelall"sv,

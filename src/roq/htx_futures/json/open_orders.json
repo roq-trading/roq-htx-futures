@@ -1,0 +1,18 @@
+{
+  "name": "roq/htx_futures/json/OpenOrders",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx_futures/json/Status"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx_futures/json/OpenOrdersData"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    }
+  ]
+}

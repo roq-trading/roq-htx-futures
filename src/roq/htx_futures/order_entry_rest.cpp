@@ -16,6 +16,7 @@
 #include "roq/server/oms/exceptions.hpp"
 
 #include "roq/htx_futures/json/encoder.hpp"
+#include "roq/htx_futures/json/map.hpp"
 #include "roq/htx_futures/json/utils.hpp"
 
 using namespace std::literals;
@@ -87,6 +88,8 @@ OrderEntryREST::OrderEntryREST(OrderEntry::Handler &handler, io::Context &contex
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
       profile_{
+          .open_orders = create_metrics(shared.settings, name_, "open_orders"sv),
+          .open_orders_ack = create_metrics(shared.settings, name_, "open_orders_ack"sv),
           .create_order = create_metrics(shared.settings, name_, "create_order"sv),
           .create_order_ack = create_metrics(shared.settings, name_, "create_order_ack"sv),
           .cancel_order = create_metrics(shared.settings, name_, "cancel_order"sv),
@@ -97,7 +100,7 @@ OrderEntryREST::OrderEntryREST(OrderEntry::Handler &handler, io::Context &contex
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared} {
+      account_{account}, shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto state) { return download(state); }} {
 }
 
 void OrderEntryREST::operator()(Event<Start> const &) {
@@ -117,6 +120,8 @@ void OrderEntryREST::operator()(metrics::Writer &writer) const {
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
       // profile
+      .write(profile_.open_orders, metrics::Type::PROFILE)
+      .write(profile_.open_orders_ack, metrics::Type::PROFILE)
       .write(profile_.create_order, metrics::Type::PROFILE)
       .write(profile_.create_order_ack, metrics::Type::PROFILE)
       .write(profile_.cancel_order, metrics::Type::PROFILE)
@@ -153,12 +158,14 @@ uint16_t OrderEntryREST::operator()(Event<CancelAllOrders> const &event, std::st
 }
 
 void OrderEntryREST::operator()(Trace<web::rest::Client::Connected> const &) {
-  (*this)(ConnectionStatus::READY);
+  download_.begin();
+  (*this)(ConnectionStatus::DOWNLOADING);
 }
 
 void OrderEntryREST::operator()(Trace<web::rest::Client::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
+  download_.reset();
 }
 
 void OrderEntryREST::operator()(Trace<web::rest::Client::Latency> const &event) {
@@ -191,6 +198,126 @@ void OrderEntryREST::operator()(ConnectionStatus status) {
     };
     log::info("stream_status={}"sv, stream_status);
     create_trace_and_dispatch(handler_, trace_info, stream_status);
+  }
+}
+
+uint32_t OrderEntryREST::download(OrderEntryState state) {
+  switch (state) {
+    using enum OrderEntryState;
+    case UNDEFINED:
+      assert(false);
+      break;
+    case OPEN_ORDERS:
+      open_orders();
+      return 1;
+    case DONE:
+      (*this)(ConnectionStatus::READY);
+      return 0;
+  }
+  assert(false);
+  return 0;
+}
+
+// open-orders
+
+void OrderEntryREST::open_orders() {
+  profile_.open_orders([&]() {
+    auto now_utc = clock::get_realtime<std::chrono::seconds>();
+    auto method = web::http::Method::POST;
+    auto path = shared_.api.order_management.open_orders;
+    auto query = account_.create_query(method, path, now_utc);
+    auto request = web::rest::Request{
+        .method = method,
+        .path = path,
+        .query = query,
+        .accept = web::http::Accept::APPLICATION_JSON,
+        .content_type = web::http::ContentType::APPLICATION_JSON,
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+    };
+    log::warn("DEBUG request={}"sv, request);
+    auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
+      TraceInfo trace_info;
+      Trace event{trace_info, response};
+      open_orders_ack(event);
+    };
+    (*connection_)("orders"sv, request, callback);
+  });
+}
+
+void OrderEntryREST::open_orders_ack(Trace<web::rest::Response> const &event) {
+  auto const STATE = OrderEntryState::OPEN_ORDERS;
+  profile_.open_orders_ack([&]() {
+    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+      if (download_.downloading()) {
+        download_.retry(STATE);
+      }
+    };
+    auto handle_success = [&](auto &body) {
+      log::warn("DEBUG {}"sv, body);
+      json::OpenOrders open_orders{body, decode_buffer_};
+      if (open_orders.status == json::Status::OK) {
+        Trace event_2{event, open_orders};
+        (*this)(event_2);
+        download_.check_relaxed(STATE);
+      } else {
+        // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(open_orders.ret_code), open_orders.ret_msg);
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error{}, ""sv);  // XXX FIXME TODO
+      }
+    };
+    process_response(event, handle_error, handle_success);
+  });
+}
+
+void OrderEntryREST::operator()(Trace<json::OpenOrders> const &event) {
+  auto &[trace_info, open_orders] = event;
+  log::info<2>("open_orders={}"sv, open_orders);
+  for (auto &item : open_orders.data.orders) {
+    auto client_order_id = fmt::format("{}"sv, item.client_order_id);
+    auto remaining_quantity = [&]() {
+      if (utils::compare(item.volume, 0.0) > 0) {
+        return item.volume - item.trade_volume;  // note! can't modify order
+      }
+      return NaN;
+    }();
+    auto order_update = server::oms::OrderUpdate{
+        .account = account_.name,
+        .exchange = shared_.settings.exchange,
+        .symbol = item.contract_code,
+        .side = map(item.direction),
+        .position_effect = map(item.offset),
+        .margin_mode = {},
+        .max_show_quantity = NaN,
+        .order_type = map(item.order_price_type),
+        .time_in_force = {},
+        .execution_instructions = {},
+        .create_time_utc = {},
+        .update_time_utc = item.created_at,
+        .external_account = {},
+        .external_order_id = item.order_id_str,
+        .client_order_id = client_order_id,
+        .order_status = map(item.status),
+        .quantity = item.volume,
+        .price = item.price,
+        .stop_price = NaN,
+        .leverage = item.lever_rate,
+        .remaining_quantity = remaining_quantity,
+        .traded_quantity = item.trade_volume,
+        .average_traded_price = NaN,
+        .last_traded_quantity = NaN,
+        .last_traded_price = NaN,
+        .last_liquidity = {},
+        .routing_id = {},
+        .max_request_version = {},
+        .max_response_version = {},
+        .max_accepted_version = {},
+        .update_type = UpdateType::SNAPSHOT,
+        .sending_time_utc = open_orders.ts,
+    };
+    Trace event_2{trace_info, order_update};
+    (*this)(event_2, client_order_id);
   }
 }
 

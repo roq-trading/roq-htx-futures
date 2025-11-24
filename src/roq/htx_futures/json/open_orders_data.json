@@ -1,0 +1,23 @@
+{
+  "name": "roq/htx_futures/json/OpenOrdersData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "orders",
+      "type": "roq/htx_futures/json/OpenOrdersDataOrdersItem",
+      "array": "std/span"
+    },
+    {
+      "name": "total_page",
+      "type": "std/int32"
+    },
+    {
+      "name": "current_page",
+      "type": "std/int32"
+    },
+    {
+      "name": "total_size",
+      "type": "std/int32"
+    }
+  ]
+}
