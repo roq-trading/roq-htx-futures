@@ -3,15 +3,10 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "order_id",
-      "type": "std/int64"
+      "name": "errors"
     },
     {
-      "name": "client_order_id",
-      "type": "std/int64"
-    },
-    {
-      "name": "order_id_str",
+      "name": "successes",
       "type": "std/string_view"
     }
   ]

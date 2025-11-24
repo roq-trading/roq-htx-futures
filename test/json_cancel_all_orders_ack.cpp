@@ -21,3 +21,15 @@ TEST_CASE("error", "[json_cancel_all_orders_ack]") {
                  R"(})";
   [[maybe_unused]] json::CancelAllOrdersAck obj{message};
 }
+
+TEST_CASE("success", "[json_cancel_all_orders_ack]") {
+  auto message = R"({)"
+                 R"("status":"ok",)"
+                 R"("data":{)"
+                 R"("errors":[],)"
+                 R"("successes":"1442564726236282880")"
+                 R"(},)"
+                 R"("ts":1763975842675)"
+                 R"(})";
+  [[maybe_unused]] json::CancelAllOrdersAck obj{message};
+}

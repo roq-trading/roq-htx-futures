@@ -402,7 +402,6 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
       (*connection_)(request_id, request, callback);
       send_ack();
     };
-    helper("BTC-USD"sv);  // XXX FIXME TODO DEBUG
     if (shared_.dispatcher.get_all_order_symbols(helper, account_.name)) {
     } else {
       log::warn("*** NOT POSSIBLE TO CANCEL ALL OPEN ORDERS (NO SYMBOLS) ***"sv);

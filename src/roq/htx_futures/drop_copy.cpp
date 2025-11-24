@@ -396,6 +396,7 @@ void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
         .update_type = UpdateType::INCREMENTAL,
         .sending_time_utc = match_orders.ts,
     };
+    log::warn("DEBUG order_update={}"sv, order_update);
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
@@ -459,6 +460,7 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
         .update_type = UpdateType::INCREMENTAL,
         .sending_time_utc = orders.ts,
     };
+    log::warn("DEBUG order_update={}"sv, order_update);
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
