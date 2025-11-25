@@ -22,7 +22,6 @@ std::string_view Encoder::create_order(
     std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
   buffer.clear();
   auto direction = map(create_order.side).template get<json::Direction>();
-  auto offset = map(create_order.position_effect).template get<json::Offset>();
   auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
   fmt::format_to(
       std::back_inserter(buffer),
@@ -30,15 +29,17 @@ std::string_view Encoder::create_order(
       R"("contract_code":"{}",)"
       R"("client_order_id":"{}",)"
       R"("direction":"{}",)"
-      R"("offset":"{}",)"
       R"("order_price_type":"{}",)"
       R"("volume":"{}")"sv,
       create_order.symbol,
       request_id,
       direction.as_raw_text(),
-      offset.as_raw_text(),
       order_price_type.as_raw_text(),
       Decimal{create_order.quantity, order.quantity_precision.precision});
+  if (create_order.position_effect != PositionEffect{}) {
+    auto offset = map(create_order.position_effect).template get<json::Offset>();
+    fmt::format_to(std::back_inserter(buffer), R"(,"offset":"{}")"sv, offset.as_raw_text());
+  }
   if (!std::isnan(create_order.price)) {
     fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, order.price_precision.precision});
   }
