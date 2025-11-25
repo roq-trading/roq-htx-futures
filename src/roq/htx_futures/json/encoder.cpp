@@ -21,7 +21,7 @@ namespace json {
 std::string_view Encoder::create_order(
     std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
   buffer.clear();
-  auto direction = map(create_order.side).template get<json::Side>();
+  auto direction = map(create_order.side).template get<json::Direction>();
   auto offset = map(create_order.position_effect).template get<json::Offset>();
   auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
   fmt::format_to(

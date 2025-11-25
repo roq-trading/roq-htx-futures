@@ -28,6 +28,7 @@ set(AUTOGEN_SCHEMAS
     depth_tick.json
     detail.json
     detail_tick.json
+    direction.json
     error_2.json
     error.json
     estimated_rate.json
@@ -56,7 +57,7 @@ set(AUTOGEN_SCHEMAS
     premium_index.json
     premium_index_tick.json
     quotation.json
-    side.json
+    role.json
     status.json
     subbed.json
     sub.json

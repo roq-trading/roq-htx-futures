@@ -6,3 +6,6 @@ have not tested
 - coin-m-perp buy
 - coin-m-del all
 - usdt-m all
+
+FAILS:
+{"status":"error","err_code":1048,"err_msg":"Insufficient open positions to be closed. Please check whether there are open orders under \"Limit Orders\".","ts":1764054917389}

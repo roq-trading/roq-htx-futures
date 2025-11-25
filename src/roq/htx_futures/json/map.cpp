@@ -13,6 +13,35 @@ using Helper = detail::MapHelper<Args...>;
 
 // htx_futures ==> roq
 
+// htx_futures::json::Direction ==> roq::Side
+
+template <>
+template <>
+constexpr Helper<htx_futures::json::Direction>::operator std::optional<roq::Side>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::json::Direction::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::Side::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::Side::UNDEFINED;
+    case BUY:
+      return roq::Side::BUY;
+    case SELL:
+      return roq::Side::SELL;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::json::Direction{htx_futures::json::Direction::UNDEFINED_INTERNAL}} == roq::Side::UNDEFINED);
+static_assert(Helper{htx_futures::json::Direction{htx_futures::json::Direction::BUY}} == roq::Side::BUY);
+static_assert(Helper{htx_futures::json::Direction{htx_futures::json::Direction::SELL}} == roq::Side::SELL);
+
+template <>
+template <>
+std::optional<roq::Side> Map<htx_futures::json::Direction>::helper() const {
+  return Helper{args_};
+}
+
 // htx_futures::json::Event ==> roq::UpdateType
 
 template <>
@@ -34,6 +63,10 @@ constexpr Helper<htx_futures::json::Event>::operator std::optional<roq::UpdateTy
       return roq::UpdateType::INCREMENTAL;
     case ORDER_CANCEL:
       return roq::UpdateType::INCREMENTAL;
+    case ORDER_MATCH:
+      return roq::UpdateType::INCREMENTAL;
+    case ORDER_CLOSE:
+      return roq::UpdateType::INCREMENTAL;
   }
   return {};
 }
@@ -44,6 +77,8 @@ static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::SNAPSHOT
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::UPDATE}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_OPEN}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_CANCEL}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_MATCH}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_CLOSE}} == roq::UpdateType::INCREMENTAL);
 
 template <>
 template <>
@@ -151,32 +186,32 @@ std::optional<roq::OrderType> Map<htx_futures::json::OrderPriceType>::helper() c
   return Helper{args_};
 }
 
-// htx_futures::json::Side ==> roq::Side
+// htx_futures::json::Role ==> roq::Liquidity
 
 template <>
 template <>
-constexpr Helper<htx_futures::json::Side>::operator std::optional<roq::Side>() const {
+constexpr Helper<htx_futures::json::Role>::operator std::optional<roq::Liquidity>() const {
   switch (std::get<0>(args_)) {
-    using enum htx_futures::json::Side::type_t;
+    using enum htx_futures::json::Role::type_t;
     case UNDEFINED_INTERNAL:
-      return roq::Side::UNDEFINED;
+      return roq::Liquidity::UNDEFINED;
     case UNKNOWN_INTERNAL:
-      return roq::Side::UNDEFINED;
-    case BUY:
-      return roq::Side::BUY;
-    case SELL:
-      return roq::Side::SELL;
+      return roq::Liquidity::UNDEFINED;
+    case MAKER:
+      return roq::Liquidity::MAKER;
+    case TAKER:
+      return roq::Liquidity::TAKER;
   }
   return {};
 }
 
-static_assert(Helper{htx_futures::json::Side{htx_futures::json::Side::UNDEFINED_INTERNAL}} == roq::Side::UNDEFINED);
-static_assert(Helper{htx_futures::json::Side{htx_futures::json::Side::BUY}} == roq::Side::BUY);
-static_assert(Helper{htx_futures::json::Side{htx_futures::json::Side::SELL}} == roq::Side::SELL);
+static_assert(Helper{htx_futures::json::Role{htx_futures::json::Role::UNDEFINED_INTERNAL}} == roq::Liquidity::UNDEFINED);
+static_assert(Helper{htx_futures::json::Role{htx_futures::json::Role::MAKER}} == roq::Liquidity::MAKER);
+static_assert(Helper{htx_futures::json::Role{htx_futures::json::Role::TAKER}} == roq::Liquidity::TAKER);
 
 template <>
 template <>
-std::optional<roq::Side> Map<htx_futures::json::Side>::helper() const {
+std::optional<roq::Liquidity> Map<htx_futures::json::Role>::helper() const {
   return Helper{args_};
 }
 
@@ -271,30 +306,30 @@ std::optional<htx_futures::json::Offset> Map<roq::PositionEffect>::helper() cons
   return Helper{args_};
 }
 
-// roq::Side ==> htx_futures::json::Side
+// roq::Side ==> htx_futures::json::Direction
 
 template <>
 template <>
-constexpr Helper<roq::Side>::operator std::optional<htx_futures::json::Side>() const {
+constexpr Helper<roq::Side>::operator std::optional<htx_futures::json::Direction>() const {
   switch (std::get<0>(args_)) {
     using enum roq::Side;
     case UNDEFINED:
-      return htx_futures::json::Side::UNDEFINED_INTERNAL;
+      return htx_futures::json::Direction::UNDEFINED_INTERNAL;
     case BUY:
-      return htx_futures::json::Side::BUY;
+      return htx_futures::json::Direction::BUY;
     case SELL:
-      return htx_futures::json::Side::SELL;
+      return htx_futures::json::Direction::SELL;
   }
   return {};
 }
 
-static_assert(Helper{roq::Side::UNDEFINED} == htx_futures::json::Side{htx_futures::json::Side::UNDEFINED_INTERNAL});
-static_assert(Helper{roq::Side::BUY} == htx_futures::json::Side{htx_futures::json::Side::BUY});
-static_assert(Helper{roq::Side::SELL} == htx_futures::json::Side{htx_futures::json::Side::SELL});
+static_assert(Helper{roq::Side::UNDEFINED} == htx_futures::json::Direction{htx_futures::json::Direction::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::Side::BUY} == htx_futures::json::Direction{htx_futures::json::Direction::BUY});
+static_assert(Helper{roq::Side::SELL} == htx_futures::json::Direction{htx_futures::json::Direction::SELL});
 
 template <>
 template <>
-std::optional<htx_futures::json::Side> Map<roq::Side>::helper() const {
+std::optional<htx_futures::json::Direction> Map<roq::Side>::helper() const {
   return Helper{args_};
 }
 

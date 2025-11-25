@@ -294,7 +294,9 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
         .discard = discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+
     if (discard) {
+      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
     if (all_symbols_.emplace(symbol).second) {  // only include new

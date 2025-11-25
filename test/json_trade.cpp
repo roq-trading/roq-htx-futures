@@ -47,7 +47,7 @@ TEST_CASE("json_trade_simple_inverse", "[json_trade]") {
   CHECK(d0.ts == 1639629424028ms);
   CHECK(d0.id == 1503025353300000);
   CHECK(d0.price == 49888.88_a);
-  CHECK(d0.direction == json::Side::BUY);
+  CHECK(d0.direction == json::Direction::BUY);
 }
 
 TEST_CASE("json_trade_simple_linear", "[json_trade]") {
@@ -93,7 +93,7 @@ TEST_CASE("json_trade_simple_linear", "[json_trade]") {
   CHECK(d0.ts == 1640775632497ms);
   CHECK(d0.id == 897471171570000);
   CHECK(d0.price == 47701.1_a);
-  CHECK(d0.direction == json::Side::SELL);
+  CHECK(d0.direction == json::Direction::SELL);
   auto &d1 = data[1];
   CHECK(d1.amount == 2.0_a);
   CHECK(d1.quantity == 0.002_a);
@@ -101,5 +101,5 @@ TEST_CASE("json_trade_simple_linear", "[json_trade]") {
   CHECK(d1.ts == 1640775632497ms);
   CHECK(d1.id == 897471171570001);
   CHECK(d1.price == 47701.1_a);
-  CHECK(d1.direction == json::Side::SELL);
+  CHECK(d1.direction == json::Direction::SELL);
 }

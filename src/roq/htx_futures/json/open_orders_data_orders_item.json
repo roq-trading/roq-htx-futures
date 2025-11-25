@@ -32,7 +32,7 @@
     },
     {
       "name": "direction",
-      "type": "roq/htx_futures/json/Side"
+      "type": "roq/htx_futures/json/Direction"
     },
     {
       "name": "offset",

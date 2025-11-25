@@ -23,6 +23,7 @@ depth.hpp
 depth_tick.hpp
 detail.hpp
 detail_tick.hpp
+direction.hpp
 error_2.hpp
 error.hpp
 estimated_rate.hpp
@@ -51,7 +52,7 @@ positions.hpp
 premium_index.hpp
 premium_index_tick.hpp
 quotation.hpp
-side.hpp
+role.hpp
 status.hpp
 subbed.hpp
 sub.hpp
@@ -83,6 +84,7 @@ depth.cpp
 depth_tick.cpp
 detail.cpp
 detail_tick.cpp
+direction.cpp
 error_2.cpp
 error.cpp
 estimated_rate.cpp
@@ -111,7 +113,7 @@ positions.cpp
 premium_index.cpp
 premium_index_tick.cpp
 quotation.cpp
-side.cpp
+role.cpp
 status.cpp
 subbed.cpp
 sub.cpp

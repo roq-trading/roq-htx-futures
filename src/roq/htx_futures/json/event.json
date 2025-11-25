@@ -18,6 +18,14 @@
     {
       "raw": "order.cancel",
       "name": "order_cancel"
+    },
+    {
+      "raw": "order.match",
+      "name": "order_match"
+    },
+    {
+      "raw": "order.close",
+      "name": "order_close"
     }
   ]
 }
