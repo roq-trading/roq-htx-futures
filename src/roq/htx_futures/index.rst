@@ -180,7 +180,7 @@ Environments
 
    .. code-block:: shell
 
-      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-usdt-m-futures.cfg
+      $ --flagfile $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-usdt-m-futures.cfg
 
    .. include:: flags/prod/flags-usdt-m-futures.cfg
      :code: shell
@@ -189,7 +189,7 @@ Environments
 
    .. code-block:: shell
 
-      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-coin-m-delivery.cfg
+      $ --flagfile $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-coin-m-delivery.cfg
 
    .. include:: flags/prod/flags-coin-m-delivery.cfg
      :code: shell
@@ -198,7 +198,7 @@ Environments
 
    .. code-block:: shell
 
-      $ $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-coin-m-perpetual.cfg
+      $ --flagfile $CONDA_PREFIX/share/roq-htx-futures/flags/prod/flags-coin-m-perpetual.cfg
 
    .. include:: flags/prod/flags-coin-m-perpetual.cfg
      :code: shell
@@ -209,7 +209,7 @@ Configuration
 
 .. code-block:: shell
 
-   $ $CONDA_PREFIX/share/roq-htx-futures/config.toml
+   $ --flagfile $CONDA_PREFIX/share/roq-htx-futures/config.toml
 
 .. important::
 
