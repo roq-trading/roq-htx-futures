@@ -25,8 +25,10 @@ TEST_CASE("coin_m_perpetual_empty", "[json_open_orders]") {
                  R"(},)"
                  R"("ts":1763987974231)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 2};
-  [[maybe_unused]] json::OpenOrders obj{message, buffer};
+  core::json::BufferStack buffers{8192, 2};
+  // simple
+  json::OpenOrders obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }
 
 TEST_CASE("coin_m_perpetual_simple", "[json_open_orders]") {
@@ -70,6 +72,8 @@ TEST_CASE("coin_m_perpetual_simple", "[json_open_orders]") {
                  R"("total_size":1},)"
                  R"("ts":1763988814735)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 2};
-  [[maybe_unused]] json::OpenOrders obj{message, buffer};
+  core::json::BufferStack buffers{8192, 2};
+  // simple
+  json::OpenOrders obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }

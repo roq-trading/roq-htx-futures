@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/orders.hpp"
+#include "roq/htx_futures/json/parser_2.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -51,7 +51,31 @@ TEST_CASE("coin_m_perpetual_place", "[json_orders]") {
                  R"("canceled_source":null)"
                  R"(})";
   core::json::BufferStack buffers{8192, 1};
-  [[maybe_unused]] json::Orders obj{message, buffers};
+  // simple
+  json::Orders obj{message, buffers};
+  CHECK(obj.op == "notify"sv);
+  // parser
+  struct Handler final : public json::Parser2::Handler {
+    void operator()(Trace<json::Close> const &) override { FAIL(); }
+    void operator()(Trace<json::Error2> const &) override { FAIL(); }
+    void operator()(Trace<json::Ping> const &) override { FAIL(); }
+    void operator()(Trace<json::Auth> const &) override { FAIL(); }
+    void operator()(Trace<json::Sub> const &) override { FAIL(); }
+    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
+    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
+    void operator()(Trace<json::Positions> const &) override { FAIL(); }
+    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
+    void operator()(Trace<json::Orders> const &event) override {
+      found = true;
+      auto &[trace_info, orders] = event;
+      CHECK(orders.op == "notify"sv);
+    };
+
+    bool found = false;
+  } handler;
+  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
+  CHECK(res == true);
+  CHECK(handler.found == true);
 }
 
 TEST_CASE("coin_m_perpetual_cancel", "[json_orders]") {
@@ -91,7 +115,31 @@ TEST_CASE("coin_m_perpetual_cancel", "[json_orders]") {
                  R"("canceled_source":"api")"
                  R"(})";
   core::json::BufferStack buffers{8192, 1};
-  [[maybe_unused]] json::Orders obj{message, buffers};
+  // simple
+  json::Orders obj{message, buffers};
+  CHECK(obj.op == "notify"sv);
+  // parser
+  struct Handler final : public json::Parser2::Handler {
+    void operator()(Trace<json::Close> const &) override { FAIL(); }
+    void operator()(Trace<json::Error2> const &) override { FAIL(); }
+    void operator()(Trace<json::Ping> const &) override { FAIL(); }
+    void operator()(Trace<json::Auth> const &) override { FAIL(); }
+    void operator()(Trace<json::Sub> const &) override { FAIL(); }
+    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
+    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
+    void operator()(Trace<json::Positions> const &) override { FAIL(); }
+    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
+    void operator()(Trace<json::Orders> const &event) override {
+      found = true;
+      auto &[trace_info, orders] = event;
+      CHECK(orders.op == "notify"sv);
+    };
+
+    bool found = false;
+  } handler;
+  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
+  CHECK(res == true);
+  CHECK(handler.found == true);
 }
 
 TEST_CASE("coin_m_perpetual_fill", "[json_orders]") {
@@ -144,5 +192,29 @@ TEST_CASE("coin_m_perpetual_fill", "[json_orders]") {
                  R"("canceled_source":null)"
                  R"(})";
   core::json::BufferStack buffers{8192, 1};
-  [[maybe_unused]] json::Orders obj{message, buffers};
+  // simple
+  json::Orders obj{message, buffers};
+  CHECK(obj.op == "notify"sv);
+  // parser
+  struct Handler final : public json::Parser2::Handler {
+    void operator()(Trace<json::Close> const &) override { FAIL(); }
+    void operator()(Trace<json::Error2> const &) override { FAIL(); }
+    void operator()(Trace<json::Ping> const &) override { FAIL(); }
+    void operator()(Trace<json::Auth> const &) override { FAIL(); }
+    void operator()(Trace<json::Sub> const &) override { FAIL(); }
+    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
+    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
+    void operator()(Trace<json::Positions> const &) override { FAIL(); }
+    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
+    void operator()(Trace<json::Orders> const &event) override {
+      found = true;
+      auto &[trace_info, orders] = event;
+      CHECK(orders.op == "notify"sv);
+    };
+
+    bool found = false;
+  } handler;
+  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
+  CHECK(res == true);
+  CHECK(handler.found == true);
 }

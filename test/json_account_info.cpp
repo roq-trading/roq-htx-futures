@@ -64,8 +64,9 @@ TEST_CASE("usdt_m_futures_isolated", "[json_account_info]") {
                  R"(],)"
                  R"("ts":1763789883167)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 2};
-  [[maybe_unused]] json::AccountInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 2};
+  json::AccountInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }
 
 // note! reduced
@@ -185,8 +186,9 @@ TEST_CASE("usdt_m_futures_cross", "[json_account_info]") {
                  R"("margin_available":null}],)"
                  R"("ts":1763790034025)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 2};
-  [[maybe_unused]] json::AccountInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 2};
+  json::AccountInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }
 
 // note! reduced
@@ -231,8 +233,9 @@ TEST_CASE("coin_m_delivery", "[json_account_info]") {
                  R"(],)"
                  R"("ts":1763789777212)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 2};
-  [[maybe_unused]] json::AccountInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 2};
+  json::AccountInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }
 
 // note! reduced
@@ -275,6 +278,7 @@ TEST_CASE("coin_m_perpetual", "[json_account_info]") {
                  R"(],)"
                  R"("ts":1763789609949)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 2};
-  [[maybe_unused]] json::AccountInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 2};
+  json::AccountInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }

@@ -58,8 +58,9 @@ TEST_CASE("usdt_m_futures", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1763791421826)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  [[maybe_unused]] json::ContractInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::ContractInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }
 
 // note! reduced
@@ -92,8 +93,9 @@ TEST_CASE("coin_m_delivery", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1763791626928)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  [[maybe_unused]] json::ContractInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::ContractInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }
 
 // note! reduced
@@ -122,6 +124,7 @@ TEST_CASE("coin_m_perpetual", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1763791707461)"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  [[maybe_unused]] json::ContractInfo obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::ContractInfo obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }

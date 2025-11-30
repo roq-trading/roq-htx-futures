@@ -6,6 +6,8 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/utils/hash/fnv.hpp"
+
 #include "roq/htx_futures/json/topic_2.hpp"
 
 using namespace std::literals;
@@ -17,17 +19,18 @@ namespace json {
 // === HELPERS ===
 
 namespace {
-auto const FIELD_OP = "op"sv;
-auto const FIELD_TOPIC = "topic"sv;
+constexpr auto const KEY_OP = "op"sv;
+constexpr auto const KEY_TOPIC = "topic"sv;
 }  // namespace
 
 // === HELPERS ===
 
 namespace {
 template <typename T>
-void dispatch_helper(auto &handler, auto &message, auto &buffer_stack, auto &trace_info) {
+auto dispatch_helper(auto &handler, auto &message, auto &buffer_stack, auto &trace_info) {
   T obj{message, buffer_stack};
   create_trace_and_dispatch(handler, trace_info, obj);
+  return true;
 }
 
 constexpr auto extract_topic_helper(std::string_view const &topic) {
@@ -60,88 +63,69 @@ bool Parser2::dispatch(
     core::json::BufferStack &buffer_stack,
     TraceInfo const &trace_info,
     bool allow_unknown_event_types) {
-  auto stop = false;
   auto result = false;
   auto helper = [&](auto &key, auto &value) {
-    if (result || stop) {  // XXX FIXME TODO can we stop early?
-      return;
-    }
-    if (key == FIELD_OP) {
-      Operator op{value};
-      switch (op) {
-        using enum Operator::type_t;
-        case UNDEFINED_INTERNAL:
-          break;
-        case UNKNOWN_INTERNAL:
-          if (allow_unknown_event_types) {
-            stop = true;
-          }
-          break;
-        case CLOSE:
-          result = true;
-          dispatch_helper<Close>(handler, message, buffer_stack, trace_info);
-          break;
-        case ERROR:
-          result = true;
-          dispatch_helper<Error2>(handler, message, buffer_stack, trace_info);
-          break;
-        case PING:
-          result = true;
-          dispatch_helper<Ping>(handler, message, buffer_stack, trace_info);
-          break;
-        case AUTH:
-          result = true;
-          dispatch_helper<Auth>(handler, message, buffer_stack, trace_info);
-          break;
-        case SUB:
-          result = true;
-          dispatch_helper<Sub>(handler, message, buffer_stack, trace_info);
-          break;
-        case NOTIFY:
-          break;
+    auto key_2 = utils::hash::FNV::compute(key);
+    switch (key_2) {
+      case utils::hash::FNV::compute(KEY_OP): {
+        Operator op{value};
+        switch (op) {
+          using enum Operator::type_t;
+          case UNDEFINED_INTERNAL:
+            log::fatal("Unexpected"sv);
+          case UNKNOWN_INTERNAL:
+            break;
+          case CLOSE:
+            result = dispatch_helper<Close>(handler, message, buffer_stack, trace_info);
+            break;
+          case ERROR:
+            result = dispatch_helper<Error2>(handler, message, buffer_stack, trace_info);
+            break;
+          case PING:
+            result = dispatch_helper<Ping>(handler, message, buffer_stack, trace_info);
+            break;
+          case AUTH:
+            result = dispatch_helper<Auth>(handler, message, buffer_stack, trace_info);
+            break;
+          case SUB:
+            result = dispatch_helper<Sub>(handler, message, buffer_stack, trace_info);
+            break;
+          case NOTIFY:
+            return false;  // note! continue
+        }
+        return true;
       }
-      return;
-    }
-    if (key == FIELD_TOPIC) {
-      auto topic = extract_topic(std::get<std::string_view>(value));
-      switch (topic) {
-        using enum Topic2::type_t;
-        case UNDEFINED_INTERNAL:
-          break;
-        case UNKNOWN_INTERNAL:
-          if (allow_unknown_event_types) {
-            stop = true;
-          }
-          break;
-        case FUNDING_RATE:
-          result = true;
-          dispatch_helper<FundingRate>(handler, message, buffer_stack, trace_info);
-          break;
-        case ACCOUNTS:
-          result = true;
-          dispatch_helper<Accounts>(handler, message, buffer_stack, trace_info);
-          break;
-        case POSITIONS:
-          result = true;
-          dispatch_helper<Positions>(handler, message, buffer_stack, trace_info);
-          break;
-        case MATCH_ORDERS:
-          result = true;
-          dispatch_helper<MatchOrders>(handler, message, buffer_stack, trace_info);
-          break;
-        case ORDERS:
-          result = true;
-          dispatch_helper<Orders>(handler, message, buffer_stack, trace_info);
-          break;
+      case utils::hash::FNV::compute(KEY_TOPIC): {
+        auto topic = extract_topic(std::get<std::string_view>(value));
+        switch (topic) {
+          using enum Topic2::type_t;
+          case UNDEFINED_INTERNAL:
+            break;
+          case UNKNOWN_INTERNAL:
+            break;
+          case FUNDING_RATE:
+            result = dispatch_helper<FundingRate>(handler, message, buffer_stack, trace_info);
+            break;
+          case ACCOUNTS:
+            result = dispatch_helper<Accounts>(handler, message, buffer_stack, trace_info);
+            break;
+          case POSITIONS:
+            result = dispatch_helper<Positions>(handler, message, buffer_stack, trace_info);
+            break;
+          case MATCH_ORDERS:
+            result = dispatch_helper<MatchOrders>(handler, message, buffer_stack, trace_info);
+            break;
+          case ORDERS:
+            result = dispatch_helper<Orders>(handler, message, buffer_stack, trace_info);
+            break;
+        }
+        return true;
       }
-      return;
     }
-    // XXX FIXME TODO can we stop early?
+    return result;
   };
-  core::json::Parser parser{message};
-  auto value = parser.root();
-  std::get<core::json::Object>(value).dispatch(helper);
-  if (result || stop) {
+  core::json::Parser::dispatch<core::json::Object>(helper, message);
+  if (result || allow_unknown_event_types) {
     return result;
   }
   log::fatal(R"(Unexpected: message="{}")"sv, message);

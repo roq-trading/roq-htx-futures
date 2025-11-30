@@ -12,16 +12,6 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("error", "[json_cancel_all_orders_ack]") {
-  auto message = R"({)"
-                 R"("status":"error",)"
-                 R"("err_code":403,)"
-                 R"("err_msg":"Incorrect signature method [错误的签名方法]",)"
-                 R"("ts":1763892684776)"
-                 R"(})";
-  [[maybe_unused]] json::CancelAllOrdersAck obj{message};
-}
-
 TEST_CASE("success", "[json_cancel_all_orders_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
@@ -31,5 +21,17 @@ TEST_CASE("success", "[json_cancel_all_orders_ack]") {
                  R"(},)"
                  R"("ts":1763975842675)"
                  R"(})";
-  [[maybe_unused]] json::CancelAllOrdersAck obj{message};
+  json::CancelAllOrdersAck obj{message};
+  CHECK(obj.status == json::Status::OK);
+}
+
+TEST_CASE("failure", "[json_cancel_all_orders_ack]") {
+  auto message = R"({)"
+                 R"("status":"error",)"
+                 R"("err_code":403,)"
+                 R"("err_msg":"Incorrect signature method [错误的签名方法]",)"
+                 R"("ts":1763892684776)"
+                 R"(})";
+  json::CancelAllOrdersAck obj{message};
+  CHECK(obj.status == json::Status::ERROR);
 }

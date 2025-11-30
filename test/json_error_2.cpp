@@ -12,28 +12,26 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("simple", "[json_sub]") {
+TEST_CASE("simple", "[json_error]") {
   auto message = R"({)"
-                 R"("op":"sub",)"
-                 R"("topic":"orders.*",)"
-                 R"("ts":1763808315805,)"
-                 R"("err-code":0)"
+                 R"("op":"error",)"
+                 R"("ts":1763860751249)"
                  R"(})";
   core::json::BufferStack buffers{8192, 1};
   // simple
-  json::Sub obj{message};
-  CHECK(obj.op == json::Operator::SUB);
+  json::Error2 obj{message};
+  CHECK(obj.op == json::Operator::ERROR);
   // parser
   struct Handler final : public json::Parser2::Handler {
     void operator()(Trace<json::Close> const &) override { FAIL(); }
-    void operator()(Trace<json::Error2> const &) override { FAIL(); }
+    void operator()(Trace<json::Error2> const &event) override {
+      found = true;
+      auto &[trace_info, error] = event;
+      CHECK(error.op == json::Operator::ERROR);
+    }
     void operator()(Trace<json::Ping> const &) override { FAIL(); }
     void operator()(Trace<json::Auth> const &) override { FAIL(); }
-    void operator()(Trace<json::Sub> const &event) override {
-      found = true;
-      auto &[trace_info, sub] = event;
-      CHECK(sub.op == json::Operator::SUB);
-    };
+    void operator()(Trace<json::Sub> const &) override { FAIL(); }
     void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
     void operator()(Trace<json::Accounts> const &) override { FAIL(); }
     void operator()(Trace<json::Positions> const &) override { FAIL(); }

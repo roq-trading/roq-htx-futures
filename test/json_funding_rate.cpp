@@ -5,6 +5,7 @@
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/htx_futures/json/funding_rate.hpp"
+// #include "roq/htx_futures/json/parser.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -14,7 +15,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_funding_rate_simple_swap", "[json_funding_rate]") {
+TEST_CASE("swap", "[json_funding_rate]") {
   auto message = R"({)"
                  R"("op":"notify",)"
                  R"("topic":"public.BTC-USDT.funding_rate",)"
@@ -31,8 +32,9 @@ TEST_CASE("json_funding_rate_simple_swap", "[json_funding_rate]") {
                  R"(})"
                  R"(])"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  json::FundingRate obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  // simple
+  json::FundingRate obj{message, buffers};
   CHECK(obj.op == json::Operator::NOTIFY);
   CHECK(obj.topic == "public.BTC-USDT.funding_rate"sv);
   CHECK(obj.ts == 1643960260995ms);
@@ -47,4 +49,25 @@ TEST_CASE("json_funding_rate_simple_swap", "[json_funding_rate]") {
   CHECK(d0.estimated_rate == -0.000065319255924193_a);
   CHECK(d0.settlement_time == 1643961600000ms);
   CHECK(d0.trade_partition == "USDT"sv);
+  // parser
+  /*
+  struct Handler final : public json::Parser::Handler {
+    void operator()(Trace<json::Ping> const &) override { FAIL(); }
+    void operator()(Trace<json::Error> const &) override { FAIL(); }
+    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
+    void operator()(Trace<json::BBO> const &) override { FAIL(); }
+    void operator()(Trace<json::Depth> const &) override { FAIL(); }
+    void operator()(Trace<json::Trade> const &) override { FAIL(); }
+    void operator()(Trace<json::Detail> const &) override { FAIL(); }
+    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
+    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
+    void operator()(Trace<json::Basis> const &) override { FAIL(); }
+    void operator()(Trace<json::Index> const &) override { FAIL(); }
+
+    bool found = false;
+  } handler;
+  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
+  CHECK(res == true);
+  CHECK(handler.found == true);
+  */
 }

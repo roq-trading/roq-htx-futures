@@ -21,5 +21,6 @@ TEST_CASE("success", "[json_cancel_order_ack]") {
                  R"(},)"
                  R"("ts":1763961141034)"
                  R"(})";
-  [[maybe_unused]] json::CancelOrderAck obj{message};
+  json::CancelOrderAck obj{message};
+  CHECK(obj.status == json::Status::OK);
 }
