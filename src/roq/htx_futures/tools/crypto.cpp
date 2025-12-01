@@ -48,7 +48,7 @@ Crypto::Crypto(std::string_view const &key, std::string_view const &secret, std:
 }
 
 std::string_view Crypto::create_ws_auth(std::chrono::seconds now_utc) {
-  assert(!std::empty(path));
+  assert(!std::empty(path_));
   encode_buffer_.clear();
   std::chrono::sys_days days{std::chrono::duration_cast<std::chrono::days>(now_utc)};
   std::chrono::year_month_day ymd{days};
