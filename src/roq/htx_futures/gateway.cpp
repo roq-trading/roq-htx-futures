@@ -30,7 +30,7 @@ R create_accounts(auto &config, auto &settings) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
-    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, settings.rest.uri));
+    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, settings.ws.order_uri));
   }
   return result;
 }

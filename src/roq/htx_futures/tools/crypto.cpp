@@ -36,17 +36,18 @@ auto create_ed25519(auto &secret) {
 
 // === IMPLEMENTATION ===
 
-Crypto::Crypto(std::string_view const &key, std::string_view const &secret, std::string_view const &hostname)
-    : key{key}, hostname_{hostname},
+Crypto::Crypto(std::string_view const &key, std::string_view const &secret, std::string_view const &hostname, std::string_view const &path)
+    : key{key}, hostname_{hostname}, path_{path},
 #ifdef USE_ED25
       pkey_{create_ed25519<decltype(pkey_)>(secret)}
 #else
       mac_{secret}
 #endif
 {
+  log::warn(R"(DEBUG hostname="{}", path="{}")"sv, hostname_, path_);
 }
 
-std::string_view Crypto::create_ws_auth(std::string_view const &path, std::chrono::seconds now_utc) {
+std::string_view Crypto::create_ws_auth(std::chrono::seconds now_utc) {
   assert(!std::empty(path));
   encode_buffer_.clear();
   std::chrono::sys_days days{std::chrono::duration_cast<std::chrono::days>(now_utc)};
@@ -73,7 +74,7 @@ std::string_view Crypto::create_ws_auth(std::string_view const &path, std::chron
   mac_.update("GET\n"sv);
   mac_.update(hostname_);
   mac_.update("\n"sv);
-  mac_.update(path);
+  mac_.update(path_);
   mac_.update("\n"sv);
   mac_.update(tmp4);
   auto digest = mac_.final(digest_);

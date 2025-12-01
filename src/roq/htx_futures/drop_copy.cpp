@@ -205,8 +205,9 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
 
 void DropCopy::send_login() {
   auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  auto message = account_.create_ws_auth("/swap-notification"sv, now_utc);
-  log::warn("DEBUG {}"sv, message);
+  // auto message = account_.create_ws_auth("/swap-notification"sv, now_utc);
+  auto message = account_.create_ws_auth(now_utc);
+  // log::warn("DEBUG {}"sv, message);
   // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
@@ -231,7 +232,6 @@ void DropCopy::subscribe(std::string_view const &topic) {
 }
 
 void DropCopy::parse(std::string_view const &message) {
-  log::warn("DEBUG {}"sv, message);
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {

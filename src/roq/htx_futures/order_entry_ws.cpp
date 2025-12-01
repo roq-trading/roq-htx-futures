@@ -253,7 +253,8 @@ void OrderEntryWS::send_pong(std::chrono::milliseconds timestamp) {
 
 void OrderEntryWS::send_login() {
   auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  auto message = account_.create_ws_auth("/swap-notification"sv, now_utc);
+  // auto message = account_.create_ws_auth("/swap-notification"sv, now_utc);
+  auto message = account_.create_ws_auth(now_utc);
   log::warn("DEBUG {}"sv, message);
   // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
