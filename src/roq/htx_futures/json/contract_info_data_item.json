@@ -71,6 +71,10 @@
     {
       "name": "open_type",
       "type": "std/int32"
+    },
+    {
+      "name": "settlement_period",
+      "type": "std/int32"
     }
   ]
 }
