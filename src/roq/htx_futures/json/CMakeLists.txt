@@ -39,6 +39,7 @@ set(AUTOGEN_SCHEMAS
     funding_rate.json
     index.json
     index_tick.json
+    margin_mode.json
     match_orders.json
     match_orders_trade_item.json
     offset.json
@@ -52,6 +53,7 @@ set(AUTOGEN_SCHEMAS
     ping.json
     place_order_ack_data.json
     place_order_ack.json
+    position_mode.json
     positions_data_item.json
     positions.json
     premium_index.json

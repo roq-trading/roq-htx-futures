@@ -34,6 +34,7 @@ funding_rate_item.hpp
 funding_rate.hpp
 index.hpp
 index_tick.hpp
+margin_mode.hpp
 match_orders.hpp
 match_orders_trade_item.hpp
 offset.hpp
@@ -47,6 +48,7 @@ orders_trade_item.hpp
 ping.hpp
 place_order_ack_data.hpp
 place_order_ack.hpp
+position_mode.hpp
 positions_data_item.hpp
 positions.hpp
 premium_index.hpp
@@ -95,6 +97,7 @@ funding_rate_item.cpp
 funding_rate.cpp
 index.cpp
 index_tick.cpp
+margin_mode.cpp
 match_orders.cpp
 match_orders_trade_item.cpp
 offset.cpp
@@ -108,6 +111,7 @@ orders_trade_item.cpp
 ping.cpp
 place_order_ack_data.cpp
 place_order_ack.cpp
+position_mode.cpp
 positions_data_item.cpp
 positions.cpp
 premium_index.cpp

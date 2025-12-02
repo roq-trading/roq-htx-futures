@@ -104,6 +104,7 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   } latency_;
   // account
   Account &account_;
+  std::string const auth_path_;
   // cache
   Shared &shared_;
   // state

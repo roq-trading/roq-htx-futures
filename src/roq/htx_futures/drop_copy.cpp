@@ -65,6 +65,10 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
   return web::socket::Client::create(handler, context, config, []() { return std::string(); });
 }
 
+auto create_auth_path(auto &settings) {
+  return settings.ws.order_uri.get_path();
+}
+
 struct create_metrics final : public utils::metrics::Factory {
   create_metrics(auto &settings, auto &group, auto const &function) : utils::metrics::Factory{settings.app.name, group, function} {}
 };
@@ -93,7 +97,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
+      account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
 void DropCopy::operator()(Event<Start> const &) {
@@ -205,8 +209,7 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
 
 void DropCopy::send_login() {
   auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  // auto message = account_.create_ws_auth("/swap-notification"sv, now_utc);
-  auto message = account_.create_ws_auth(now_utc);
+  auto message = account_.create_ws_auth(auth_path_, now_utc);
   // log::warn("DEBUG {}"sv, message);
   // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);

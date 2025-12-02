@@ -24,12 +24,12 @@ namespace htx_futures {
 namespace tools {
 
 struct Crypto final {
-  Crypto(std::string_view const &key, std::string_view const &secret, std::string_view const &hostname, std::string_view const &path);
+  Crypto(std::string_view const &key, std::string_view const &secret, std::string_view const &hostname);
 
   Crypto(Crypto &&) = delete;
   Crypto(Crypto const &) = delete;
 
-  std::string_view create_ws_auth(std::chrono::seconds now_utc);
+  std::string_view create_ws_auth(std::string_view const &path, std::chrono::seconds now_utc);
 
   std::string_view create_query(web::http::Method, std::string_view const &path, std::chrono::seconds now_utc);
 
@@ -37,7 +37,6 @@ struct Crypto final {
 
  private:
   std::string const hostname_;
-  std::string const path_;
   std::string encode_buffer_;
 #ifdef USE_ED25
   utils::signature::PKey pkey_;

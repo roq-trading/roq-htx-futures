@@ -103,6 +103,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   } latency_;
   // account
   Account &account_;
+  std::string const auth_path_;
   // cache
   Shared &shared_;
   // state

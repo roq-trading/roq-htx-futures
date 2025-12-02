@@ -57,6 +57,26 @@
     {
       "name": "adjust_factor",
       "type": "std/double"
+    },
+    {
+      "name": "margin_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_mode",
+      "type": "roq/htx_futures/json/MarginMode"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    },
+    {
+      "name": "position_mode",
+      "type": "roq/htx_futures/json/PositionMode"
     }
   ]
 }
