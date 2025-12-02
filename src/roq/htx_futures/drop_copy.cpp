@@ -166,7 +166,6 @@ void DropCopy::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
-        log::debug(R"(message="{}")"sv, message);
         parse(message);
       })) {
   } else {

@@ -31,7 +31,7 @@ TEST_CASE("coin_m_perpetual_empty", "[json_open_orders]") {
   CHECK(obj.status == json::Status::OK);
 }
 
-TEST_CASE("coin_m_perpetual_simple", "[json_open_orders]") {
+TEST_CASE("coin_m_perpetual_1", "[json_open_orders]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":{)"
@@ -71,6 +71,55 @@ TEST_CASE("coin_m_perpetual_simple", "[json_open_orders]") {
                  R"("current_page":1,)"
                  R"("total_size":1},)"
                  R"("ts":1763988814735)"
+                 R"(})";
+  core::json::BufferStack buffers{8192, 2};
+  // simple
+  json::OpenOrders obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
+}
+
+TEST_CASE("coin_m_perpetual_2", "[json_open_orders]") {
+  auto message = R"({)"
+                 R"("status":"ok",)"
+                 R"("data":{)"
+                 R"("orders":[{)"
+                 R"("update_time":1764651043496,)"
+                 R"("symbol":"ETH",)"
+                 R"("contract_code":"ETH-USD",)"
+                 R"("volume":1,)"
+                 R"("price":2000.00,)"
+                 R"("order_price_type":"limit",)"
+                 R"("order_type":1,)"
+                 R"("direction":"buy",)"
+                 R"("offset":"open",)"
+                 R"("lever_rate":1,)"
+                 R"("order_id":1445396767259586560,)"
+                 R"("client_order_id":563239567803652,)"
+                 R"("created_at":1764651043478,)"
+                 R"("trade_volume":0,)"
+                 R"("trade_turnover":0,)"
+                 R"("fee":0,)"
+                 R"("trade_avg_price":null,)"
+                 R"("margin_frozen":0.005000000000000000,)"
+                 R"("profit":0,)"
+                 R"("status":3,)"
+                 R"("order_source":"api",)"
+                 R"("canceled_source":null,)"
+                 R"("order_id_str":"1445396767259586560",)"
+                 R"("fee_asset":"ETH",)"
+                 R"("liquidation_type":null,)"
+                 R"("canceled_at":null,)"
+                 R"("is_tpsl":0,)"
+                 R"("real_profit":0,)"
+                 R"("self_match_prevent":1,)"
+                 R"("tp_trigger_price":null,)"
+                 R"("sl_trigger_price":null)"
+                 R"(})"
+                 R"(],)"
+                 R"("total_page":1,)"
+                 R"("current_page":1,)"
+                 R"("total_size":1},)"
+                 R"("ts":1764653131151)"
                  R"(})";
   core::json::BufferStack buffers{8192, 2};
   // simple

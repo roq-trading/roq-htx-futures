@@ -116,6 +116,14 @@
     {
       "name": "self_match_prevent",
       "type": "std/int32"
+    },
+    {
+      "name": "tp_trigger_price",
+      "type": "std/double"
+    },
+    {
+      "name": "sl_trigger_price",
+      "type": "std/double"
     }
   ]
 }

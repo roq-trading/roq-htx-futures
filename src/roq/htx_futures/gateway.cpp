@@ -36,16 +36,24 @@ R create_accounts(auto &config, auto &settings) {
 }
 
 template <typename R>
-R create_order_entry(Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
+R create_order_entry_rest(Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts) {
-      if (shared.settings.ws_api) {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS>(gateway, context, ++stream_id, *account, shared));
-      } else {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST>(gateway, context, ++stream_id, *account, shared));
-      }
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST>(gateway, context, ++stream_id, *account, shared));
+    }
+  }
+  return result;
+}
+
+template <typename R>
+R create_order_entry_ws(Gateway &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
+  using result_type = std::remove_cvref_t<R>;
+  result_type result;
+  if (shared.settings.ws_api && has_real_accounts) {
+    for (auto &[name, account] : accounts) {
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS>(gateway, context, ++stream_id, *account, shared));
     }
   }
   return result;
@@ -67,7 +75,8 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config, settings)}, context_{context}, shared_{dispatcher, settings},
       rest_{*this, context_, ++stream_id_, shared_},
-      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
+      order_entry_rest_{create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
+      order_entry_ws_{create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
   if (settings.rest.cancel_on_disconnect) {
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
@@ -249,7 +258,10 @@ template <typename... Args>
 void Gateway::dispatch_helper(auto &self, Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
   helper(self.rest_);
-  for (auto &[_, item] : self.order_entry_) {
+  for (auto &[_, item] : self.order_entry_rest_) {
+    helper(*item);
+  }
+  for (auto &[_, item] : self.order_entry_ws_) {
     helper(*item);
   }
   for (auto &[_, item] : self.drop_copy_) {
@@ -269,11 +281,19 @@ void Gateway::dispatch_helper(auto &self, Args &&...args) {
 }
 
 OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
-  auto iter = order_entry_.find(account);
-  if (iter != std::end(order_entry_)) {
-    return *(*iter).second;
+  if (shared_.settings.ws_api) {
+    auto iter = order_entry_ws_.find(account);
+    if (iter != std::end(order_entry_ws_)) {
+      return *(*iter).second;
+    }
+  } else {
+    auto iter = order_entry_rest_.find(account);
+    if (iter != std::end(order_entry_rest_)) {
+      return *(*iter).second;
+    }
   }
   throw RuntimeError{R"(Unknown account="{}")"sv, account};
 }
+
 }  // namespace htx_futures
 }  // namespace roq

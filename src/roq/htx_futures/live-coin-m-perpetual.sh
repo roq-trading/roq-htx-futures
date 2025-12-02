@@ -14,6 +14,8 @@ CONFIG_FILE="$ROQ_CONFIG_PATH/roq-htx-futures/$CONFIG.toml"
 
 API="coin-m-perpetual"
 
+WS_API=true
+
 FLAGFILE="../../../share/flags/prod/flags-$API.cfg"
 
 $PREFIX ./roq-htx-futures \
@@ -24,6 +26,7 @@ $PREFIX ./roq-htx-futures \
   --event_log_dir "$HOME/var/lib/roq/data" \
   --client_listen_address "$HOME/run/$NAME.sock" \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
-  --api="$API" \
+  --api "$API" \
+  --ws_api=$WS_API \
   --cache_all_reference_data=true \
   $@

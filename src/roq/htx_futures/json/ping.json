@@ -12,8 +12,8 @@
     },
     {
       "name": "ts",
-      "type": "std/int64",
-      "comment": "???"
+      "type": "std/milliseconds",
+      "comment": "??? + ws-trade"
     },
     {
       "name": "ping",

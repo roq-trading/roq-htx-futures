@@ -225,7 +225,7 @@ void WebSocket2::send_pong(std::chrono::milliseconds timestamp) {
       R"("ts":{})"
       R"(}})"sv,
       timestamp.count());
-  log::debug(R"(message="{}")"sv, message);
+  // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 

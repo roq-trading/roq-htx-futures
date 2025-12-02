@@ -54,6 +54,9 @@ positions.hpp
 premium_index.hpp
 premium_index_tick.hpp
 quotation.hpp
+response_data.hpp
+response_data_errors_item.hpp
+response.hpp
 role.hpp
 status.hpp
 subbed.hpp
@@ -117,6 +120,9 @@ positions.cpp
 premium_index.cpp
 premium_index_tick.cpp
 quotation.cpp
+response_data.cpp
+response_data_errors_item.cpp
+response.cpp
 role.cpp
 status.cpp
 subbed.cpp

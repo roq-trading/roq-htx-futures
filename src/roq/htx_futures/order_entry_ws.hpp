@@ -26,12 +26,12 @@
 #include "roq/htx_futures/order_entry.hpp"
 #include "roq/htx_futures/shared.hpp"
 
-#include "roq/htx_futures/json/parser_2.hpp"
+#include "roq/htx_futures/json/parser_3.hpp"
 
 namespace roq {
 namespace htx_futures {
 
-struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public json::Parser2::Handler {
+struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public json::Parser3::Handler {
   OrderEntryWS(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
   OrderEntryWS(OrderEntryWS const &) = delete;
@@ -70,16 +70,12 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
 
   void parse(std::string_view const &message);
 
+  // json::Parser3::Handler
+
   void operator()(Trace<json::Close> const &) override;
-  void operator()(Trace<json::Error2> const &) override;
   void operator()(Trace<json::Ping> const &) override;
   void operator()(Trace<json::Auth> const &) override;
-  void operator()(Trace<json::Sub> const &) override;
-  void operator()(Trace<json::FundingRate> const &) override;
-  void operator()(Trace<json::Accounts> const &) override;
-  void operator()(Trace<json::Positions> const &) override;
-  void operator()(Trace<json::MatchOrders> const &) override;
-  void operator()(Trace<json::Orders> const &) override;
+  void operator()(Trace<json::Response> const &) override;
 
  private:
   OrderEntry::Handler &handler_;

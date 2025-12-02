@@ -99,7 +99,8 @@ struct Gateway final : public server::Handler,
   uint16_t stream_id_ = {};
   // streams
   Rest rest_;
-  utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
+  utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_rest_;
+  utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_ws_;
   utils::unordered_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
   std::vector<std::unique_ptr<WebSocket>> web_socket_;

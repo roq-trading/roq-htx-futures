@@ -1,6 +1,6 @@
 set(TARGET_NAME ${PROJECT_NAME}-json)
 
-set(SOURCES encoder.cpp map.cpp parser.cpp parser_2.cpp utils.cpp)
+set(SOURCES encoder.cpp map.cpp parser.cpp parser_2.cpp parser_3.cpp utils.cpp)
 
 include(RoqAutogen)
 
@@ -59,6 +59,9 @@ set(AUTOGEN_SCHEMAS
     premium_index.json
     premium_index_tick.json
     quotation.json
+    response_data.json
+    response_data_errors_item.json
+    response.json
     role.json
     status.json
     subbed.json

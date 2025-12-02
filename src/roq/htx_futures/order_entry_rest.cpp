@@ -293,7 +293,7 @@ void OrderEntryREST::operator()(Trace<json::OpenOrders> const &event) {
         .order_type = map(item.order_price_type),
         .time_in_force = {},
         .execution_instructions = {},
-        .create_time_utc = {},
+        .create_time_utc = item.created_at,
         .update_time_utc = item.created_at,
         .external_account = {},
         .external_order_id = item.order_id_str,
@@ -316,6 +316,8 @@ void OrderEntryREST::operator()(Trace<json::OpenOrders> const &event) {
         .update_type = UpdateType::SNAPSHOT,
         .sending_time_utc = open_orders.ts,
     };
+    log::warn("DEBUG order_update={}"sv, order_update);
+    log::warn(R"(DEBUG client_order_id="{}")"sv, client_order_id);
     Trace event_2{trace_info, order_update};
     (*this)(event_2, client_order_id);
   }
