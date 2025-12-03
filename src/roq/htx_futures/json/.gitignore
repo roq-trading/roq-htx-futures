@@ -1,9 +1,9 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-htx-futures-json
-account_info_data_item_contract_detail_item.hpp
-account_info_data_item_futures_contract_detail_item.hpp
-account_info_data_item.hpp
-account_info.hpp
+account_info_ack_data_item_contract_detail_item.hpp
+account_info_ack_data_item_futures_contract_detail_item.hpp
+account_info_ack_data_item.hpp
+account_info_ack.hpp
 accounts_data_item.hpp
 accounts.hpp
 auth_data.hpp
@@ -17,8 +17,8 @@ cancel_all_orders_ack.hpp
 cancel_order_ack_data.hpp
 cancel_order_ack.hpp
 close.hpp
-contract_info_data_item.hpp
-contract_info.hpp
+contract_info_ack_data_item.hpp
+contract_info_ack.hpp
 depth.hpp
 depth_tick.hpp
 detail.hpp
@@ -38,9 +38,9 @@ margin_mode.hpp
 match_orders.hpp
 match_orders_trade_item.hpp
 offset.hpp
-open_orders_data.hpp
-open_orders_data_orders_item.hpp
-open_orders.hpp
+open_orders_ack_data.hpp
+open_orders_ack_data_orders_item.hpp
+open_orders_ack.hpp
 operator.hpp
 order_price_type.hpp
 orders.hpp
@@ -66,10 +66,10 @@ topic.hpp
 trade.hpp
 trade_tick_item.hpp
 trade_tick.hpp
-account_info_data_item_contract_detail_item.cpp
-account_info_data_item_futures_contract_detail_item.cpp
-account_info_data_item.cpp
-account_info.cpp
+account_info_ack_data_item_contract_detail_item.cpp
+account_info_ack_data_item_futures_contract_detail_item.cpp
+account_info_ack_data_item.cpp
+account_info_ack.cpp
 accounts_data_item.cpp
 accounts.cpp
 auth_data.cpp
@@ -83,8 +83,8 @@ cancel_all_orders_ack.cpp
 cancel_order_ack_data.cpp
 cancel_order_ack.cpp
 close.cpp
-contract_info_data_item.cpp
-contract_info.cpp
+contract_info_ack_data_item.cpp
+contract_info_ack.cpp
 depth.cpp
 depth_tick.cpp
 detail.cpp
@@ -104,9 +104,9 @@ margin_mode.cpp
 match_orders.cpp
 match_orders_trade_item.cpp
 offset.cpp
-open_orders_data.cpp
-open_orders_data_orders_item.cpp
-open_orders.cpp
+open_orders_ack_data.cpp
+open_orders_ack_data_orders_item.cpp
+open_orders_ack.cpp
 operator.cpp
 order_price_type.cpp
 orders.cpp

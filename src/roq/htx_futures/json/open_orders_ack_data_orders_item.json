@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx_futures/json/OpenOrdersDataOrdersItem",
+  "name": "roq/htx_futures/json/OpenOrdersAckDataOrdersItem",
   "type": "dictionary",
   "values": [
     {

@@ -12,6 +12,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::CancelOrderAck;
+
 TEST_CASE("success", "[json_cancel_order_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
@@ -21,6 +23,7 @@ TEST_CASE("success", "[json_cancel_order_ack]") {
                  R"(},)"
                  R"("ts":1763961141034)"
                  R"(})";
-  json::CancelOrderAck obj{message};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  value_type obj{message};
+  helper(obj);
 }

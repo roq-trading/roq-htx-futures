@@ -257,13 +257,13 @@ void OrderEntryREST::open_orders_ack(Trace<web::rest::Response> const &event) {
     };
     auto handle_success = [&](auto &body) {
       log::warn("DEBUG {}"sv, body);
-      json::OpenOrders open_orders{body, decode_buffer_};
-      if (open_orders.status == json::Status::OK) {
-        Trace event_2{event, open_orders};
+      json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
+      if (open_orders_ack.status == json::Status::OK) {
+        Trace event_2{event, open_orders_ack};
         (*this)(event_2);
         download_.check_relaxed(STATE);
       } else {
-        // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(open_orders.ret_code), open_orders.ret_msg);
+        // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(open_orders_ack.ret_code), open_orders_ack.ret_msg);
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error{}, ""sv);  // XXX FIXME TODO
       }
     };
@@ -271,10 +271,10 @@ void OrderEntryREST::open_orders_ack(Trace<web::rest::Response> const &event) {
   });
 }
 
-void OrderEntryREST::operator()(Trace<json::OpenOrders> const &event) {
-  auto &[trace_info, open_orders] = event;
-  log::info<2>("open_orders={}"sv, open_orders);
-  for (auto &item : open_orders.data.orders) {
+void OrderEntryREST::operator()(Trace<json::OpenOrdersAck> const &event) {
+  auto &[trace_info, open_orders_ack] = event;
+  log::info<2>("open_orders_ack={}"sv, open_orders_ack);
+  for (auto &item : open_orders_ack.data.orders) {
     auto client_order_id = fmt::format("{}"sv, item.client_order_id);
     auto remaining_quantity = [&]() {
       if (utils::compare(item.volume, 0.0) > 0) {
@@ -314,7 +314,7 @@ void OrderEntryREST::operator()(Trace<json::OpenOrders> const &event) {
         .max_response_version = {},
         .max_accepted_version = {},
         .update_type = UpdateType::SNAPSHOT,
-        .sending_time_utc = open_orders.ts,
+        .sending_time_utc = open_orders_ack.ts,
     };
     log::warn("DEBUG order_update={}"sv, order_update);
     log::warn(R"(DEBUG client_order_id="{}")"sv, client_order_id);

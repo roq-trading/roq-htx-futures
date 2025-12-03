@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/open_orders.hpp"
+#include "roq/htx_futures/json/open_orders_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -14,7 +14,9 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("coin_m_perpetual_empty", "[json_open_orders]") {
+using value_type = json::OpenOrdersAck;
+
+TEST_CASE("coin_m_perpetual_empty", "[json_open_orders_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":{)"
@@ -25,13 +27,13 @@ TEST_CASE("coin_m_perpetual_empty", "[json_open_orders]") {
                  R"(},)"
                  R"("ts":1763987974231)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 2};
-  // simple
-  json::OpenOrders obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  core::json::BufferStack buffers{8192, 1};
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
-TEST_CASE("coin_m_perpetual_1", "[json_open_orders]") {
+TEST_CASE("coin_m_perpetual_1", "[json_open_orders_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":{)"
@@ -72,13 +74,13 @@ TEST_CASE("coin_m_perpetual_1", "[json_open_orders]") {
                  R"("total_size":1},)"
                  R"("ts":1763988814735)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 2};
-  // simple
-  json::OpenOrders obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  core::json::BufferStack buffers{8192, 1};
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
-TEST_CASE("coin_m_perpetual_2", "[json_open_orders]") {
+TEST_CASE("coin_m_perpetual_2", "[json_open_orders_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":{)"
@@ -121,8 +123,8 @@ TEST_CASE("coin_m_perpetual_2", "[json_open_orders]") {
                  R"("total_size":1},)"
                  R"("ts":1764653131151)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 2};
-  // simple
-  json::OpenOrders obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  core::json::BufferStack buffers{8192, 1};
+  value_type obj{message, buffers};
+  helper(obj);
 }

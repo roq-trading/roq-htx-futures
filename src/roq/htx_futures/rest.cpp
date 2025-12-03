@@ -227,12 +227,12 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::ContractInfo contract_info{body, decode_buffer_};
+        json::ContractInfoAck contract_info_ack{body, decode_buffer_};
         // XXX debug -- saw something 20220603 -- maybe like this
-        if (std::empty(contract_info.data)) {
+        if (std::empty(contract_info_ack.data)) {
           log::warn(R"(DEBUG: body="{}")"sv, body);
         }
-        Trace event_2{event, contract_info};
+        Trace event_2{event, contract_info_ack};
         (*this)(event_2);
         download_.check(STATE);
       }
@@ -245,14 +245,14 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
   });
 }
 
-void Rest::operator()(Trace<json::ContractInfo> const &event) {
-  auto &[trace_info, contract_info] = event;
-  log::info<4>("contract_info={}"sv, contract_info);
+void Rest::operator()(Trace<json::ContractInfoAck> const &event) {
+  auto &[trace_info, contract_info_ack] = event;
+  log::info<4>("contract_info_ack={}"sv, contract_info_ack);
   std::vector<Symbol> symbols;
-  symbols.reserve(std::size(contract_info.data));
+  symbols.reserve(std::size(contract_info_ack.data));
   size_t counter = 0;
-  for (size_t i = 0; i < std::size(contract_info.data); ++i) {
-    auto &item = contract_info.data[i];
+  for (size_t i = 0; i < std::size(contract_info_ack.data); ++i) {
+    auto &item = contract_info_ack.data[i];
     log::info<2>("item={}"sv, item);
     if (item.contract_status != 1) {
       log::warn<1>(R"(Dropping pair="{}" due to contract_status={})"sv, item.pair, item.contract_status);
@@ -310,7 +310,7 @@ void Rest::operator()(Trace<json::ContractInfo> const &event) {
     handler_(symbols_update);
   }
   if (counter > 0) [[unlikely]] {
-    log::info("Symbols {} / {}"sv, counter, std::size(contract_info.data));
+    log::info("Symbols {} / {}"sv, counter, std::size(contract_info_ack.data));
   }
 }
 

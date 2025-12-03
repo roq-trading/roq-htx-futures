@@ -2,9 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/buffer_stack.hpp"
-
-#include "roq/htx_futures/json/parser.hpp"
+#include "parser_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -13,6 +11,8 @@ using namespace std::literals;
 using namespace std::chrono_literals;
 
 using namespace Catch::literals;
+
+using value_type = json::Depth;
 
 // note! reduced
 TEST_CASE("simple", "[json_depth]") {
@@ -36,55 +36,32 @@ TEST_CASE("simple", "[json_depth]") {
                  R"(},)"
                  R"("ts":1639630955318)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Depth obj{message, buffers};
-  CHECK(obj.ch == "market.FIL211231.depth.size_150.high_freq"sv);
-  auto &tick = obj.tick;
-  auto &asks = tick.asks;
-  REQUIRE(std::size(asks) == 2);
-  auto &a0 = asks[0];
-  CHECK(a0.price == 37.722_a);
-  CHECK(a0.vol == 2.0_a);
-  auto &a1 = asks[1];
-  CHECK(a1.price == 37.735_a);
-  CHECK(a1.vol == 145.0_a);
-  auto &bids = tick.bids;
-  REQUIRE(std::size(bids) == 2);
-  auto &b0 = bids[0];
-  CHECK(b0.price == 37.71_a);
-  CHECK(b0.vol == 145.0_a);
-  auto &b1 = bids[1];
-  CHECK(b1.price == 37.709_a);
-  CHECK(b1.vol == 170.0_a);
-  CHECK(tick.ch == "market.FIL211231.depth.size_150.high_freq"sv);
-  CHECK(tick.event == json::Event::SNAPSHOT);
-  CHECK(tick.id == 149496559186);
-  CHECK(tick.mrid == 149496559186);
-  CHECK(tick.ts == 1639630955318ms);
-  CHECK(tick.version == 195613528);
-  CHECK(obj.ts == 1639630955318ms);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &event) override {
-      found = true;
-      auto &[trace_info, depth] = event;
-      CHECK(depth.ch == "market.FIL211231.depth.size_150.high_freq"sv);
-    }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &) override { FAIL(); }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.ch == "market.FIL211231.depth.size_150.high_freq"sv);
+    auto &tick = obj.tick;
+    auto &asks = tick.asks;
+    REQUIRE(std::size(asks) == 2);
+    auto &a0 = asks[0];
+    CHECK(a0.price == 37.722_a);
+    CHECK(a0.vol == 2.0_a);
+    auto &a1 = asks[1];
+    CHECK(a1.price == 37.735_a);
+    CHECK(a1.vol == 145.0_a);
+    auto &bids = tick.bids;
+    REQUIRE(std::size(bids) == 2);
+    auto &b0 = bids[0];
+    CHECK(b0.price == 37.71_a);
+    CHECK(b0.vol == 145.0_a);
+    auto &b1 = bids[1];
+    CHECK(b1.price == 37.709_a);
+    CHECK(b1.vol == 170.0_a);
+    CHECK(tick.ch == "market.FIL211231.depth.size_150.high_freq"sv);
+    CHECK(tick.event == json::Event::SNAPSHOT);
+    CHECK(tick.id == 149496559186);
+    CHECK(tick.mrid == 149496559186);
+    CHECK(tick.ts == 1639630955318ms);
+    CHECK(tick.version == 195613528);
+    CHECK(obj.ts == 1639630955318ms);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

@@ -12,6 +12,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::CancelAllOrdersAck;
+
 TEST_CASE("success", "[json_cancel_all_orders_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
@@ -21,8 +23,9 @@ TEST_CASE("success", "[json_cancel_all_orders_ack]") {
                  R"(},)"
                  R"("ts":1763975842675)"
                  R"(})";
-  json::CancelAllOrdersAck obj{message};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  value_type obj{message};
+  helper(obj);
 }
 
 TEST_CASE("failure", "[json_cancel_all_orders_ack]") {
@@ -32,6 +35,7 @@ TEST_CASE("failure", "[json_cancel_all_orders_ack]") {
                  R"("err_msg":"Incorrect signature method [错误的签名方法]",)"
                  R"("ts":1763892684776)"
                  R"(})";
-  json::CancelAllOrdersAck obj{message};
-  CHECK(obj.status == json::Status::ERROR);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::ERROR); };
+  value_type obj{message};
+  helper(obj);
 }

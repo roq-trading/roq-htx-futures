@@ -5,10 +5,10 @@ set(SOURCES encoder.cpp map.cpp parser.cpp parser_2.cpp parser_3.cpp utils.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    account_info_data_item_contract_detail_item.json
-    account_info_data_item_futures_contract_detail_item.json
-    account_info_data_item.json
-    account_info.json
+    account_info_ack_data_item_contract_detail_item.json
+    account_info_ack_data_item_futures_contract_detail_item.json
+    account_info_ack_data_item.json
+    account_info_ack.json
     accounts_data_item.json
     accounts.json
     auth_data.json
@@ -22,8 +22,8 @@ set(AUTOGEN_SCHEMAS
     cancel_order_ack_data.json
     cancel_order_ack.json
     close.json
-    contract_info_data_item.json
-    contract_info.json
+    contract_info_ack_data_item.json
+    contract_info_ack.json
     depth.json
     depth_tick.json
     detail.json
@@ -43,9 +43,9 @@ set(AUTOGEN_SCHEMAS
     match_orders.json
     match_orders_trade_item.json
     offset.json
-    open_orders_data.json
-    open_orders_data_orders_item.json
-    open_orders.json
+    open_orders_ack_data.json
+    open_orders_ack_data_orders_item.json
+    open_orders_ack.json
     operator.json
     order_price_type.json
     orders.json

@@ -27,7 +27,7 @@
 
 #include "roq/htx_futures/json/cancel_all_orders_ack.hpp"
 #include "roq/htx_futures/json/cancel_order_ack.hpp"
-#include "roq/htx_futures/json/open_orders.hpp"
+#include "roq/htx_futures/json/open_orders_ack.hpp"
 #include "roq/htx_futures/json/place_order_ack.hpp"
 
 namespace roq {
@@ -68,7 +68,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void open_orders();
   void open_orders_ack(Trace<web::rest::Response> const &);
-  void operator()(Trace<json::OpenOrders> const &);
+  void operator()(Trace<json::OpenOrdersAck> const &);
 
   // create-order
 

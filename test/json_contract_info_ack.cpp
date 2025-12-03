@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/contract_info.hpp"
+#include "roq/htx_futures/json/contract_info_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -14,8 +14,10 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::ContractInfoAck;
+
 // note! reduced
-TEST_CASE("usdt_m_futures", "[json_contract_info]") {
+TEST_CASE("usdt_m_futures", "[json_contract_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -58,13 +60,14 @@ TEST_CASE("usdt_m_futures", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1763791421826)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::ContractInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
 // note! reduced
-TEST_CASE("coin_m_delivery", "[json_contract_info]") {
+TEST_CASE("coin_m_delivery", "[json_contract_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -93,13 +96,14 @@ TEST_CASE("coin_m_delivery", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1763791626928)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::ContractInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
 // note! reduced
-TEST_CASE("coin_m_perpetual", "[json_contract_info]") {
+TEST_CASE("coin_m_perpetual", "[json_contract_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -124,7 +128,8 @@ TEST_CASE("coin_m_perpetual", "[json_contract_info]") {
                  R"(],)"
                  R"("ts":1763791707461)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::ContractInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }

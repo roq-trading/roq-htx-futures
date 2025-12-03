@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx_futures/json/parser.hpp"
+#include "parser_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -11,6 +11,8 @@ using namespace std::literals;
 using namespace std::chrono_literals;
 
 using namespace Catch::literals;
+
+using value_type = json::EstimatedRate;
 
 TEST_CASE("swap", "[json_estimated_rate]") {
   auto message = R"({)"
@@ -27,31 +29,6 @@ TEST_CASE("swap", "[json_estimated_rate]") {
                  R"("count":"0")"
                  R"(})"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::EstimatedRate obj{message, buffers};
-  CHECK(obj.ch == "market.BTC-USD.estimated_rate.1min"sv);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &) override { FAIL(); }
-    void operator()(Trace<json::EstimatedRate> const &event) override {
-      found = true;
-      auto &[trace_info, estimated_rate] = event;
-      CHECK(estimated_rate.ch == "market.BTC-USD.estimated_rate.1min"sv);
-    }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) { CHECK(obj.ch == "market.BTC-USD.estimated_rate.1min"sv); };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

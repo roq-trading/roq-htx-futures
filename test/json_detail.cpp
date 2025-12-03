@@ -2,9 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/buffer_stack.hpp"
-
-#include "roq/htx_futures/json/parser.hpp"
+#include "parser_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -13,6 +11,8 @@ using namespace std::literals;
 using namespace std::chrono_literals;
 
 using namespace Catch::literals;
+
+using value_type = json::Detail;
 
 TEST_CASE("inverse", "[json_detail]") {
   auto message = R"({)"
@@ -32,50 +32,27 @@ TEST_CASE("inverse", "[json_detail]") {
                  R"("bid":[37.783,4])"
                  R"(})"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Detail obj{message, buffers};
-  CHECK(obj.ch == "market.FIL211231.detail"sv);
-  CHECK(obj.ts == 1639628009780ms);
-  auto &tick = obj.tick;
-  CHECK(tick.id == 1639627980);
-  CHECK(tick.mrid == 149495401281);
-  CHECK(tick.open == 35.714_a);
-  CHECK(tick.close == 37.795_a);
-  CHECK(tick.high == 38.901_a);
-  CHECK(tick.low == 35.641_a);
-  CHECK(tick.amount == 68725.1520427579159023020649636609479771038_a);
-  CHECK(tick.vol == 255300.0_a);
-  CHECK(tick.count == 4172.0_a);
-  auto &ask = tick.ask;
-  CHECK(ask.price == 37.809_a);
-  CHECK(ask.vol == 145.0_a);
-  auto &bid = tick.bid;
-  CHECK(bid.price == 37.783_a);
-  CHECK(bid.vol == 4.0_a);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &event) override {
-      found = true;
-      auto &[trace_info, detail] = event;
-      CHECK(detail.ch == "market.FIL211231.detail"sv);
-    }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &event) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.ch == "market.FIL211231.detail"sv);
+    CHECK(obj.ts == 1639628009780ms);
+    auto &tick = obj.tick;
+    CHECK(tick.id == 1639627980);
+    CHECK(tick.mrid == 149495401281);
+    CHECK(tick.open == 35.714_a);
+    CHECK(tick.close == 37.795_a);
+    CHECK(tick.high == 38.901_a);
+    CHECK(tick.low == 35.641_a);
+    CHECK(tick.amount == 68725.1520427579159023020649636609479771038_a);
+    CHECK(tick.vol == 255300.0_a);
+    CHECK(tick.count == 4172.0_a);
+    auto &ask = tick.ask;
+    CHECK(ask.price == 37.809_a);
+    CHECK(ask.vol == 145.0_a);
+    auto &bid = tick.bid;
+    CHECK(bid.price == 37.783_a);
+    CHECK(bid.vol == 4.0_a);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
 TEST_CASE("linear", "[json_detail]") {
@@ -97,51 +74,28 @@ TEST_CASE("linear", "[json_detail]") {
                  R"("bid":[0.89738,235])"
                  R"(})"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Detail obj{message, buffers};
-  CHECK(obj.ch == "market.WOO-USDT.detail"sv);
-  CHECK(obj.ts == 1640775846213ms);
-  auto &tick = obj.tick;
-  CHECK(tick.id == 1640775840);
-  CHECK(tick.mrid == 38292289192);
-  CHECK(tick.open == 0.99934_a);
-  CHECK(tick.close == 0.89934_a);
-  CHECK(tick.high == 1.00166_a);
-  CHECK(tick.low == 0.88366_a);
-  CHECK(tick.amount == 738940.0_a);
-  CHECK(tick.vol == 73894.0_a);
-  CHECK(tick.trade_turnover == 683194.497_a);
-  CHECK(tick.count == 4256.0_a);
-  auto &ask = tick.ask;
-  CHECK(ask.price == 0.90157_a);
-  CHECK(ask.vol == 10.0_a);
-  auto &bid = tick.bid;
-  CHECK(bid.price == 0.89738_a);
-  CHECK(bid.vol == 235.0_a);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &event) override {
-      found = true;
-      auto &[trace_info, detail] = event;
-      CHECK(detail.ch == "market.WOO-USDT.detail"sv);
-    }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &event) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.ch == "market.WOO-USDT.detail"sv);
+    CHECK(obj.ts == 1640775846213ms);
+    auto &tick = obj.tick;
+    CHECK(tick.id == 1640775840);
+    CHECK(tick.mrid == 38292289192);
+    CHECK(tick.open == 0.99934_a);
+    CHECK(tick.close == 0.89934_a);
+    CHECK(tick.high == 1.00166_a);
+    CHECK(tick.low == 0.88366_a);
+    CHECK(tick.amount == 738940.0_a);
+    CHECK(tick.vol == 73894.0_a);
+    CHECK(tick.trade_turnover == 683194.497_a);
+    CHECK(tick.count == 4256.0_a);
+    auto &ask = tick.ask;
+    CHECK(ask.price == 0.90157_a);
+    CHECK(ask.vol == 10.0_a);
+    auto &bid = tick.bid;
+    CHECK(bid.price == 0.89738_a);
+    CHECK(bid.vol == 235.0_a);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
 TEST_CASE("crash_20220603", "[json_detail]") {
@@ -161,31 +115,6 @@ TEST_CASE("crash_20220603", "[json_detail]") {
                  R"("bid":null)"
                  R"(})"
                  R"(})"sv;
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Detail obj{message, buffers};
-  CHECK(obj.ch == "market.ETH220603.detail"sv);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &event) override {
-      found = true;
-      auto &[trace_info, detail] = event;
-      CHECK(detail.ch == "market.ETH220603.detail"sv);
-    }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &event) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) { CHECK(obj.ch == "market.ETH220603.detail"sv); };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

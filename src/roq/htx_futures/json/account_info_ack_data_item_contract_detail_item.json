@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx_futures/json/AccountInfoDataItemFuturesContractDetailItem",
+  "name": "roq/htx_futures/json/AccountInfoAckDataItemContractDetailItem",
   "type": "dictionary",
   "values": [
     {
@@ -16,10 +16,6 @@
     },
     {
       "name": "margin_frozen",
-      "type": "std/double"
-    },
-    {
-      "name": "margin_available",
       "type": "std/double"
     },
     {
@@ -56,6 +52,10 @@
     },
     {
       "name": "cross_max_available",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_available",
       "type": "std/double"
     }
   ]

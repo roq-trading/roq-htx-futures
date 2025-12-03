@@ -25,7 +25,7 @@
 #include "roq/htx_futures/rest_state.hpp"
 #include "roq/htx_futures/shared.hpp"
 
-#include "roq/htx_futures/json/contract_info.hpp"
+#include "roq/htx_futures/json/contract_info_ack.hpp"
 
 namespace roq {
 namespace htx_futures {
@@ -67,7 +67,7 @@ struct Rest final : public web::rest::Client::Handler {
 
   void get_contract_info();
   void get_contract_info_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::ContractInfo> const &);
+  void operator()(Trace<json::ContractInfoAck> const &);
 
   template <typename SuccessHandler, typename ErrorHandler>
   void process_response(web::rest::Response const &, SuccessHandler, ErrorHandler);

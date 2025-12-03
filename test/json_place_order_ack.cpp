@@ -12,6 +12,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::PlaceOrderAck;
+
 TEST_CASE("success", "[json_place_order_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
@@ -22,8 +24,9 @@ TEST_CASE("success", "[json_place_order_ack]") {
                  R"(},)"
                  R"("ts":1763891916921)"
                  R"(})";
-  json::PlaceOrderAck obj{message};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  value_type obj{message};
+  helper(obj);
 }
 
 TEST_CASE("failure", "[json_place_order_ack]") {
@@ -33,6 +36,7 @@ TEST_CASE("failure", "[json_place_order_ack]") {
                  R"("err_msg":"Insufficient margin available.",)"
                  R"("ts":1763867554021)"
                  R"(})";
-  json::PlaceOrderAck obj{message};
-  CHECK(obj.status == json::Status::ERROR);
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::ERROR); };
+  value_type obj{message};
+  helper(obj);
 }

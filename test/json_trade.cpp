@@ -2,9 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/buffer_stack.hpp"
-
-#include "roq/htx_futures/json/parser.hpp"
+#include "parser_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -13,6 +11,8 @@ using namespace std::literals;
 using namespace std::chrono_literals;
 
 using namespace Catch::literals;
+
+using value_type = json::Trade;
 
 TEST_CASE("inverse", "[json_trade]") {
   auto message = R"({)"
@@ -32,46 +32,23 @@ TEST_CASE("inverse", "[json_trade]") {
                  R"(])"
                  R"(})"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Trade obj{message, buffers};
-  CHECK(obj.ch == "market.BTC220325.trade.detail"sv);
-  CHECK(obj.ts == 1639629424053ms);
-  auto &tick = obj.tick;
-  CHECK(tick.id == 150302535330);
-  CHECK(tick.ts == 1639629424028ms);
-  auto &data = tick.data;
-  CHECK(std::size(data) == 1);
-  auto &d0 = data[0];
-  CHECK(d0.amount == 18_a);
-  CHECK(d0.quantity == 0.0360801846022600627634855703315047361_a);
-  CHECK(d0.ts == 1639629424028ms);
-  CHECK(d0.id == 1503025353300000);
-  CHECK(d0.price == 49888.88_a);
-  CHECK(d0.direction == json::Direction::BUY);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &event) override {
-      found = true;
-      auto &[trace_info, trade] = event;
-      CHECK(trade.ch == "market.BTC220325.trade.detail"sv);
-    }
-    void operator()(Trace<json::Detail> const &) override { FAIL(); }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.ch == "market.BTC220325.trade.detail"sv);
+    CHECK(obj.ts == 1639629424053ms);
+    auto &tick = obj.tick;
+    CHECK(tick.id == 150302535330);
+    CHECK(tick.ts == 1639629424028ms);
+    auto &data = tick.data;
+    CHECK(std::size(data) == 1);
+    auto &d0 = data[0];
+    CHECK(d0.amount == 18_a);
+    CHECK(d0.quantity == 0.0360801846022600627634855703315047361_a);
+    CHECK(d0.ts == 1639629424028ms);
+    CHECK(d0.id == 1503025353300000);
+    CHECK(d0.price == 49888.88_a);
+    CHECK(d0.direction == json::Direction::BUY);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
 TEST_CASE("linear", "[json_trade]") {
@@ -101,53 +78,30 @@ TEST_CASE("linear", "[json_trade]") {
                  R"(])"
                  R"(})"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Trade obj{message, buffers};
-  CHECK(obj.ch == "market.BTC-USDT.trade.detail"sv);
-  CHECK(obj.ts == 1640775632524ms);
-  auto &tick = obj.tick;
-  CHECK(tick.id == 89747117157);
-  CHECK(tick.ts == 1640775632497ms);
-  auto &data = tick.data;
-  CHECK(std::size(data) == 2);
-  auto &d0 = data[0];
-  CHECK(d0.amount == 120.0_a);
-  CHECK(d0.quantity == 0.12_a);
-  CHECK(d0.trade_turnover == 5724.132_a);
-  CHECK(d0.ts == 1640775632497ms);
-  CHECK(d0.id == 897471171570000);
-  CHECK(d0.price == 47701.1_a);
-  CHECK(d0.direction == json::Direction::SELL);
-  auto &d1 = data[1];
-  CHECK(d1.amount == 2.0_a);
-  CHECK(d1.quantity == 0.002_a);
-  CHECK(d1.trade_turnover == 95.4022_a);
-  CHECK(d1.ts == 1640775632497ms);
-  CHECK(d1.id == 897471171570001);
-  CHECK(d1.price == 47701.1_a);
-  CHECK(d1.direction == json::Direction::SELL);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &event) override {
-      found = true;
-      auto &[trace_info, trade] = event;
-      CHECK(trade.ch == "market.BTC-USDT.trade.detail"sv);
-    }
-    void operator()(Trace<json::Detail> const &) override { FAIL(); }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.ch == "market.BTC-USDT.trade.detail"sv);
+    CHECK(obj.ts == 1640775632524ms);
+    auto &tick = obj.tick;
+    CHECK(tick.id == 89747117157);
+    CHECK(tick.ts == 1640775632497ms);
+    auto &data = tick.data;
+    CHECK(std::size(data) == 2);
+    auto &d0 = data[0];
+    CHECK(d0.amount == 120.0_a);
+    CHECK(d0.quantity == 0.12_a);
+    CHECK(d0.trade_turnover == 5724.132_a);
+    CHECK(d0.ts == 1640775632497ms);
+    CHECK(d0.id == 897471171570000);
+    CHECK(d0.price == 47701.1_a);
+    CHECK(d0.direction == json::Direction::SELL);
+    auto &d1 = data[1];
+    CHECK(d1.amount == 2.0_a);
+    CHECK(d1.quantity == 0.002_a);
+    CHECK(d1.trade_turnover == 95.4022_a);
+    CHECK(d1.ts == 1640775632497ms);
+    CHECK(d1.id == 897471171570001);
+    CHECK(d1.price == 47701.1_a);
+    CHECK(d1.direction == json::Direction::SELL);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

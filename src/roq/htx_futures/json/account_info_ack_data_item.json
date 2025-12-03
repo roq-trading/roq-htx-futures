@@ -1,15 +1,15 @@
 {
-  "name": "roq/htx_futures/json/AccountInfoDataItem",
+  "name": "roq/htx_futures/json/AccountInfoAckDataItem",
   "type": "dictionary",
   "values": [
     {
       "name": "futures_contract_detail",
-      "type": "roq/htx_futures/json/AccountInfoDataItemFuturesContractDetailItem",
+      "type": "roq/htx_futures/json/AccountInfoAckDataItemFuturesContractDetailItem",
       "array": "std/span"
     },
     {
       "name": "contract_detail",
-      "type": "roq/htx_futures/json/AccountInfoDataItemContractDetailItem",
+      "type": "roq/htx_futures/json/AccountInfoAckDataItemContractDetailItem",
       "array": "std/span"
     },
     {

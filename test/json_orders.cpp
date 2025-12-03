@@ -2,9 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/buffer_stack.hpp"
-
-#include "roq/htx_futures/json/parser_2.hpp"
+#include "parser_2_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -13,6 +11,8 @@ using namespace std::literals;
 using namespace std::chrono_literals;
 
 using namespace Catch::literals;
+
+using value_type = json::Orders;
 
 TEST_CASE("coin_m_perpetual_place", "[json_orders]") {
   auto message = R"({)"
@@ -50,32 +50,8 @@ TEST_CASE("coin_m_perpetual_place", "[json_orders]") {
                  R"("self-match-prevent":1,)"
                  R"("canceled_source":null)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Orders obj{message, buffers};
-  CHECK(obj.op == "notify"sv);
-  // parser
-  struct Handler final : public json::Parser2::Handler {
-    void operator()(Trace<json::Close> const &) override { FAIL(); }
-    void operator()(Trace<json::Error2> const &) override { FAIL(); }
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Auth> const &) override { FAIL(); }
-    void operator()(Trace<json::Sub> const &) override { FAIL(); }
-    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
-    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
-    void operator()(Trace<json::Positions> const &) override { FAIL(); }
-    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
-    void operator()(Trace<json::Orders> const &event) override {
-      found = true;
-      auto &[trace_info, orders] = event;
-      CHECK(orders.op == "notify"sv);
-    };
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) { CHECK(obj.op == "notify"sv); };
+  Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
 TEST_CASE("coin_m_perpetual_cancel", "[json_orders]") {
@@ -114,32 +90,8 @@ TEST_CASE("coin_m_perpetual_cancel", "[json_orders]") {
                  R"("self-match-prevent":1,)"
                  R"("canceled_source":"api")"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Orders obj{message, buffers};
-  CHECK(obj.op == "notify"sv);
-  // parser
-  struct Handler final : public json::Parser2::Handler {
-    void operator()(Trace<json::Close> const &) override { FAIL(); }
-    void operator()(Trace<json::Error2> const &) override { FAIL(); }
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Auth> const &) override { FAIL(); }
-    void operator()(Trace<json::Sub> const &) override { FAIL(); }
-    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
-    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
-    void operator()(Trace<json::Positions> const &) override { FAIL(); }
-    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
-    void operator()(Trace<json::Orders> const &event) override {
-      found = true;
-      auto &[trace_info, orders] = event;
-      CHECK(orders.op == "notify"sv);
-    };
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) { CHECK(obj.op == "notify"sv); };
+  Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
 TEST_CASE("coin_m_perpetual_fill", "[json_orders]") {
@@ -191,30 +143,6 @@ TEST_CASE("coin_m_perpetual_fill", "[json_orders]") {
                  R"("self-match-prevent":1,)"
                  R"("canceled_source":null)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Orders obj{message, buffers};
-  CHECK(obj.op == "notify"sv);
-  // parser
-  struct Handler final : public json::Parser2::Handler {
-    void operator()(Trace<json::Close> const &) override { FAIL(); }
-    void operator()(Trace<json::Error2> const &) override { FAIL(); }
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Auth> const &) override { FAIL(); }
-    void operator()(Trace<json::Sub> const &) override { FAIL(); }
-    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
-    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
-    void operator()(Trace<json::Positions> const &) override { FAIL(); }
-    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
-    void operator()(Trace<json::Orders> const &event) override {
-      found = true;
-      auto &[trace_info, orders] = event;
-      CHECK(orders.op == "notify"sv);
-    };
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) { CHECK(obj.op == "notify"sv); };
+  Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }

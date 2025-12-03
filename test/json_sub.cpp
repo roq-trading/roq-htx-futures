@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx_futures/json/parser_2.hpp"
+#include "parser_2_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -12,6 +12,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::Sub;
+
 TEST_CASE("simple", "[json_sub]") {
   auto message = R"({)"
                  R"("op":"sub",)"
@@ -19,30 +21,6 @@ TEST_CASE("simple", "[json_sub]") {
                  R"("ts":1763808315805,)"
                  R"("err-code":0)"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Sub obj{message};
-  CHECK(obj.op == json::Operator::SUB);
-  // parser
-  struct Handler final : public json::Parser2::Handler {
-    void operator()(Trace<json::Close> const &) override { FAIL(); }
-    void operator()(Trace<json::Error2> const &) override { FAIL(); }
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Auth> const &) override { FAIL(); }
-    void operator()(Trace<json::Sub> const &event) override {
-      found = true;
-      auto &[trace_info, sub] = event;
-      CHECK(sub.op == json::Operator::SUB);
-    };
-    void operator()(Trace<json::FundingRate> const &) override { FAIL(); }
-    void operator()(Trace<json::Accounts> const &) override { FAIL(); }
-    void operator()(Trace<json::Positions> const &) override { FAIL(); }
-    void operator()(Trace<json::MatchOrders> const &) override { FAIL(); }
-    void operator()(Trace<json::Orders> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser2::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::SUB); };
+  Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }

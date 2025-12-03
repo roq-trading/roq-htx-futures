@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/account_info.hpp"
+#include "roq/htx_futures/json/account_info_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -14,8 +14,10 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::AccountInfoAck;
+
 // note! reduced
-TEST_CASE("usdt_m_futures_isolated", "[json_account_info]") {
+TEST_CASE("usdt_m_futures_isolated", "[json_account_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -64,13 +66,14 @@ TEST_CASE("usdt_m_futures_isolated", "[json_account_info]") {
                  R"(],)"
                  R"("ts":1763789883167)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 2};
-  json::AccountInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
 // note! reduced
-TEST_CASE("usdt_m_futures_cross", "[json_account_info]") {
+TEST_CASE("usdt_m_futures_cross", "[json_account_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -186,13 +189,14 @@ TEST_CASE("usdt_m_futures_cross", "[json_account_info]") {
                  R"("margin_available":null}],)"
                  R"("ts":1763790034025)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 2};
-  json::AccountInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
 // note! reduced
-TEST_CASE("coin_m_delivery", "[json_account_info]") {
+TEST_CASE("coin_m_delivery", "[json_account_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -233,13 +237,14 @@ TEST_CASE("coin_m_delivery", "[json_account_info]") {
                  R"(],)"
                  R"("ts":1763789777212)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 2};
-  json::AccountInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
 // note! reduced
-TEST_CASE("coin_m_perpetual", "[json_account_info]") {
+TEST_CASE("coin_m_perpetual", "[json_account_info_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -278,7 +283,8 @@ TEST_CASE("coin_m_perpetual", "[json_account_info]") {
                  R"(],)"
                  R"("ts":1763789609949)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 2};
-  json::AccountInfo obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
