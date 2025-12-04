@@ -16,6 +16,18 @@
     },
     {
       "name": "orders"
+    },
+    {
+      "name": "accounts_cross"
+    },
+    {
+      "name": "positions_cross"
+    },
+    {
+      "name": "matchOrders_cross"
+    },
+    {
+      "name": "orders_cross"
     }
   ]
 }

@@ -4,6 +4,9 @@ account_info_ack_data_item_contract_detail_item.hpp
 account_info_ack_data_item_futures_contract_detail_item.hpp
 account_info_ack_data_item.hpp
 account_info_ack.hpp
+accounts_cross_data_item_contract_detail_item.hpp
+accounts_cross_data_item.hpp
+accounts_cross.hpp
 accounts_data_item.hpp
 accounts.hpp
 auth_data.hpp
@@ -17,6 +20,7 @@ cancel_all_orders_ack.hpp
 cancel_order_ack_data.hpp
 cancel_order_ack.hpp
 close.hpp
+close_2.hpp
 contract_info_ack_data_item.hpp
 contract_info_ack.hpp
 depth.hpp
@@ -36,6 +40,7 @@ index.hpp
 index_tick.hpp
 margin_mode.hpp
 match_orders.hpp
+match_orders_cross.hpp
 match_orders_trade_item.hpp
 offset.hpp
 open_orders_ack_data.hpp
@@ -44,11 +49,14 @@ open_orders_ack.hpp
 operator.hpp
 order_price_type.hpp
 orders.hpp
+orders_cross.hpp
 orders_trade_item.hpp
 ping.hpp
 place_order_ack_data.hpp
 place_order_ack.hpp
 position_mode.hpp
+positions_cross_data_item.hpp
+positions_cross.hpp
 positions_data_item.hpp
 positions.hpp
 premium_index.hpp
@@ -70,6 +78,9 @@ account_info_ack_data_item_contract_detail_item.cpp
 account_info_ack_data_item_futures_contract_detail_item.cpp
 account_info_ack_data_item.cpp
 account_info_ack.cpp
+accounts_cross_data_item_contract_detail_item.cpp
+accounts_cross_data_item.cpp
+accounts_cross.cpp
 accounts_data_item.cpp
 accounts.cpp
 auth_data.cpp
@@ -83,6 +94,7 @@ cancel_all_orders_ack.cpp
 cancel_order_ack_data.cpp
 cancel_order_ack.cpp
 close.cpp
+close_2.cpp
 contract_info_ack_data_item.cpp
 contract_info_ack.cpp
 depth.cpp
@@ -102,6 +114,7 @@ index.cpp
 index_tick.cpp
 margin_mode.cpp
 match_orders.cpp
+match_orders_cross.cpp
 match_orders_trade_item.cpp
 offset.cpp
 open_orders_ack_data.cpp
@@ -110,11 +123,14 @@ open_orders_ack.cpp
 operator.cpp
 order_price_type.cpp
 orders.cpp
+orders_cross.cpp
 orders_trade_item.cpp
 ping.cpp
 place_order_ack_data.cpp
 place_order_ack.cpp
 position_mode.cpp
+positions_cross_data_item.cpp
+positions_cross.cpp
 positions_data_item.cpp
 positions.cpp
 premium_index.cpp

@@ -18,6 +18,11 @@
     {
       "name": "total_size",
       "type": "std/int32"
+    },
+    {
+      "name": "exceed_limit",
+      "type": "std/bool",
+      "comment": "usdt-m"
     }
   ]
 }

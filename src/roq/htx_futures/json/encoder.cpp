@@ -104,14 +104,28 @@ std::string_view Encoder::cancel_all_orders(
 // WS
 
 std::string_view Encoder::create_order_ws(
-    std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
+    std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id, MarginMode margin_mode) {
+  auto op = [&]() -> std::string_view {
+    switch (margin_mode) {
+      using enum MarginMode;
+      case UNDEFINED:
+        break;
+      case ISOLATED:
+        return "create_order"sv;
+      case CROSS:
+        return "create_cross_order"sv;
+      case PORTFOLIO:
+        break;
+    }
+    log::fatal("Unexpected"sv);
+  }();
   buffer.clear();
   auto direction = map(create_order.side).template get<json::Direction>();
   auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"
-      R"("op":"create_order",)"
+      R"("op":"{}",)"
       R"("cid":"{}:{}:1",)"
       R"("data":{{)"
       R"("contract_code":"{}",)"
@@ -119,6 +133,7 @@ std::string_view Encoder::create_order_ws(
       R"("direction":"{}",)"
       R"("order_price_type":"{}",)"
       R"("volume":"{}")"sv,
+      op,
       OP_CREATE_ORDER,
       request_id,
       create_order.symbol,
@@ -150,15 +165,31 @@ std::string_view Encoder::cancel_order_ws(
     CancelOrder const &cancel_order,
     server::oms::Order const &order,
     std::string_view const &request_id,
-    [[maybe_unused]] std::string_view const &previous_request_id) {
+    [[maybe_unused]] std::string_view const &previous_request_id,
+    MarginMode margin_mode) {
+  auto op = [&]() -> std::string_view {
+    switch (margin_mode) {
+      using enum MarginMode;
+      case UNDEFINED:
+        break;
+      case ISOLATED:
+        return "cancel"sv;
+      case CROSS:
+        return "cross_cancel"sv;
+      case PORTFOLIO:
+        break;
+    }
+    log::fatal("Unexpected"sv);
+  }();
   buffer.clear();
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"
-      R"("op":"cancel",)"
+      R"("op":"{}",)"
       R"("cid":"{}:{}:{}",)"
       R"("data":{{)"
       R"("contract_code":"{}")"sv,
+      op,
       OP_CANCEL_ORDER,
       request_id,
       cancel_order.version,
@@ -176,17 +207,32 @@ std::string_view Encoder::cancel_order_ws(
 }
 
 std::string_view Encoder::cancel_all_orders_ws(
-    std::string &buffer, CancelAllOrders const &, std::string_view const &request_id, std::string_view const &symbol) {
+    std::string &buffer, CancelAllOrders const &, std::string_view const &request_id, std::string_view const &symbol, MarginMode margin_mode) {
+  auto op = [&]() -> std::string_view {
+    switch (margin_mode) {
+      using enum MarginMode;
+      case UNDEFINED:
+        break;
+      case ISOLATED:
+        return "cancelall"sv;
+      case CROSS:
+        return "cross_cancelall"sv;
+      case PORTFOLIO:
+        break;
+    }
+    log::fatal("Unexpected"sv);
+  }();
   buffer.clear();
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"
-      R"("op":"cancelall",)"
+      R"("op":"{}",)"
       R"("cid":"{}:{}:0",)"
       R"("data":{{)"
       R"("contract_code":"{}")"
       R"(}})"
       R"(}})"sv,
+      op,
       OP_CANCEL_ALL_ORDERS,
       request_id,
       symbol);

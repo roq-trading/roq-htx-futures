@@ -231,6 +231,7 @@ void WebSocket2::send_pong(std::chrono::milliseconds timestamp) {
 
 void WebSocket2::parse(std::string_view const &message) {
   profile_.parse([&]() {
+    log::info<5>(R"(message="{}")"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
@@ -244,7 +245,7 @@ void WebSocket2::parse(std::string_view const &message) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Close> const &) {
+void WebSocket2::operator()(Trace<json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
@@ -261,6 +262,7 @@ void WebSocket2::operator()(Trace<json::Error2> const &) {
 void WebSocket2::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
+    log::warn("ping={}"sv, ping);
     log::info<4>("trace_info={}, ping={}"sv, trace_info, ping);
     send_pong(ping.timestamp);
   });
@@ -327,6 +329,22 @@ void WebSocket2::operator()(Trace<json::MatchOrders> const &) {
 }
 
 void WebSocket2::operator()(Trace<json::Orders> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::AccountsCross> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::PositionsCross> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::MatchOrdersCross> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket2::operator()(Trace<json::OrdersCross> const &) {
   log::fatal("Unexpected"sv);
 }
 

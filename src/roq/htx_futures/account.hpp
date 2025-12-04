@@ -7,6 +7,8 @@
 #include <string_view>
 #include <utility>
 
+#include "roq/margin_mode.hpp"
+
 #include "roq/htx_futures/config.hpp"
 
 #include "roq/htx_futures/tools/crypto.hpp"
@@ -15,7 +17,7 @@ namespace roq {
 namespace htx_futures {
 
 struct Account final {
-  Account(Config const &, std::string_view const &name, roq::io::web::URI const &uri);
+  Account(Config const &, std::string_view const &name, MarginMode, roq::io::web::URI const &uri);
 
   Account(Account const &) = delete;
 
@@ -26,6 +28,7 @@ struct Account final {
   std::string_view create_query(web::http::Method, std::string_view const &path, std::chrono::seconds now_utc);
 
   std::string const name;
+  MarginMode const margin_mode;
 
  private:
   tools::Crypto crypto_;

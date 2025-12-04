@@ -19,11 +19,27 @@ struct API final {
     bool has_funding_rate = {};
   } market_data;
   struct {
+    MarginMode default_margin_mode = {};
+    // isolated
     std::string_view account_info = {};
     std::string_view open_orders = {};
     std::string_view place_order = {};
     std::string_view cancel_order = {};
     std::string_view cancel_all_orders = {};
+    std::string_view topic_accounts = {};
+    std::string_view topic_positions = {};
+    std::string_view topic_match_orders = {};
+    std::string_view topic_orders = {};
+    // cross
+    std::string_view account_info_cross = {};
+    std::string_view open_orders_cross = {};
+    std::string_view place_order_cross = {};
+    std::string_view cancel_order_cross = {};
+    std::string_view cancel_all_orders_cross = {};
+    std::string_view topic_accounts_cross = {};
+    std::string_view topic_positions_cross = {};
+    std::string_view topic_match_orders_cross = {};
+    std::string_view topic_orders_cross = {};
   } order_management;
 
   // factory

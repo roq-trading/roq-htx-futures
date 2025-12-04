@@ -89,12 +89,12 @@ struct Gateway final : public server::Handler,
 
  private:
   server::Dispatcher &dispatcher_;
-  // accounts
-  utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
   // io
   io::Context &context_;
   // shared
   Shared shared_;
+  // accounts
+  utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
   // seed
   uint16_t stream_id_ = {};
   // streams

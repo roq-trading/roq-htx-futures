@@ -133,7 +133,7 @@ void OrderEntryWS::operator()(metrics::Writer &writer) const {
 uint16_t OrderEntryWS::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
   profile_.create_order([&]() {
     auto &[message_info, create_order] = event;
-    auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, request_id);
+    auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
     log::warn(R"(DEBUG message="{}")"sv, message);
     (*connection_).send_text(message);
@@ -154,7 +154,7 @@ uint16_t OrderEntryWS::operator()(
     Event<CancelOrder> const &event, server::oms::Order const &order, std::string_view const &request_id, std::string_view const &previous_request_id) {
   profile_.cancel_order([&]() {
     auto &[message_info, cancel_order] = event;
-    auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, request_id, previous_request_id);
+    auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, request_id, previous_request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
     log::warn(R"(DEBUG message="{}")"sv, message);
     (*connection_).send_text(message);
@@ -166,7 +166,7 @@ uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::stri
   profile_.cancel_all_orders([&]() {
     auto &[message_info, cancel_all_orders] = event;
     auto helper = [&](auto &symbol) {
-      auto message = json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol);
+      auto message = json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol, account_.margin_mode);
       log::info<2>(R"(message="{}")"sv, message);
       log::warn(R"(DEBUG message="{}")"sv, message);
       (*connection_).send_text(message);

@@ -1,0 +1,173 @@
+{
+  "name": "roq/htx_futures/json/OrdersCross",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "contract_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "pair",
+      "type": "std/string_view"
+    },
+    {
+      "name": "business_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "op",
+      "type": "roq/htx_futures/json/Operator"
+    },
+    {
+      "name": "topic",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "volume",
+      "type": "std/double"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "order_price_type",
+      "type": "roq/htx_futures/json/OrderPriceType"
+    },
+    {
+      "name": "direction",
+      "type": "roq/htx_futures/json/Direction"
+    },
+    {
+      "name": "offset",
+      "type": "roq/htx_futures/json/Offset"
+    },
+    {
+      "name": "status",
+      "type": "std/int32"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "order_id_str",
+      "type": "std/string_view"
+    },
+    {
+      "name": "client_order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "order_source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "order_type",
+      "type": "std/int32"
+    },
+    {
+      "name": "created_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "trade_volume",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_turnover",
+      "type": "std/double"
+    },
+    {
+      "name": "fee",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_avg_price",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "profit",
+      "type": "std/double"
+    },
+    {
+      "name": "trade"
+    },
+    {
+      "name": "canceled_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "fee_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "uid",
+      "type": "std/string_view"
+    },
+    {
+      "name": "liquidation_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_mode",
+      "type": "roq/htx_futures/json/MarginMode"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view"
+    },
+    {
+      "name": "is_tpsl",
+      "type": "std/int32"
+    },
+    {
+      "name": "real_profit",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    },
+    {
+      "name": "reduce_only",
+      "type": "std/int32"
+    },
+    {
+      "name": "self-match-prevent",
+      "type": "std/int32"
+    },
+    {
+      "name": "self_match_prevent_new",
+      "type": "std/string_view"
+    },
+    {
+      "name": "canceled_source",
+      "type": "std/string_view"
+    }
+  ]
+}

@@ -124,6 +124,72 @@
     {
       "name": "sl_trigger_price",
       "type": "std/double"
+    },
+    {
+      "raw": "updateTime",
+      "name": "updateTime2",
+      "type": "std/milliseconds",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "business_type",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "contract_type",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "pair",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "remark2",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "fee_amount",
+      "type": "std/double",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "fee_quote_amount",
+      "type": "std/double",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "margin_asset",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "margin_mode",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "reduce_only",
+      "type": "std/int32",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "self_match_prevent_new",
+      "type": "std/string_view",
+      "comment": "usdt-m"
     }
   ]
 }

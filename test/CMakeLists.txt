@@ -6,6 +6,7 @@ set(SOURCES
     crypto.cpp
     json_account_info_ack.cpp
     json_accounts.cpp
+    json_accounts_cross.cpp
     json_auth.cpp
     json_basis.cpp
     json_bbo.cpp
@@ -17,10 +18,13 @@ set(SOURCES
     json_error_2.cpp
     json_funding_rate.cpp
     json_match_orders.cpp
+    json_match_orders_cross.cpp
     json_open_orders_ack.cpp
     json_orders.cpp
+    json_orders_cross.cpp
     json_place_order_ack.cpp
     json_positions.cpp
+    json_positions_cross.cpp
     json_premium_index.cpp
     json_subbed.cpp
     json_sub.cpp

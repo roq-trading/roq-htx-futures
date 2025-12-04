@@ -20,6 +20,11 @@
       "type": "std/bool",
       "default": false,
       "description": "Use WebSocket API?"
+    },
+    {
+      "name": "margin_mode",
+      "type": "std/string",
+      "description": "Margin-mode to use when account margin-mode has not been configured"
     }
   ]
 }

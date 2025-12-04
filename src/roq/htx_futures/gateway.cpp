@@ -26,11 +26,30 @@ namespace htx_futures {
 
 namespace {
 template <typename R>
-R create_accounts(auto &config, auto &settings) {
+R create_accounts(auto &config, auto &settings, auto &api) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
-    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, settings.ws.order_uri));
+    auto margin_mode = [&]() -> MarginMode {
+      if (account.margin_mode != MarginMode{}) {
+        return account.margin_mode;
+      }
+      if (settings.margin_mode != MarginMode{}) {
+        return settings.margin_mode;
+      }
+      return api.order_management.default_margin_mode;
+    }();
+    switch (margin_mode) {
+      using enum MarginMode;
+      case UNDEFINED:
+        log::fatal(R"(Unexpected: no margin_mode for account name="{}")"sv, account.name);
+      case ISOLATED:
+      case CROSS:
+        break;
+      case PORTFOLIO:
+        log::fatal("Unexpected: exchange does not support margin_mode={}"sv, margin_mode);
+    }
+    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, margin_mode, settings.ws.order_uri));
   }
   return result;
 }
@@ -73,7 +92,7 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
-    : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config, settings)}, context_{context}, shared_{dispatcher, settings},
+    : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher, settings}, accounts_{create_accounts<decltype(accounts_)>(config, settings, shared_.api)},
       rest_{*this, context_, ++stream_id_, shared_},
       order_entry_rest_{create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       order_entry_ws_{create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},

@@ -45,9 +45,14 @@ constexpr auto extract_topic_helper(std::string_view const &topic) {
 }
 
 static_assert(extract_topic_helper("public.BTC-USDT.funding_rate"sv) == "funding_rate"sv);
+//
 static_assert(extract_topic_helper("accounts"sv) == "accounts"sv);
 static_assert(extract_topic_helper("positions"sv) == "positions"sv);
 static_assert(extract_topic_helper("matchOrders.btc-usd"sv) == "matchOrders"sv);
+//
+static_assert(extract_topic_helper("accounts_cross"sv) == "accounts_cross"sv);
+static_assert(extract_topic_helper("positions_cross"sv) == "positions_cross"sv);
+static_assert(extract_topic_helper("matchOrders_cross.btc-usd"sv) == "matchOrders_cross"sv);
 
 auto extract_topic(std::string_view const &topic) {
   auto tmp = extract_topic_helper(topic);
@@ -76,7 +81,7 @@ bool Parser2::dispatch(
           case UNKNOWN_INTERNAL:
             break;
           case CLOSE:
-            result = dispatch_helper<Close>(handler, message, buffer_stack, trace_info);
+            result = dispatch_helper<Close2>(handler, message, buffer_stack, trace_info);
             break;
           case ERROR:
             result = dispatch_helper<Error2>(handler, message, buffer_stack, trace_info);
@@ -106,6 +111,7 @@ bool Parser2::dispatch(
           case FUNDING_RATE:
             result = dispatch_helper<FundingRate>(handler, message, buffer_stack, trace_info);
             break;
+            //
           case ACCOUNTS:
             result = dispatch_helper<Accounts>(handler, message, buffer_stack, trace_info);
             break;
@@ -117,6 +123,19 @@ bool Parser2::dispatch(
             break;
           case ORDERS:
             result = dispatch_helper<Orders>(handler, message, buffer_stack, trace_info);
+            break;
+            //
+          case ACCOUNTS_CROSS:
+            result = dispatch_helper<AccountsCross>(handler, message, buffer_stack, trace_info);
+            break;
+          case POSITIONS_CROSS:
+            result = dispatch_helper<PositionsCross>(handler, message, buffer_stack, trace_info);
+            break;
+          case MATCH_ORDERS_CROSS:
+            result = dispatch_helper<MatchOrdersCross>(handler, message, buffer_stack, trace_info);
+            break;
+          case ORDERS_CROSS:
+            result = dispatch_helper<OrdersCross>(handler, message, buffer_stack, trace_info);
             break;
         }
         return true;

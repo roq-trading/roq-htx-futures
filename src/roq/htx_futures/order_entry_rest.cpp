@@ -224,7 +224,20 @@ void OrderEntryREST::open_orders() {
   profile_.open_orders([&]() {
     auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::POST;
-    auto path = shared_.api.order_management.open_orders;
+    auto path = [&]() -> std::string_view {
+      switch (account_.margin_mode) {
+        using enum MarginMode;
+        case UNDEFINED:
+          break;
+        case ISOLATED:
+          return shared_.api.order_management.open_orders;
+        case CROSS:
+          return shared_.api.order_management.open_orders_cross;
+        case PORTFOLIO:
+          break;
+      }
+      log::fatal("Unexpected"sv);
+    }();
     auto query = account_.create_query(method, path, now_utc);
     auto request = web::rest::Request{
         .method = method,
@@ -333,7 +346,20 @@ void OrderEntryREST::create_order(Event<CreateOrder> const &event, server::oms::
     auto &[message_info, create_order] = event;
     auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::POST;
-    auto path = shared_.api.order_management.place_order;
+    auto path = [&]() -> std::string_view {
+      switch (account_.margin_mode) {
+        using enum MarginMode;
+        case UNDEFINED:
+          break;
+        case ISOLATED:
+          return shared_.api.order_management.place_order;
+        case CROSS:
+          return shared_.api.order_management.place_order_cross;
+        case PORTFOLIO:
+          break;
+      }
+      log::fatal("Unexpected"sv);
+    }();
     auto query = account_.create_query(method, path, now_utc);
     auto body = json::Encoder::create_order(encode_buffer_, create_order, order, request_id);
     auto request = web::rest::Request{
@@ -410,7 +436,20 @@ void OrderEntryREST::cancel_order(
     auto &[message_info, cancel_order] = event;
     auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::POST;
-    auto path = shared_.api.order_management.cancel_order;
+    auto path = [&]() -> std::string_view {
+      switch (account_.margin_mode) {
+        using enum MarginMode;
+        case UNDEFINED:
+          break;
+        case ISOLATED:
+          return shared_.api.order_management.cancel_order;
+        case CROSS:
+          return shared_.api.order_management.cancel_order_cross;
+        case PORTFOLIO:
+          break;
+      }
+      log::fatal("Unexpected"sv);
+    }();
     auto query = account_.create_query(method, path, now_utc);
     auto body = json::Encoder::cancel_order(encode_buffer_, cancel_order, order, request_id, previous_request_id);
     auto request = web::rest::Request{
@@ -508,7 +547,20 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
     auto helper = [&](auto const &symbol) {
       auto now_utc = clock::get_realtime<std::chrono::seconds>();
       auto method = web::http::Method::POST;
-      auto path = shared_.api.order_management.cancel_all_orders;
+      auto path = [&]() -> std::string_view {
+        switch (account_.margin_mode) {
+          using enum MarginMode;
+          case UNDEFINED:
+            break;
+          case ISOLATED:
+            return shared_.api.order_management.cancel_all_orders;
+          case CROSS:
+            return shared_.api.order_management.cancel_all_orders_cross;
+          case PORTFOLIO:
+            break;
+        }
+        log::fatal("Unexpected"sv);
+      }();
       auto query = account_.create_query(method, path, now_utc);
       auto body = json::Encoder::cancel_all_orders(encode_buffer_, cancel_all_orders, request_id, symbol);
       log::info<2>(R"(body="{}")"sv, body);

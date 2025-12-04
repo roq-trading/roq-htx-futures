@@ -68,7 +68,7 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
 
   void parse(std::string_view const &message);
 
-  void operator()(Trace<json::Close> const &) override;
+  void operator()(Trace<json::Close2> const &) override;
   void operator()(Trace<json::Error2> const &) override;
   void operator()(Trace<json::Ping> const &) override;
   void operator()(Trace<json::Auth> const &) override;
@@ -78,6 +78,10 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   void operator()(Trace<json::Positions> const &) override;
   void operator()(Trace<json::MatchOrders> const &) override;
   void operator()(Trace<json::Orders> const &) override;
+  void operator()(Trace<json::AccountsCross> const &) override;
+  void operator()(Trace<json::PositionsCross> const &) override;
+  void operator()(Trace<json::MatchOrdersCross> const &) override;
+  void operator()(Trace<json::OrdersCross> const &) override;
 
  private:
   Handler &handler_;

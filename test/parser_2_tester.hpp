@@ -29,7 +29,7 @@ struct Parser2Tester final : public json::Parser2::Handler {
  protected:
   explicit Parser2Tester(callback_type const &callback) : callback_{callback} {}
 
-  void operator()(Trace<json::Close> const &event) override { dispatch(event); }
+  void operator()(Trace<json::Close2> const &event) override { dispatch(event); }
   void operator()(Trace<json::Error2> const &event) override { dispatch(event); }
   void operator()(Trace<json::Ping> const &event) override { dispatch(event); }
   void operator()(Trace<json::Auth> const &event) override { dispatch(event); }
@@ -39,6 +39,10 @@ struct Parser2Tester final : public json::Parser2::Handler {
   void operator()(Trace<json::Positions> const &event) override { dispatch(event); }
   void operator()(Trace<json::MatchOrders> const &event) override { dispatch(event); }
   void operator()(Trace<json::Orders> const &event) override { dispatch(event); }
+  void operator()(Trace<json::AccountsCross> const &event) override { dispatch(event); }
+  void operator()(Trace<json::PositionsCross> const &event) override { dispatch(event); }
+  void operator()(Trace<json::MatchOrdersCross> const &event) override { dispatch(event); }
+  void operator()(Trace<json::OrdersCross> const &event) override { dispatch(event); }
 
   template <typename U>
   void dispatch(Trace<U> const &event) {

@@ -4,6 +4,8 @@
 
 #include <fmt/format.h>
 
+#include "roq/margin_mode.hpp"
+
 #include "roq/server/flags/settings.hpp"
 
 #include "roq/htx_futures/flags/flags.hpp"
@@ -19,6 +21,7 @@ struct Settings final : public server::flags::Settings {
 
   std::string_view exchange;
   bool ws_api = {};
+  MarginMode margin_mode;
 
   flags::Misc misc;
   flags::REST rest;
@@ -41,6 +44,7 @@ struct fmt::formatter<roq::htx_futures::Settings> {
         R"({{)"
         R"(exchange="{}", )"
         R"(ws_api={}, )"
+        R"(margin_mode={}, )"
         R"(misc={}, )"
         R"(rest={}, )"
         R"(ws={}, )"
@@ -48,6 +52,7 @@ struct fmt::formatter<roq::htx_futures::Settings> {
         R"(}})"sv,
         value.exchange,
         value.ws_api,
+        value.margin_mode,
         value.misc,
         value.rest,
         value.ws,
