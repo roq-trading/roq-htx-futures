@@ -280,10 +280,17 @@ void OrderEntryWS::parse(std::string_view const &message) {
 
 // json::Parser3::Handler
 
-void OrderEntryWS::operator()(Trace<json::Close> const &) {
+void OrderEntryWS::operator()(Trace<json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
+  });
+}
+
+void OrderEntryWS::operator()(Trace<json::Error2> const &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::error("error={}"sv, error);
   });
 }
 

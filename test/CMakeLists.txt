@@ -16,6 +16,7 @@ set(SOURCES
     json_depth.cpp
     json_detail.cpp
     json_error_2.cpp
+    json_error_3.cpp
     json_funding_rate.cpp
     json_match_orders.cpp
     json_match_orders_cross.cpp

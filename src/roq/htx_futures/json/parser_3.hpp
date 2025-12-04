@@ -9,7 +9,8 @@
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/htx_futures/json/auth.hpp"
-#include "roq/htx_futures/json/close.hpp"
+#include "roq/htx_futures/json/close_2.hpp"
+#include "roq/htx_futures/json/error_2.hpp"
 #include "roq/htx_futures/json/ping.hpp"
 
 #include "roq/htx_futures/json/response.hpp"
@@ -20,7 +21,8 @@ namespace json {
 
 struct Parser3 final {
   struct Handler {
-    virtual void operator()(Trace<Close> const &) = 0;
+    virtual void operator()(Trace<Close2> const &) = 0;
+    virtual void operator()(Trace<Error2> const &) = 0;
     virtual void operator()(Trace<Ping> const &) = 0;
     virtual void operator()(Trace<Auth> const &) = 0;
     virtual void operator()(Trace<Response> const &) = 0;

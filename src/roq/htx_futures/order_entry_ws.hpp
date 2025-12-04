@@ -72,7 +72,8 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
 
   // json::Parser3::Handler
 
-  void operator()(Trace<json::Close> const &) override;
+  void operator()(Trace<json::Close2> const &) override;
+  void operator()(Trace<json::Error2> const &) override;
   void operator()(Trace<json::Ping> const &) override;
   void operator()(Trace<json::Auth> const &) override;
   void operator()(Trace<json::Response> const &) override;

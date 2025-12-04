@@ -53,10 +53,10 @@ bool Parser3::dispatch(
           case UNKNOWN_INTERNAL:
             break;
           case CLOSE:
-            result = dispatch_helper<Close>(handler, message, buffer_stack, trace_info);
+            result = dispatch_helper<Close2>(handler, message, buffer_stack, trace_info);
             break;
           case ERROR:
-            // result = dispatch_helper<Error2>(handler, message, buffer_stack, trace_info);
+            result = dispatch_helper<Error2>(handler, message, buffer_stack, trace_info);
             break;
           case PING:
             result = dispatch_helper<Ping>(handler, message, buffer_stack, trace_info);
