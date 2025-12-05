@@ -28,7 +28,7 @@
       "name": "order2_uri",
       "type": "roq/io/web/URI",
       "validator": "roq/core/flags/URI",
-      "default": "wss://api.hbdm.com/notification",
+      "default": "wss://api.hbdm.com/trade",
       "description": "Exchange end-point"
     },
     {

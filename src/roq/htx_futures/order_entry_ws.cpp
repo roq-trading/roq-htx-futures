@@ -29,7 +29,9 @@ namespace {
 auto const NAME = "om"sv;
 
 auto const SUPPORTS = Mask{
-    SupportType::FUNDS,
+    SupportType::CREATE_ORDER,
+    SupportType::CANCEL_ORDER,
+    SupportType::ORDER_ACK,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
