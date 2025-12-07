@@ -57,6 +57,8 @@ struct Rest final : public web::rest::Client::Handler {
   void operator()(metrics::Writer &) const;
 
  protected:
+  // web::rest::Client::Handler
+
   void operator()(Trace<web::rest::Client::Connected> const &) override;
   void operator()(Trace<web::rest::Client::Disconnected> const &) override;
   void operator()(Trace<web::rest::Client::Latency> const &) override;
@@ -65,9 +67,13 @@ struct Rest final : public web::rest::Client::Handler {
 
   uint32_t download(RestState);
 
+  // contract-info
+
   void get_contract_info();
   void get_contract_info_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<json::ContractInfoAck> const &);
+
+  // helpers
 
   template <typename SuccessHandler, typename ErrorHandler>
   void process_response(web::rest::Response const &, SuccessHandler, ErrorHandler);

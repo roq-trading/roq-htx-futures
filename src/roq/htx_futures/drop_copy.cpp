@@ -314,7 +314,7 @@ void DropCopy::operator()(Trace<json::FundingRate> const &) {
 void DropCopy::operator()(Trace<json::Accounts> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, accounts] = event;
-    log::warn("DEBUG accounts={}"sv, accounts);
+    log::info<2>("accounts={}"sv, accounts);
     auto update_type = map(accounts.event).template get<UpdateType>();
     for (auto &item : accounts.data) {
       auto funds_update = FundsUpdate{
@@ -415,7 +415,6 @@ void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
         .update_type = UpdateType::INCREMENTAL,
         .sending_time_utc = match_orders.ts,
     };
-    log::warn("DEBUG order_update={}"sv, order_update);
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
@@ -479,7 +478,6 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
         .update_type = UpdateType::INCREMENTAL,
         .sending_time_utc = orders.ts,
     };
-    log::warn("DEBUG order_update={}"sv, order_update);
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
@@ -502,7 +500,7 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
 void DropCopy::operator()(Trace<json::AccountsCross> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, accounts] = event;
-    log::warn("DEBUG accounts={}"sv, accounts);
+    log::info<2>("accounts={}"sv, accounts);
     auto update_type = map(accounts.event).template get<UpdateType>();
     for (auto &item : accounts.data) {
       for (auto &item_2 : item.contract_detail) {
@@ -605,7 +603,6 @@ void DropCopy::operator()(Trace<json::MatchOrdersCross> const &event) {
         .update_type = UpdateType::INCREMENTAL,
         .sending_time_utc = match_orders.ts,
     };
-    log::warn("DEBUG order_update={}"sv, order_update);
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
@@ -671,7 +668,6 @@ void DropCopy::operator()(Trace<json::OrdersCross> const &event) {
         .update_type = UpdateType::INCREMENTAL,
         .sending_time_utc = orders.ts,
     };
-    log::warn("DEBUG order_update={}"sv, order_update);
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;

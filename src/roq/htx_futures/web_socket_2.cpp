@@ -262,8 +262,7 @@ void WebSocket2::operator()(Trace<json::Error2> const &) {
 void WebSocket2::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
-    log::warn("ping={}"sv, ping);
-    log::info<4>("trace_info={}, ping={}"sv, trace_info, ping);
+    log::info<4>("ping={}"sv, ping);
     send_pong(ping.timestamp);
   });
 }
@@ -284,7 +283,7 @@ void WebSocket2::operator()(Trace<json::Sub> const &event) {
 void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
   profile_.funding_rate([&]() {
     auto &[trace_info, funding_rate] = event;
-    log::info<3>("trace_info={}, funding_rate={}"sv, trace_info, funding_rate);
+    log::info<3>("funding_rate={}"sv, funding_rate);
     for (auto &item : funding_rate.data) {
       auto symbol = item.contract_code;
       auto statistics = std::array<Statistics, 2>{{

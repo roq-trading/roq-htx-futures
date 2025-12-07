@@ -145,6 +145,8 @@ void Rest::operator()(ConnectionStatus status) {
   }
 }
 
+// web::rest::Client::Handler
+
 void Rest::operator()(Trace<web::rest::Client::Connected> const &) {
   if (download_.downloading()) {
     download_.bump();
@@ -197,7 +199,7 @@ uint32_t Rest::download(RestState state) {
   return {};
 }
 
-// contract info
+// contract-info
 
 void Rest::get_contract_info() {
   profile_.contract_info([&]() {
@@ -313,6 +315,8 @@ void Rest::operator()(Trace<json::ContractInfoAck> const &event) {
     log::info("Symbols {} / {}"sv, counter, std::size(contract_info_ack.data));
   }
 }
+
+// helpers
 
 template <typename SuccessHandler, typename ErrorHandler>
 void Rest::process_response(web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {

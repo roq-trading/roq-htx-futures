@@ -157,6 +157,8 @@ uint16_t OrderEntryREST::operator()(Event<CancelAllOrders> const &event, std::st
   return stream_id_;
 }
 
+// web::rest::client::Handler
+
 void OrderEntryREST::operator()(Trace<web::rest::Client::Connected> const &) {
   download_.begin();
   (*this)(ConnectionStatus::DOWNLOADING);
@@ -249,7 +251,7 @@ void OrderEntryREST::open_orders() {
         .body = {},
         .quality_of_service = {},
     };
-    log::warn("DEBUG request={}"sv, request);
+    log::info<2>("DEBUG request={}"sv, request);
     auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -269,7 +271,6 @@ void OrderEntryREST::open_orders_ack(Trace<web::rest::Response> const &event) {
       }
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
       if (open_orders_ack.status == json::Status::OK) {
         Trace event_2{event, open_orders_ack};
@@ -329,8 +330,6 @@ void OrderEntryREST::operator()(Trace<json::OpenOrdersAck> const &event) {
         .update_type = UpdateType::SNAPSHOT,
         .sending_time_utc = open_orders_ack.ts,
     };
-    log::warn("DEBUG order_update={}"sv, order_update);
-    log::warn(R"(DEBUG client_order_id="{}")"sv, client_order_id);
     Trace event_2{trace_info, order_update};
     (*this)(event_2, client_order_id);
   }
@@ -372,7 +371,7 @@ void OrderEntryREST::create_order(Event<CreateOrder> const &event, server::oms::
         .body = body,
         .quality_of_service = {},
     };
-    log::warn("DEBUG request={}"sv, request);
+    log::info<2>("DEBUG request={}"sv, request);
     auto callback = [this, user_id = message_info.source, order_id = create_order.order_id]([[maybe_unused]] auto &request_id, auto &response) {
       uint32_t version = 1;
       TraceInfo trace_info;
@@ -402,7 +401,6 @@ void OrderEntryREST::create_order_ack(Trace<web::rest::Response> const &event, u
       (*this)(event_2, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      log::warn(R"(DEBUG body="{}")"sv, body);
       json::PlaceOrderAck create_order_ack{body, decode_buffer_};
       if (create_order_ack.err_code == 0) {
         Trace event_2{event, create_order_ack};
@@ -462,7 +460,7 @@ void OrderEntryREST::cancel_order(
         .body = body,
         .quality_of_service = {},
     };
-    log::warn("DEBUG request={}"sv, request);
+    log::info<2>("DEBUG request={}"sv, request);
     auto callback = [this, user_id = message_info.source, order_id = cancel_order.order_id, version = cancel_order.version](
                         [[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
@@ -492,7 +490,6 @@ void OrderEntryREST::cancel_order_ack(Trace<web::rest::Response> const &event, u
       (*this)(event_2, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      log::warn(R"(DEBUG body="{}")"sv, body);
       json::CancelOrderAck cancel_order_ack{body, decode_buffer_};
       if (cancel_order_ack.err_code == 0) {
         Trace event_2{event, cancel_order_ack};
@@ -509,7 +506,6 @@ void OrderEntryREST::operator()(
     Trace<json::CancelOrderAck> const &event, [[maybe_unused]] uint8_t user_id, [[maybe_unused]] uint64_t order_id, [[maybe_unused]] uint32_t version) {
   auto &[trace_info, cancel_order_ack] = event;
   log::info<2>("cancel_order_ack={}"sv, cancel_order_ack);
-  log::warn("DEBUG cancel_order_ack={}"sv, cancel_order_ack);
   // note! we don't get much info ==> drop
 }
 
@@ -574,7 +570,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
           .body = body,
           .quality_of_service = {},
       };
-      log::warn(R"(DEBUG request="{}")"sv, request);
+      log::info<2>(R"(DEBUG request="{}")"sv, request);
       auto callback = [this](auto &request_id, auto &response) {
         TraceInfo trace_info;
         Trace event{trace_info, response};
@@ -619,7 +615,6 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
       send_ack(origin, status, error, text);
     };
     auto handle_success = [&](auto &body) {
-      log::warn(R"(DEBUG body="{}")"sv, body);
       json::CancelAllOrdersAck cancel_all_orders_ack{body, decode_buffer_};
       if (cancel_all_orders_ack.err_code == 0) {
         Trace event_2{event, cancel_all_orders_ack};
@@ -635,7 +630,6 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
 void OrderEntryREST::operator()(Trace<json::CancelAllOrdersAck> const &event) {
   auto &[trace_info, cancel_all_orders_ack] = event;
   log::info<2>("cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
-  log::warn("DEBUG cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
   // note! no real information here
 }
 

@@ -137,7 +137,6 @@ uint16_t OrderEntryWS::operator()(Event<CreateOrder> const &event, server::oms::
     auto &[message_info, create_order] = event;
     auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
-    log::warn(R"(DEBUG message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
@@ -158,7 +157,6 @@ uint16_t OrderEntryWS::operator()(
     auto &[message_info, cancel_order] = event;
     auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, request_id, previous_request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
-    log::warn(R"(DEBUG message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
@@ -170,7 +168,6 @@ uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::stri
     auto helper = [&](auto &symbol) {
       auto message = json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol, account_.margin_mode);
       log::info<2>(R"(message="{}")"sv, message);
-      log::warn(R"(DEBUG message="{}")"sv, message);
       (*connection_).send_text(message);
     };
     if (shared_.dispatcher.get_all_order_symbols(helper, account_.name)) {
@@ -180,6 +177,8 @@ uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::stri
   });
   return stream_id_;
 }
+
+// web::socket::Client::Handler
 
 void OrderEntryWS::operator()(web::socket::Client::Connected const &) {
 }
@@ -317,9 +316,9 @@ void OrderEntryWS::operator()(Trace<json::Auth> const &event) {
 
 void OrderEntryWS::operator()(Trace<json::Response> const &event) {
   auto &[trace_info, response] = event;
-  log::warn("DEBUG response={}"sv, response);
+  log::info<2>("DEBUG response={}"sv, response);
   auto [request_type, request_id, version] = json::Encoder::split_cid(response.cid);
-  log::warn("DEBUG request_type={}, request_id={}, version={}"sv, request_type, request_id, version);
+  log::info<2>("DEBUG request_type={}, request_id={}, version={}"sv, request_type, request_id, version);
   if (response.status == json::Status::OK && std::empty(response.data.errors)) {
     return;
   }
