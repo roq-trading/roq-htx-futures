@@ -18,10 +18,6 @@ auto const API_USDT_M_FUTURES = API{
     .market_data{
         .get_contract_info = "/linear-swap-api/v1/swap_contract_info"sv,
         .market_depth = "depth.size_150.high_freq"sv,
-        .has_premium_index = false,
-        .has_estimated_rate = false,
-        .has_index = false,
-        .has_funding_rate = false,
     },
     .order_management{
         .default_margin_mode = MarginMode::CROSS,
@@ -52,10 +48,6 @@ auto const API_COIN_M_DELIVERY = API{
     .market_data{
         .get_contract_info = "/api/v1/contract_contract_info"sv,
         .market_depth = "depth.size_150.high_freq"sv,
-        .has_premium_index = true,
-        .has_estimated_rate = true,
-        .has_index = true,
-        .has_funding_rate = true,
     },
     .order_management{
         .default_margin_mode = MarginMode::ISOLATED,
@@ -86,10 +78,6 @@ auto const API_COIN_M_PERPETUAL = API{
     .market_data{
         .get_contract_info = "/swap-api/v1/swap_contract_info"sv,
         .market_depth = "depth.size_150.high_freq"sv,
-        .has_premium_index = true,
-        .has_estimated_rate = true,
-        .has_index = true,
-        .has_funding_rate = true,
     },
     .order_management{
         .default_margin_mode = MarginMode::ISOLATED,

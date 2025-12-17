@@ -196,9 +196,7 @@ void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
   if (std::empty(symbols)) {
     return;
   }
-  if (shared_.api.market_data.has_funding_rate) {
-    subscribe(symbols, "public"sv, "funding_rate"sv);
-  }
+  subscribe(symbols, "public"sv, "funding_rate"sv);
 }
 
 void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {

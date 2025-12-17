@@ -13,10 +13,6 @@ struct API final {
   struct {
     std::string_view get_contract_info;
     std::string_view market_depth;
-    bool has_premium_index = {};
-    bool has_estimated_rate = {};
-    bool has_index = {};
-    bool has_funding_rate = {};
   } market_data;
   struct {
     MarginMode default_margin_mode = {};

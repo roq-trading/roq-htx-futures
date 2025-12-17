@@ -316,36 +316,39 @@ void OrderEntryWS::operator()(Trace<json::Auth> const &event) {
 
 void OrderEntryWS::operator()(Trace<json::Response> const &event) {
   auto &[trace_info, response] = event;
-  log::info<2>("DEBUG response={}"sv, response);
+  log::info<2>("response={}"sv, response);
+  log::warn("DEBUG response={}"sv, response);
   auto [request_type, request_id, version] = json::Encoder::split_cid(response.cid);
-  log::info<2>("DEBUG request_type={}, request_id={}, version={}"sv, request_type, request_id, version);
-  if (response.status == json::Status::OK && std::empty(response.data.errors)) {
+  log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
+  if (request_type == RequestType::UNDEFINED) {  // note! cancel-all-orders
     return;
   }
-  if (request_type == RequestType{}) {  // note! cancel-all-orders
-    return;
-  }
-  auto [err_code, err_msg] = [&]() -> std::tuple<int32_t, std::string_view> {
+  // XXX FIXME TODO data.order_id_str => external_order_id
+  auto [request_status, error, text] = [&]() -> std::tuple<RequestStatus, Error, std::string_view> {
+    if (response.status == json::Status::OK) {
+      return {RequestStatus::ACCEPTED, {}, {}};
+    }
     if (std::empty(response.data.errors)) {
-      return {response.err_code, response.err_msg};
+      return {RequestStatus::REJECTED, json::guess_error(response.err_code), response.err_msg};
     }
     if (std::size(response.data.errors) == 1) {
       auto &error = response.data.errors[0];
-      return {error.err_code, error.err_msg};
+      return {RequestStatus::REJECTED, json::guess_error(error.err_code), error.err_msg};
     }
-    log::fatal("Unexpected: response={}"sv, response);
+    log::fatal("Unexpected: response={}"sv, response);  // note! more errors, why?
   }();
   auto response_2 = server::oms::Response{
       .request_type = request_type,
       .origin = Origin::EXCHANGE,
-      .request_status = RequestStatus::FAILED,
-      .error = json::guess_error(err_code),
-      .text = err_msg,
+      .request_status = request_status,
+      .error = error,
+      .text = text,
       .version = version,
       .request_id = request_id,
       .quantity = NaN,
       .price = NaN,
   };
+  log::warn("DEBUG response={}"sv, response_2);
   auto helper = []([[maybe_unused]] auto &order) {};
   if (shared_.update_order(request_id, stream_id_, trace_info, response_2, helper)) {
   } else {
