@@ -59,6 +59,8 @@ constexpr Helper<htx_futures::json::Event>::operator std::optional<roq::UpdateTy
       return roq::UpdateType::SNAPSHOT;
     case UPDATE:
       return roq::UpdateType::INCREMENTAL;
+    case SETTLEMENT:
+      return roq::UpdateType::INCREMENTAL;
     case ORDER_OPEN:
       return roq::UpdateType::INCREMENTAL;
     case ORDER_CANCEL:
@@ -75,6 +77,7 @@ static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::UNDEFINE
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::INIT}} == roq::UpdateType::SNAPSHOT);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::SNAPSHOT}} == roq::UpdateType::SNAPSHOT);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::UPDATE}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::SETTLEMENT}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_OPEN}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_CANCEL}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_MATCH}} == roq::UpdateType::INCREMENTAL);
@@ -101,6 +104,8 @@ constexpr Helper<htx_futures::json::Offset>::operator std::optional<roq::Positio
       return roq::PositionEffect::OPEN;
     case CLOSE:
       return roq::PositionEffect::CLOSE;
+    case BOTH:
+      return roq::PositionEffect::UNDEFINED;
   }
   return {};
 }
@@ -108,6 +113,7 @@ constexpr Helper<htx_futures::json::Offset>::operator std::optional<roq::Positio
 static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::UNDEFINED_INTERNAL}} == roq::PositionEffect::UNDEFINED);
 static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::OPEN}} == roq::PositionEffect::OPEN);
 static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::CLOSE}} == roq::PositionEffect::CLOSE);
+static_assert(Helper{htx_futures::json::Offset{htx_futures::json::Offset::BOTH}} == roq::PositionEffect::UNDEFINED);
 
 template <>
 template <>

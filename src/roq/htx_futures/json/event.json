@@ -12,6 +12,9 @@
       "name": "update"
     },
     {
+      "name": "settlement"
+    },
+    {
       "raw": "order.open",
       "name": "order_open"
     },
