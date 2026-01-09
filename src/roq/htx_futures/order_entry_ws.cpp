@@ -324,6 +324,7 @@ void OrderEntryWS::operator()(Trace<json::Response> const &event) {
     return;
   }
   // XXX FIXME TODO data.order_id_str => external_order_id
+  std::string_view external_order_id = response.data.order_id_str;
   auto [request_status, error, text] = [&]() -> std::tuple<RequestStatus, Error, std::string_view> {
     if (response.status == json::Status::OK) {
       return {RequestStatus::ACCEPTED, {}, {}};
