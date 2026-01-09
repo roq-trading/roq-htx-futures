@@ -346,6 +346,7 @@ void OrderEntryWS::operator()(Trace<json::Response> const &event) {
       .text = text,
       .version = version,
       .request_id = request_id,
+      .external_order_id = {},
       .quantity = NaN,
       .price = NaN,
   };
