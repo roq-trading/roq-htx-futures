@@ -16,8 +16,6 @@ namespace json {
 
 namespace {
 constexpr auto const KEY_OP = "op"sv;
-constexpr auto const VALUE_OP_AUTH = "auth"sv;
-constexpr auto const VALUE_OP_PING = "ping"sv;
 constexpr auto const KEY_STATUS = "status"sv;
 }  // namespace
 
