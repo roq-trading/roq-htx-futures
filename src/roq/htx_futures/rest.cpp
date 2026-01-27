@@ -300,7 +300,7 @@ void Rest::operator()(Trace<json::ContractInfoAck> const &event) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
-    if (all_symbols_.emplace(symbol).second) {  // only include new
+    if (shared_.all_symbols.emplace(symbol).second) {  // only include new
       symbols.emplace_back(symbol);
     }
     ++counter;

@@ -45,6 +45,7 @@ struct Shared final {
  public:
   Settings const &settings;
   core::Symbols symbols;
+  utils::unordered_set<std::string> all_symbols;
 };
 
 }  // namespace htx_futures
