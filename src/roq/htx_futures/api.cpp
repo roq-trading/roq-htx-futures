@@ -105,28 +105,12 @@ auto const API_COIN_M_PERPETUAL = API{
 };
 }  // namespace
 
-// === HELPERS ===
-
-namespace {
-enum class Type {
-  USDT_M_FUTURES,
-  COIN_M_DELIVERY,
-  COIN_M_PERPETUAL,
-};
-
-auto parse_api(auto &api) {
-  std::string tmp{api};
-  std::replace(tmp.begin(), tmp.end(), '-', '_');
-  return utils::parse_enum<Type>(tmp);
-}
-}  // namespace
-
 // === IMPLEMENTATION ===
 
 API API::create(Settings const &settings) {
-  auto key = parse_api(settings.app.api);
+  auto key = parse_api(settings);
   switch (key) {
-    using enum Type;
+    using enum Key;
     case USDT_M_FUTURES:
       return API_USDT_M_FUTURES;
     case COIN_M_DELIVERY:
@@ -135,6 +119,12 @@ API API::create(Settings const &settings) {
       return API_COIN_M_PERPETUAL;
   }
   log::fatal("Unexpected"sv);
+}
+
+API::Key API::parse_api(Settings const &settings) {
+  std::string tmp{settings.app.api};
+  std::replace(tmp.begin(), tmp.end(), '-', '_');
+  return utils::parse_enum<Key>(tmp);
 }
 
 }  // namespace htx_futures

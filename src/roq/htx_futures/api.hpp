@@ -40,6 +40,14 @@ struct API final {
 
   // factory
   static API create(Settings const &);
+
+  enum class Key {
+    USDT_M_FUTURES,
+    COIN_M_DELIVERY,
+    COIN_M_PERPETUAL,
+  };
+
+  static Key parse_api(Settings const &);
 };
 
 }  // namespace htx_futures

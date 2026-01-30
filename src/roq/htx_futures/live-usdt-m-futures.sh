@@ -28,5 +28,4 @@ $PREFIX ./roq-htx-futures \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
   --api="$API" \
   --ws_api=$WS_API \
-  --cache_all_reference_data=true \
   $@
