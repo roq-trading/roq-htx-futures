@@ -25,11 +25,19 @@ struct OrderEntry {
 
   virtual void operator()(metrics::Writer &) const = 0;
 
-  virtual uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, std::string_view const &request_id) = 0;
+  virtual uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) = 0;
   virtual uint16_t operator()(
-      Event<ModifyOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id) = 0;
+      Event<ModifyOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) = 0;
   virtual uint16_t operator()(
-      Event<CancelOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id) = 0;
+      Event<CancelOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) = 0;
 
   virtual uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) = 0;
 };

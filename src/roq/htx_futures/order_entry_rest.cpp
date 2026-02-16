@@ -132,7 +132,8 @@ void OrderEntryREST::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-uint16_t OrderEntryREST::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+uint16_t OrderEntryREST::operator()(
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
   create_order(event, order, request_id);
   return stream_id_;
 }
@@ -140,6 +141,7 @@ uint16_t OrderEntryREST::operator()(Event<CreateOrder> const &event, server::oms
 uint16_t OrderEntryREST::operator()(
     Event<ModifyOrder> const &,
     server::oms::Order const &,
+    server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   throw server::oms::NotSupported{"not supported"sv};
@@ -147,7 +149,11 @@ uint16_t OrderEntryREST::operator()(
 }
 
 uint16_t OrderEntryREST::operator()(
-    Event<CancelOrder> const &event, server::oms::Order const &order, std::string_view const &request_id, std::string_view const &previous_request_id) {
+    Event<CancelOrder> const &event,
+    server::oms::Order const &order,
+    server::oms::RefData const &,
+    std::string_view const &request_id,
+    std::string_view const &previous_request_id) {
   cancel_order(event, order, request_id, previous_request_id);
   return stream_id_;
 }
