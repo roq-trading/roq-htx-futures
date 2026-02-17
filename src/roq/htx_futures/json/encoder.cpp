@@ -35,7 +35,11 @@ constexpr auto const OP_CANCEL_ALL_ORDERS = "X"sv;
 // self_match_prevent
 // stop-loss ??? => sl_
 std::string_view Encoder::create_order(
-    std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
+    std::string &buffer,
+    CreateOrder const &create_order,
+    server::oms::Order const &,
+    server::oms::RefData const &ref_data,
+    std::string_view const &request_id) {
   buffer.clear();
   auto direction = map(create_order.side).template get<json::Direction>();
   auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
@@ -51,13 +55,13 @@ std::string_view Encoder::create_order(
       request_id,
       direction.as_raw_text(),
       order_price_type.as_raw_text(),
-      Decimal{create_order.quantity, order.quantity_precision.precision});
+      Decimal{create_order.quantity, ref_data.quantity.precision});
   if (create_order.position_effect != PositionEffect{}) {
     auto offset = map(create_order.position_effect).template get<json::Offset>();
     fmt::format_to(std::back_inserter(buffer), R"(,"offset":"{}")"sv, offset.as_raw_text());
   }
   if (!std::isnan(create_order.price)) {
-    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, order.price_precision.precision});
+    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, ref_data.price.precision});
   }
   if (!std::isnan(create_order.leverage)) {
     fmt::format_to(std::back_inserter(buffer), R"(,"lever_rate":{})"sv, create_order.leverage);
@@ -72,6 +76,7 @@ std::string_view Encoder::cancel_order(
     std::string &buffer,
     CancelOrder const &,
     server::oms::Order const &order,
+    server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   buffer.clear();
@@ -104,7 +109,12 @@ std::string_view Encoder::cancel_all_orders(
 // WS
 
 std::string_view Encoder::create_order_ws(
-    std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id, MarginMode margin_mode) {
+    std::string &buffer,
+    CreateOrder const &create_order,
+    server::oms::Order const &,
+    server::oms::RefData const &ref_data,
+    std::string_view const &request_id,
+    MarginMode margin_mode) {
   auto op = [&]() -> std::string_view {
     switch (margin_mode) {
       using enum MarginMode;
@@ -140,13 +150,13 @@ std::string_view Encoder::create_order_ws(
       request_id,
       direction.as_raw_text(),
       order_price_type.as_raw_text(),
-      Decimal{create_order.quantity, order.quantity_precision.precision});
+      Decimal{create_order.quantity, ref_data.quantity.precision});
   if (create_order.position_effect != PositionEffect{}) {
     auto offset = map(create_order.position_effect).template get<json::Offset>();
     fmt::format_to(std::back_inserter(buffer), R"(,"offset":"{}")"sv, offset.as_raw_text());
   }
   if (!std::isnan(create_order.price)) {
-    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, order.price_precision.precision});
+    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, ref_data.price.precision});
   }
   if (!std::isnan(create_order.leverage)) {
     fmt::format_to(std::back_inserter(buffer), R"(,"lever_rate":{})"sv, create_order.leverage);
@@ -164,6 +174,7 @@ std::string_view Encoder::cancel_order_ws(
     std::string &buffer,
     CancelOrder const &cancel_order,
     server::oms::Order const &order,
+    server::oms::RefData const &,
     std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id,
     MarginMode margin_mode) {

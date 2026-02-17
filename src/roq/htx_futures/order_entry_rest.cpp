@@ -133,8 +133,8 @@ void OrderEntryREST::operator()(metrics::Writer &writer) const {
 }
 
 uint16_t OrderEntryREST::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
-  create_order(event, order, request_id);
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
+  create_order(event, order, ref_data, request_id);
   return stream_id_;
 }
 
@@ -151,10 +151,10 @@ uint16_t OrderEntryREST::operator()(
 uint16_t OrderEntryREST::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
-    server::oms::RefData const &,
+    server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     std::string_view const &previous_request_id) {
-  cancel_order(event, order, request_id, previous_request_id);
+  cancel_order(event, order, ref_data, request_id, previous_request_id);
   return stream_id_;
 }
 
@@ -345,7 +345,8 @@ void OrderEntryREST::operator()(Trace<json::OpenOrdersAck> const &event) {
 
 // create-order
 
-void OrderEntryREST::create_order(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+void OrderEntryREST::create_order(
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
@@ -368,7 +369,7 @@ void OrderEntryREST::create_order(Event<CreateOrder> const &event, server::oms::
       log::fatal("Unexpected"sv);
     }();
     auto query = account_.create_query(method, path, now_utc);
-    auto body = json::Encoder::create_order(encode_buffer_, create_order, order, request_id);
+    auto body = json::Encoder::create_order(encode_buffer_, create_order, order, ref_data, request_id);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -434,6 +435,7 @@ void OrderEntryREST::operator()(
 void OrderEntryREST::cancel_order(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
+    server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   profile_.cancel_order([&]() {
@@ -458,7 +460,7 @@ void OrderEntryREST::cancel_order(
       log::fatal("Unexpected"sv);
     }();
     auto query = account_.create_query(method, path, now_utc);
-    auto body = json::Encoder::cancel_order(encode_buffer_, cancel_order, order, request_id, previous_request_id);
+    auto body = json::Encoder::cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
     auto request = web::rest::Request{
         .method = method,
         .path = path,

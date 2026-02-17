@@ -133,10 +133,10 @@ void OrderEntryWS::operator()(metrics::Writer &writer) const {
 }
 
 uint16_t OrderEntryWS::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     auto &[message_info, create_order] = event;
-    auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, request_id, account_.margin_mode);
+    auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
@@ -156,12 +156,12 @@ uint16_t OrderEntryWS::operator()(
 uint16_t OrderEntryWS::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
-    server::oms::RefData const &,
+    server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     std::string_view const &previous_request_id) {
   profile_.cancel_order([&]() {
     auto &[message_info, cancel_order] = event;
-    auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, request_id, previous_request_id, account_.margin_mode);
+    auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
