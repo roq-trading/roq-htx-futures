@@ -184,26 +184,26 @@ void MarketData::operator()(web::socket::Client::Binary const &binary) {
   counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
-void MarketData::operator()(ConnectionStatus status) {
-  if (utils::update(status_, status)) {
-    TraceInfo trace_info;
-    auto stream_status = StreamStatus{
-        .stream_id = stream_id_,
-        .account = {},
-        .supports = SUPPORTS,
-        .transport = Transport::TCP,
-        .protocol = Protocol::WS,
-        .encoding = {Encoding::JSON},
-        .priority = Priority::PRIMARY,
-        .connection_status = status_,
-        .interface = (*connection_).get_interface(),
-        .authority = (*connection_).get_current_authority(),
-        .path = (*connection_).get_current_path(),
-        .proxy = (*connection_).get_proxy(),
-    };
-    log::info("stream_status={}"sv, stream_status);
-    create_trace_and_dispatch(handler_, trace_info, stream_status);
-  }
+void MarketData::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+  connection_status_ = connection_status;
+  TraceInfo trace_info;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::WS,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 void MarketData::subscribe(std::span<Symbol const> const &symbols) {

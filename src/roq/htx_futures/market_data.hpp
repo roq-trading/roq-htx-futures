@@ -43,7 +43,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
 
   MarketData(MarketData const &) = delete;
 
-  bool ready() const { return status_ == ConnectionStatus::READY; }
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -63,7 +63,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   void operator()(web::socket::Client::Binary const &) override;
 
  private:
-  void operator()(ConnectionStatus);
+  void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void subscribe(std::span<Symbol const> const &symbols);
   void subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme);
@@ -114,7 +114,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   // cache
   Shared &shared_;
   // state
-  ConnectionStatus status_ = {};
+  ConnectionStatus connection_status_ = {};
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
