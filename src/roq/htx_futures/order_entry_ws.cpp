@@ -322,7 +322,6 @@ void OrderEntryWS::operator()(Trace<json::Auth> const &event) {
 void OrderEntryWS::operator()(Trace<json::Response> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
-  log::warn("DEBUG response={}"sv, response);
   auto [request_type, request_id, version] = json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
   if (request_type == RequestType::UNDEFINED) {  // note! cancel-all-orders
@@ -353,7 +352,6 @@ void OrderEntryWS::operator()(Trace<json::Response> const &event) {
       .quantity = NaN,
       .price = NaN,
   };
-  log::warn("DEBUG response={}"sv, response_2);
   auto helper = []([[maybe_unused]] auto &order) {};
   if (shared_.update_order(request_id, stream_id_, trace_info, response_2, helper)) {
   } else {
