@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx_futures/json/RateLimit",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "limit",
+      "type": "std/int32"
+    },
+    {
+      "name": "interval",
+      "type": "std/int32"
+    },
+    {
+      "name": "remaining",
+      "type": "std/int32"
+    },
+    {
+      "name": "reset",
+      "type": "std/milliseconds"
+    }
+  ]
+}

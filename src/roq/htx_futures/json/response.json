@@ -25,6 +25,10 @@
     {
       "name": "cid",
       "type": "std/string_view"
+    },
+    {
+      "name": "rate_limit",
+      "type": "roq/htx_futures/json/RateLimit"
     }
   ]
 }

@@ -24,8 +24,8 @@ set(AUTOGEN_SCHEMAS
     cancel_all_orders_ack.json
     cancel_order_ack_data.json
     cancel_order_ack.json
-    close.json
     close_2.json
+    close.json
     contract_info_ack_data_item.json
     contract_info_ack.json
     depth.json
@@ -44,8 +44,8 @@ set(AUTOGEN_SCHEMAS
     index.json
     index_tick.json
     margin_mode.json
-    match_orders.json
     match_orders_cross.json
+    match_orders.json
     match_orders_trade_item.json
     offset.json
     open_orders_ack_data.json
@@ -53,8 +53,8 @@ set(AUTOGEN_SCHEMAS
     open_orders_ack.json
     operator.json
     order_price_type.json
-    orders.json
     orders_cross.json
+    orders.json
     orders_trade_item.json
     ping.json
     place_order_ack_data.json
@@ -67,8 +67,9 @@ set(AUTOGEN_SCHEMAS
     premium_index.json
     premium_index_tick.json
     quotation.json
-    response_data.json
+    rate_limit.json
     response_data_errors_item.json
+    response_data.json
     response.json
     role.json
     status.json
