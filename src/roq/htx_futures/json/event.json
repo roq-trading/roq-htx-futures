@@ -29,6 +29,10 @@
     {
       "raw": "order.close",
       "name": "order_close"
+    },
+    {
+      "raw": "contract.system",
+      "name": "contract_system"
     }
   ]
 }

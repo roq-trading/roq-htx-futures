@@ -69,6 +69,8 @@ constexpr Helper<htx_futures::json::Event>::operator std::optional<roq::UpdateTy
       return roq::UpdateType::INCREMENTAL;
     case ORDER_CLOSE:
       return roq::UpdateType::INCREMENTAL;
+    case CONTRACT_SYSTEM:
+      return roq::UpdateType::INCREMENTAL;
   }
   return {};
 }
