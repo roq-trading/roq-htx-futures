@@ -42,7 +42,7 @@ std::string_view Encoder::create_order(
     std::string_view const &request_id) {
   buffer.clear();
   auto direction = map(create_order.side).template get<json::Direction>();
-  auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
+  auto order_price_type = map(create_order.order_type, create_order.time_in_force, create_order.execution_instructions).template get<json::OrderPriceType>();
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"
@@ -131,7 +131,7 @@ std::string_view Encoder::create_order_ws(
   }();
   buffer.clear();
   auto direction = map(create_order.side).template get<json::Direction>();
-  auto order_price_type = map(create_order.order_type).template get<json::OrderPriceType>();
+  auto order_price_type = map(create_order.order_type, create_order.time_in_force, create_order.execution_instructions).template get<json::OrderPriceType>();
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"

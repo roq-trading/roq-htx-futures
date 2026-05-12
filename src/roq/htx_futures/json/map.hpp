@@ -8,13 +8,17 @@
 #include "roq/htx_futures/json/order_price_type.hpp"
 #include "roq/htx_futures/json/role.hpp"
 
+#include "roq/execution_instruction.hpp"
 #include "roq/liquidity.hpp"
 #include "roq/order_type.hpp"
 #include "roq/position_effect.hpp"
 #include "roq/side.hpp"
+#include "roq/time_in_force.hpp"
 #include "roq/update_type.hpp"
 
 #include "roq/map.hpp"
+
+#include "roq/mask.hpp"
 
 namespace roq {
 
@@ -46,7 +50,7 @@ std::optional<OrderStatus> Map<std::int32_t>::helper() const;
 
 template <>
 template <>
-std::optional<htx_futures::json::OrderPriceType> Map<roq::OrderType>::helper() const;
+std::optional<htx_futures::json::OrderPriceType> Map<roq::OrderType, roq::TimeInForce, Mask<roq::ExecutionInstruction>>::helper() const;
 
 template <>
 template <>

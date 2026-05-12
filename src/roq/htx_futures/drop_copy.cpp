@@ -374,6 +374,7 @@ void DropCopy::operator()(Trace<json::Positions> const &event) {
 void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
+    log::debug("match_orders={}"sv, match_orders);
     auto client_order_id = fmt::format("{}"sv, match_orders.client_order_id);
     auto remaining_quantity = [&]() {
       if (utils::compare(match_orders.volume, 0.0) > 0) {
@@ -439,6 +440,7 @@ void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
 void DropCopy::operator()(Trace<json::Orders> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
+    log::debug("orders={}"sv, orders);
     auto client_order_id = fmt::format("{}"sv, orders.client_order_id);
     auto remaining_quantity = [&]() {
       if (utils::compare(orders.volume, 0.0) > 0) {
@@ -567,6 +569,7 @@ void DropCopy::operator()(Trace<json::PositionsCross> const &event) {
 void DropCopy::operator()(Trace<json::MatchOrdersCross> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
+    log::debug("match_orders={}"sv, match_orders);
     auto client_order_id = fmt::format("{}"sv, match_orders.client_order_id);
     auto remaining_quantity = [&]() {
       if (utils::compare(match_orders.volume, 0.0) > 0) {
@@ -634,6 +637,7 @@ void DropCopy::operator()(Trace<json::MatchOrdersCross> const &event) {
 void DropCopy::operator()(Trace<json::OrdersCross> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
+    log::debug("orders={}"sv, orders);
     auto client_order_id = fmt::format("{}"sv, orders.client_order_id);
     auto remaining_quantity = [&]() {
       if (utils::compare(orders.volume, 0.0) > 0) {

@@ -137,6 +137,7 @@ uint16_t OrderEntryWS::operator()(
     auto &[message_info, create_order] = event;
     auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
+    log::debug(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
@@ -162,6 +163,7 @@ uint16_t OrderEntryWS::operator()(
     auto &[message_info, cancel_order] = event;
     auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id, account_.margin_mode);
     log::info<2>(R"(message="{}")"sv, message);
+    log::debug(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
@@ -173,6 +175,7 @@ uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::stri
     auto helper = [&](auto &symbol) {
       auto message = json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol, account_.margin_mode);
       log::info<2>(R"(message="{}")"sv, message);
+      log::debug(R"(message="{}")"sv, message);
       (*connection_).send_text(message);
     };
     if (shared_.dispatcher.get_all_order_symbols(helper, account_.name)) {
@@ -269,7 +272,7 @@ void OrderEntryWS::send_login() {
 }
 
 void OrderEntryWS::parse(std::string_view const &message) {
-  log::debug("{}"sv, message);
+  // log::debug("{}"sv, message);
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {

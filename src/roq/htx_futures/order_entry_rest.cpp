@@ -257,7 +257,8 @@ void OrderEntryREST::open_orders() {
         .body = {},
         .quality_of_service = {},
     };
-    log::info<2>("DEBUG request={}"sv, request);
+    log::info<2>("request={}"sv, request);
+    log::debug("request={}"sv, request);
     auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -380,7 +381,8 @@ void OrderEntryREST::create_order(
         .body = body,
         .quality_of_service = {},
     };
-    log::info<2>("DEBUG request={}"sv, request);
+    log::info<2>("request={}"sv, request);
+    log::debug("request={}"sv, request);
     auto callback = [this, user_id = message_info.source, order_id = create_order.order_id]([[maybe_unused]] auto &request_id, auto &response) {
       uint32_t version = 1;
       TraceInfo trace_info;
@@ -471,7 +473,8 @@ void OrderEntryREST::cancel_order(
         .body = body,
         .quality_of_service = {},
     };
-    log::info<2>("DEBUG request={}"sv, request);
+    log::info<2>("request={}"sv, request);
+    log::debug("request={}"sv, request);
     auto callback = [this, user_id = message_info.source, order_id = cancel_order.order_id, version = cancel_order.version](
                         [[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
@@ -582,7 +585,8 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
           .body = body,
           .quality_of_service = {},
       };
-      log::info<2>(R"(DEBUG request="{}")"sv, request);
+      log::info<2>(R"(request="{}")"sv, request);
+      log::debug(R"(request="{}")"sv, request);
       auto callback = [this](auto &request_id, auto &response) {
         TraceInfo trace_info;
         Trace event{trace_info, response};

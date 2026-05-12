@@ -134,6 +134,8 @@ constexpr Helper<htx_futures::json::OrderPriceType>::operator std::optional<roq:
       return roq::OrderType::UNDEFINED;
     case UNKNOWN_INTERNAL:
       return roq::OrderType::UNDEFINED;
+    case MARKET:
+      return roq::OrderType::MARKET;
     case LIMIT:
       return roq::OrderType::LIMIT;
     case OPPONENT:
@@ -171,6 +173,7 @@ constexpr Helper<htx_futures::json::OrderPriceType>::operator std::optional<roq:
 }
 
 static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::UNDEFINED_INTERNAL}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::MARKET}} == roq::OrderType::MARKET);
 static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::LIMIT}} == roq::OrderType::LIMIT);
 static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::OPPONENT}} == roq::OrderType::UNDEFINED);
 static_assert(Helper{htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::POST_ONLY}} == roq::OrderType::LIMIT);
@@ -260,30 +263,77 @@ std::optional<roq::OrderStatus> Map<std::int32_t>::helper() const {
 }
 // roq ==> htx_futures::json
 
-// roq::OrderType ==> htx_futures::json::OrderPriceType
+// {roq::OrderType, roq::TimeInForce} ==> htx_futures::json::OrderPriceType
 
 template <>
 template <>
-constexpr Helper<roq::OrderType>::operator std::optional<htx_futures::json::OrderPriceType>() const {
-  switch (std::get<0>(args_)) {
+constexpr Helper<roq::OrderType, roq::TimeInForce, Mask<roq::ExecutionInstruction>>::operator std::optional<htx_futures::json::OrderPriceType>() const {
+  auto &[order_type, time_in_force, execution_instructions] = args_;
+  switch (order_type) {
     using enum roq::OrderType;
     case UNDEFINED:
       return htx_futures::json::OrderPriceType::UNDEFINED_INTERNAL;
     case MARKET:
-      return htx_futures::json::OrderPriceType::FOK;  // XXX FIXME TODO ???
+      return htx_futures::json::OrderPriceType::MARKET;
     case LIMIT:
-      return htx_futures::json::OrderPriceType::LIMIT;
+      if (execution_instructions.has(ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE)) {
+        return htx_futures::json::OrderPriceType::POST_ONLY;
+      }
+      switch (time_in_force) {
+        using enum roq::TimeInForce;
+        case UNDEFINED:
+          return htx_futures::json::OrderPriceType::LIMIT;
+        case GFD:
+          break;
+        case GTC:
+          return htx_futures::json::OrderPriceType::LIMIT;
+        case OPG:
+          break;
+        case IOC:
+          return htx_futures::json::OrderPriceType::IOC;
+        case FOK:
+          return htx_futures::json::OrderPriceType::FOK;
+        case GTX:
+          break;
+        case GTD:
+          break;
+        case AT_THE_CLOSE:
+          break;
+        case GOOD_THROUGH_CROSSING:
+          break;
+        case AT_CROSSING:
+          break;
+        case GOOD_FOR_TIME:
+          break;
+        case GFA:
+          break;
+        case GFM:
+          break;
+      }
+      break;
   }
   return {};
 }
 
-static_assert(Helper{roq::OrderType::UNDEFINED} == htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::UNDEFINED_INTERNAL});
-static_assert(Helper{roq::OrderType::MARKET} == htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::FOK});
-static_assert(Helper{roq::OrderType::LIMIT} == htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::LIMIT});
+static_assert(
+    Helper{roq::OrderType::UNDEFINED, roq::TimeInForce::UNDEFINED, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::UNDEFINED_INTERNAL});
+static_assert(
+    Helper{roq::OrderType::MARKET, roq::TimeInForce::UNDEFINED, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::MARKET});
+static_assert(
+    Helper{roq::OrderType::LIMIT, roq::TimeInForce::UNDEFINED, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::LIMIT});
+static_assert(
+    Helper{roq::OrderType::LIMIT, roq::TimeInForce::FOK, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::FOK});
+static_assert(
+    Helper{roq::OrderType::LIMIT, roq::TimeInForce::IOC, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::json::OrderPriceType{htx_futures::json::OrderPriceType::IOC});
 
 template <>
 template <>
-std::optional<htx_futures::json::OrderPriceType> Map<roq::OrderType>::helper() const {
+std::optional<htx_futures::json::OrderPriceType> Map<roq::OrderType, roq::TimeInForce, Mask<roq::ExecutionInstruction>>::helper() const {
   return Helper{args_};
 }
 
