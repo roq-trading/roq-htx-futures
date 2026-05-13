@@ -7,7 +7,7 @@ Roq's HTX futures gateway.
 
 You will **NOT** be able to build this project!
 
-Reason: It depends on proprietary closed-source solutions.
+Please [contact Roq GmbH (email)](mailto:info@roq-trading.com) if you're interested in licensing this software.
 
 
 ## Links
