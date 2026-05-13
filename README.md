@@ -15,7 +15,7 @@ Reference documentation can be found [here](https://roq-trading.com/docs/referen
 
 ## Building
 
-You will **NOT** be able to build this project!
+This is proprietary software: you will **NOT** be able to build this project!
 
 
 ## Links
