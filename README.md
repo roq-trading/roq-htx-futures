@@ -3,14 +3,19 @@
 Roq's HTX futures gateway.
 
 
-## Building
-
-You will **NOT** be able to build this project!
-
-
 ## Contact
 
 Please reach out by [email](mailto:info@roq-trading.com) if you're interested in licensing this software.
+
+
+## Documentation
+
+Reference documentation can be found [here](https://roq-trading.com/docs/reference/gateways/crypto/roq-htx-futures/).
+
+
+## Building
+
+You will **NOT** be able to build this project!
 
 
 ## Links
