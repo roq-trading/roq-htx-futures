@@ -7,7 +7,10 @@ Roq's HTX futures gateway.
 
 You will **NOT** be able to build this project!
 
-Please [contact (email)](mailto:info@roq-trading.com) Roq GmbH if you're interested in licensing this software.
+
+## Contact
+
+Please reach out by [email](mailto:info@roq-trading.com) if you're interested in licensing this software.
 
 
 ## Links
