@@ -22,7 +22,6 @@
 
 #include "roq/htx_futures/account.hpp"
 #include "roq/htx_futures/order_entry.hpp"
-#include "roq/htx_futures/order_entry_state.hpp"
 #include "roq/htx_futures/shared.hpp"
 
 #include "roq/htx_futures/json/cancel_all_orders_ack.hpp"
@@ -71,7 +70,13 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(OrderEntryState);
+  enum class State {
+    UNDEFINED = 0,
+    OPEN_ORDERS,
+    DONE,
+  };
+
+  uint32_t download(State);
 
   // open-orders
 
@@ -141,7 +146,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<OrderEntryState> download_;
+  core::Download<State> download_;
   // buffers
   std::string encode_buffer_;
 };

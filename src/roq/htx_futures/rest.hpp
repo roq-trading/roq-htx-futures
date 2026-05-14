@@ -22,7 +22,6 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx_futures/rest_state.hpp"
 #include "roq/htx_futures/shared.hpp"
 
 #include "roq/htx_futures/json/contract_info_ack.hpp"
@@ -65,7 +64,13 @@ struct Rest final : public web::rest::Client::Handler {
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(RestState);
+  enum class State {
+    UNDEFINED = 0,
+    CONTRACT_INFO,
+    DONE,
+  };
+
+  uint32_t download(State);
 
   // contract-info
 
@@ -101,7 +106,7 @@ struct Rest final : public web::rest::Client::Handler {
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<RestState> download_;
+  core::Download<State> download_;
   // experimental
   std::chrono::nanoseconds next_refresh_ = {};
 };

@@ -175,9 +175,9 @@ void Rest::operator()(Trace<web::rest::Client::Latency> const &event) {
   latency_.ping.update(latency.sample);
 }
 
-uint32_t Rest::download(RestState state) {
+uint32_t Rest::download(State state) {
   switch (state) {
-    using enum RestState;
+    using enum State;
     case UNDEFINED:
       assert(false);
       break;
@@ -223,7 +223,7 @@ void Rest::get_contract_info() {
 }
 
 void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  constexpr auto const STATE = RestState::CONTRACT_INFO;
+  constexpr auto const STATE = State::CONTRACT_INFO;
   profile_.contract_info_ack([&]() {
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
