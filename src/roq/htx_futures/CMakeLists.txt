@@ -24,25 +24,11 @@ add_subdirectory(tools)
 
 include(RoqAutogen)
 
-set(AUTOGEN_SCHEMAS order_entry_state.json rest_state.json)
-
-roq_autogen_hpp(
-  OUTPUT
-  AUTOGEN_HEADERS
-  SOURCES
-  ${AUTOGEN_SCHEMAS}
-  TEMPLATE_DIR
-  ${TEMPLATE_DIR}
-  TEMPLATE_TYPE
-  "state")
-
-add_custom_target(autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
-
-roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME} ${AUTOGEN_HEADERS})
+roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME})
 
 add_executable(${TARGET_NAME} ${SOURCES})
 
-add_dependencies(${TARGET_NAME} autogen-headers autogen-json-headers)
+add_dependencies(${TARGET_NAME} autogen-json-headers)
 
 target_link_libraries(
   ${TARGET_NAME}
