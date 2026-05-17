@@ -33,6 +33,10 @@
     {
       "raw": "contract.system",
       "name": "contract_system"
+    },
+    {
+      "raw": "contract.transfer",
+      "name": "contract_transfer"
     }
   ]
 }

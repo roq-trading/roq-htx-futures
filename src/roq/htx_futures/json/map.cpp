@@ -71,6 +71,8 @@ constexpr Helper<htx_futures::json::Event>::operator std::optional<roq::UpdateTy
       return roq::UpdateType::INCREMENTAL;
     case CONTRACT_SYSTEM:
       return roq::UpdateType::INCREMENTAL;
+    case CONTRACT_TRANSFER:
+      return roq::UpdateType::INCREMENTAL;
   }
   return {};
 }
@@ -84,6 +86,8 @@ static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_OP
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_CANCEL}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_MATCH}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::ORDER_CLOSE}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::CONTRACT_SYSTEM}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::json::Event{htx_futures::json::Event::CONTRACT_TRANSFER}} == roq::UpdateType::INCREMENTAL);
 
 template <>
 template <>
