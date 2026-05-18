@@ -15,12 +15,13 @@
 
 #include "roq/htx_futures/account.hpp"
 #include "roq/htx_futures/config.hpp"
+#include "roq/htx_futures/settings.hpp"
+#include "roq/htx_futures/shared.hpp"
+
 #include "roq/htx_futures/drop_copy.hpp"
 #include "roq/htx_futures/market_data.hpp"
 #include "roq/htx_futures/order_entry.hpp"
 #include "roq/htx_futures/rest.hpp"
-#include "roq/htx_futures/settings.hpp"
-#include "roq/htx_futures/shared.hpp"
 #include "roq/htx_futures/web_socket.hpp"
 #include "roq/htx_futures/web_socket_2.hpp"
 
