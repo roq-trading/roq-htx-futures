@@ -102,6 +102,8 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
   }
 }
 
+// server::Handler
+
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
   assert(std::empty(market_data_));
@@ -139,97 +141,6 @@ void Gateway::operator()(Event<Connected> const &) {
 }
 
 void Gateway::operator()(Event<Disconnected> const &) {
-}
-
-void Gateway::operator()(Trace<StreamStatus> const &event) {
-  dispatcher_(event);
-}
-
-void Gateway::operator()(Trace<ExternalLatency> const &event) {
-  dispatcher_(event);
-}
-
-void Gateway::operator()(Trace<ReferenceData> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<MarketStatus> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<TopOfBook> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
-  auto callback = []([[maybe_unused]] auto &market_by_price) {};
-  dispatcher_(event, is_last, bids_, asks_, callback);
-}
-
-void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<PositionUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
-  auto [size, start_from] = shared_.symbols(symbols_update.symbols);
-  ensure_symbol_slices(size);
-  for (auto &iter : market_data_) {
-    (*iter).subscribe(start_from);
-  }
-  for (auto &iter : web_socket_) {
-    (*iter).subscribe(start_from);
-  }
-  for (auto &iter : web_socket_2_) {
-    (*iter).subscribe(start_from);
-  }
-}
-
-void Gateway::ensure_symbol_slices(size_t size) {
-  // market data
-  while (std::size(market_data_) < size) {
-    auto stream_id = ++stream_id_;
-    auto index = std::size(market_data_);
-    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
-    Start start;
-    create_event_and_dispatch(*market_data, message_info, start);
-    market_data_.emplace_back(std::move(market_data));
-  }
-  // web socket #1
-  while (std::size(web_socket_) < size) {
-    auto stream_id = ++stream_id_;
-    auto index = std::size(web_socket_);
-    log::debug("Create WebSocket #1 (stream_id={}, index={})"sv, stream_id, index);
-    auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
-    Start start;
-    create_event_and_dispatch(*web_socket, message_info, start);
-    web_socket_.emplace_back(std::move(web_socket));
-  }
-  // web socket #2
-  while (std::size(web_socket_2_) < size) {
-    auto stream_id = ++stream_id_;
-    auto index = std::size(web_socket_2_);
-    log::debug("Create WebSocket #2 (stream_id={}, index={})"sv, stream_id, index);
-    auto web_socket_2 = std::make_unique<WebSocket2>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
-    Start start;
-    create_event_and_dispatch(*web_socket_2, message_info, start);
-    web_socket_2_.emplace_back(std::move(web_socket_2));
-  }
 }
 
 void Gateway::operator()(Event<Subscribe> const &event) {
@@ -291,6 +202,101 @@ uint16_t Gateway::operator()(Event<CancelQuotes> const &) {
 
 void Gateway::operator()(metrics::Writer &writer) const {
   dispatch_helper(*this, writer);
+}
+
+// streams
+
+void Gateway::operator()(Trace<StreamStatus> const &event) {
+  dispatcher_(event);
+}
+
+void Gateway::operator()(Trace<ExternalLatency> const &event) {
+  dispatcher_(event);
+}
+
+void Gateway::operator()(Trace<ReferenceData> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<MarketStatus> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<TopOfBook> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
+  auto callback = []([[maybe_unused]] auto &market_by_price) {};
+  dispatcher_(event, is_last, bids_, asks_, callback);
+}
+
+void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<PositionUpdate> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
+  auto [size, start_from] = shared_.symbols(symbols_update.symbols);
+  ensure_symbol_slices(size);
+  for (auto &iter : market_data_) {
+    (*iter).subscribe(start_from);
+  }
+  for (auto &iter : web_socket_) {
+    (*iter).subscribe(start_from);
+  }
+  for (auto &iter : web_socket_2_) {
+    (*iter).subscribe(start_from);
+  }
+}
+
+// utilities
+
+void Gateway::ensure_symbol_slices(size_t size) {
+  // market data
+  while (std::size(market_data_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(market_data_);
+    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
+    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*market_data, message_info, start);
+    market_data_.emplace_back(std::move(market_data));
+  }
+  // web socket #1
+  while (std::size(web_socket_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(web_socket_);
+    log::debug("Create WebSocket #1 (stream_id={}, index={})"sv, stream_id, index);
+    auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*web_socket, message_info, start);
+    web_socket_.emplace_back(std::move(web_socket));
+  }
+  // web socket #2
+  while (std::size(web_socket_2_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(web_socket_2_);
+    log::debug("Create WebSocket #2 (stream_id={}, index={})"sv, stream_id, index);
+    auto web_socket_2 = std::make_unique<WebSocket2>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*web_socket_2, message_info, start);
+    web_socket_2_.emplace_back(std::move(web_socket_2));
+  }
 }
 
 template <typename... Args>
