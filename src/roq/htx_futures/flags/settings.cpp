@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/settings.hpp"
+#include "roq/htx_futures/flags/settings.hpp"
 
 #include "roq/logging.hpp"
 
@@ -10,15 +10,16 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx_futures {
+namespace flags {
 
 // === HELPERS ===
 
 namespace {
-auto create_margin_mode(auto &value) -> MarginMode {
+auto create_margin_mode(auto &value) -> roq::MarginMode {
   if (std::empty(value)) {
     return {};
   }
-  return utils::parse_enum<MarginMode>(value);
+  return utils::parse_enum<roq::MarginMode>(value);
 }
 }  // namespace
 
@@ -33,5 +34,6 @@ Settings::Settings(args::Parser const &args, flags::Flags const &flags)
   log::info("settings={}"sv, *this);
 }
 
+}  // namespace flags
 }  // namespace htx_futures
 }  // namespace roq

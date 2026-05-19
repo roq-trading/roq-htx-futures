@@ -13,7 +13,6 @@ set(SOURCES
     order_entry_rest.cpp
     order_entry_ws.cpp
     rest.cpp
-    settings.cpp
     shared.cpp
     web_socket_2.cpp
     web_socket.cpp
@@ -43,7 +42,6 @@ target_link_libraries(
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-server::roq-server
-          roq-server::roq-server-flags
           roq-web::roq-web
           fmt::fmt
           unordered_dense::unordered_dense
