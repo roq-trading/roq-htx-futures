@@ -9,12 +9,13 @@
 
 #include "roq/margin_mode.hpp"
 
-#include "roq/htx_futures/config.hpp"
+#include "roq/htx_futures/gateway/config.hpp"
 
 #include "roq/htx_futures/tools/crypto.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 struct Account final {
   Account(Config const &, std::string_view const &name, MarginMode, roq::io::web::URI const &uri);
@@ -34,5 +35,6 @@ struct Account final {
   tools::Crypto crypto_;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

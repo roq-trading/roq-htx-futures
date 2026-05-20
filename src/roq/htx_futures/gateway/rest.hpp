@@ -22,12 +22,13 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx_futures/shared.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/json/contract_info_ack.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 struct Rest final : public web::rest::Client::Handler {
   struct SymbolsUpdate final {
@@ -111,5 +112,6 @@ struct Rest final : public web::rest::Client::Handler {
   std::chrono::nanoseconds next_refresh_ = {};
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include "roq/compat.hpp"
+
 #include <string_view>
 
-#include "roq/htx_futures/settings.hpp"
+#include "roq/htx_futures/gateway/settings.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 struct API final {
   struct {
@@ -47,8 +50,9 @@ struct API final {
     COIN_M_PERPETUAL,
   };
 
-  static Key parse_api(Settings const &);
+  ROQ_PUBLIC static Key parse_api(Settings const &);
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

@@ -6,8 +6,10 @@
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 using Settings = flags::Settings;
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

@@ -1,6 +1,8 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/web_socket_2.hpp"
+#include "roq/htx_futures/gateway/web_socket.hpp"
+
+#include <algorithm>
 
 #include "roq/mask.hpp"
 
@@ -19,11 +21,12 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 // === CONSTANTS ===
 
 namespace {
-auto const NAME = "ws2"sv;
+auto const NAME = "ws"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::STATISTICS,
@@ -40,7 +43,7 @@ auto create_name(auto stream_id) {
 }
 
 auto create_connection(auto &handler, auto &settings, auto &context) {
-  auto uri = settings.ws.order_uri;
+  auto uri = settings.ws.index_uri;
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
@@ -61,7 +64,7 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::socket::Client::create(handler, context, config, []() { return std::string(); });
+  return web::socket::Client::create(handler, context, config, []() -> std::string { return {}; });
 }
 
 struct create_metrics final : public utils::metrics::Factory {
@@ -71,78 +74,83 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-WebSocket2::WebSocket2(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
+WebSocket::WebSocket(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+      request_id_{static_cast<uint64_t>(stream_id_) * 1000000},  // scale (debugging)
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
           .total_bytes_received = create_metrics(shared.settings, name_, "total_bytes_received"sv),
       },
       profile_{
           .parse = create_metrics(shared.settings, name_, "parse"sv),
-          .close = create_metrics(shared.settings, name_, "close"sv),
-          .error = create_metrics(shared.settings, name_, "error"sv),
           .ping = create_metrics(shared.settings, name_, "ping"sv),
-          .sub = create_metrics(shared.settings, name_, "sub"sv),
-          .funding_rate = create_metrics(shared.settings, name_, "funding_rate"sv),
+          .error = create_metrics(shared.settings, name_, "error"sv),
+          .subbed = create_metrics(shared.settings, name_, "subbed"sv),
+          .estimated_rate = create_metrics(shared.settings, name_, "estimated_rate"sv),
+          .premium_index = create_metrics(shared.settings, name_, "premium_index"sv),
+          .basis = create_metrics(shared.settings, name_, "basis"sv),
+          .index = create_metrics(shared.settings, name_, "index"sv),
       },
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
+          .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
       shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
-void WebSocket2::operator()(Event<Start> const &) {
+void WebSocket::operator()(Event<Start> const &) {
   (*connection_).start();
 }
 
-void WebSocket2::operator()(Event<Stop> const &) {
+void WebSocket::operator()(Event<Stop> const &) {
   (*connection_).stop();
 }
 
-void WebSocket2::operator()(Event<Timer> const &event) {
+void WebSocket::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void WebSocket2::operator()(metrics::Writer &writer) const {
+void WebSocket::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
-      .write(counter_.total_bytes_received, metrics::Type::COUNTER)
       // profile
       .write(profile_.parse, metrics::Type::PROFILE)
-      .write(profile_.close, metrics::Type::PROFILE)
       .write(profile_.error, metrics::Type::PROFILE)
-      .write(profile_.ping, metrics::Type::PROFILE)
-      .write(profile_.sub, metrics::Type::PROFILE)
-      .write(profile_.funding_rate, metrics::Type::PROFILE)
+      .write(profile_.subbed, metrics::Type::PROFILE)
+      .write(profile_.estimated_rate, metrics::Type::PROFILE)
+      .write(profile_.premium_index, metrics::Type::PROFILE)
+      .write(profile_.basis, metrics::Type::PROFILE)
+      .write(profile_.index, metrics::Type::PROFILE)
       // latency
-      .write(latency_.ping, metrics::Type::LATENCY);
+      .write(latency_.ping, metrics::Type::LATENCY)
+      .write(latency_.heartbeat, metrics::Type::LATENCY);
 }
 
-void WebSocket2::subscribe(size_t start_from) {
+void WebSocket::subscribe(size_t start_from) {
   if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
   }
 }
 
-void WebSocket2::operator()(web::socket::Client::Connected const &) {
+void WebSocket::operator()(web::socket::Client::Connected const &) {
 }
 
-void WebSocket2::operator()(web::socket::Client::Disconnected const &) {
+void WebSocket::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void WebSocket2::operator()(web::socket::Client::Ready const &) {
+void WebSocket::operator()(web::socket::Client::Ready const &) {
   (*this)(ConnectionStatus::READY);
   subscribe();
 }
 
-void WebSocket2::operator()(web::socket::Client::Close const &) {
+void WebSocket::operator()(web::socket::Client::Close const &) {
 }
 
-void WebSocket2::operator()(web::socket::Client::Latency const &latency) {
+void WebSocket::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -153,11 +161,11 @@ void WebSocket2::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void WebSocket2::operator()(web::socket::Client::Text const &) {
+void WebSocket::operator()(web::socket::Client::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(web::socket::Client::Binary const &binary) {
+void WebSocket::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
@@ -169,7 +177,7 @@ void WebSocket2::operator()(web::socket::Client::Binary const &binary) {
   counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
-void WebSocket2::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void WebSocket::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
   connection_status_ = connection_status;
   TraceInfo trace_info;
   auto stream_status = StreamStatus{
@@ -177,7 +185,7 @@ void WebSocket2::operator()(ConnectionStatus connection_status, std::string_view
       .account = {},
       .supports = SUPPORTS,
       .transport = Transport::TCP,
-      .protocol = Protocol::WS,
+      .protocol = Protocol::HTTP,
       .encoding = {Encoding::JSON},
       .priority = Priority::PRIMARY,
       .connection_status = connection_status_,
@@ -191,48 +199,49 @@ void WebSocket2::operator()(ConnectionStatus connection_status, std::string_view
   create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
-void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
+void WebSocket::subscribe(std::span<Symbol const> const &symbols) {
   if (std::empty(symbols)) {
     return;
   }
-  subscribe(symbols, "public"sv, "funding_rate"sv);
+  subscribe(symbols, "market"sv, "basis.1min.open"sv);
+  subscribe(symbols, "market"sv, "estimated_rate.1min"sv);
+  subscribe(symbols, "market"sv, "index.1min"sv);
 }
 
-void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
+void WebSocket::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
+    auto id = ++request_id_;
     auto message = fmt::format(
         R"({{)"
-        R"("op":"sub",)"
-        R"("topic":"{}.{}.{}",)"
-        R"("cid":"xxx")"
+        R"("sub":"{}.{}.{}",)"
+        R"("id":"{}")"
         R"(}})"sv,
         source,
         symbol,
-        theme);
+        theme,
+        id);
     log::debug(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   }
 }
 
-void WebSocket2::send_pong(std::chrono::milliseconds timestamp) {
+void WebSocket::send_pong(std::chrono::milliseconds timestamp) {
   auto message = fmt::format(
       R"({{)"
-      R"("op":"pong",)"
-      R"("ts":{})"
+      R"("pong":{})"
       R"(}})"sv,
       timestamp.count());
   // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 
-void WebSocket2::parse(std::string_view const &message) {
+void WebSocket::parse(std::string_view const &message) {
   profile_.parse([&]() {
-    log::info<5>(R"(message="{}")"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -242,107 +251,90 @@ void WebSocket2::parse(std::string_view const &message) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Close2> const &) {
-  profile_.close([&]() {
-    log::warn("Exchange requested connection closed"sv);
-    (*connection_).close();
-  });
-}
-
-void WebSocket2::operator()(Trace<json::Error2> const &) {
-  profile_.close([&]() {
-    log::warn("*** ERROR ***"sv);
-    (*connection_).close();
-  });
-}
-
-void WebSocket2::operator()(Trace<json::Ping> const &event) {
+void WebSocket::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
-    log::info<4>("ping={}"sv, ping);
     send_pong(ping.timestamp);
   });
 }
 
-void WebSocket2::operator()(Trace<json::Auth> const &) {
-  log::fatal("Unexpected"sv);
-}
-
-void WebSocket2::operator()(Trace<json::Sub> const &event) {
-  profile_.sub([&]() {
-    auto &[trace_info, sub] = event;
-    if (sub.err_code != 0) {
-      log::error(R"(Subscription failed: code={}, msg="{}")"sv, sub.err_code, sub.err_msg);
-    }
+void WebSocket::operator()(Trace<json::Error> const &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::warn("error={}"sv, error);
   });
 }
 
-void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
-  profile_.funding_rate([&]() {
-    auto &[trace_info, funding_rate] = event;
-    log::info<3>("funding_rate={}"sv, funding_rate);
-    for (auto &item : funding_rate.data) {
-      auto symbol = item.contract_code;
-      auto statistics = std::array<Statistics, 2>{{
-          {
-              .type = StatisticsType::FUNDING_RATE,
-              .value = item.funding_rate,
-              .begin_time_utc = {},
-              .end_time_utc = {},
-          },
-          {
-              .type = StatisticsType::FUNDING_RATE_PREDICTION,
-              .value = item.estimated_rate,
-              .begin_time_utc = {},
-              .end_time_utc = {},
-          },
-      }};
-      auto statistics_update = StatisticsUpdate{
-          .stream_id = stream_id_,
-          .exchange = shared_.settings.exchange,
-          .symbol = symbol,
-          .statistics = statistics,
-          .update_type = UpdateType::INCREMENTAL,
-          .exchange_time_utc = funding_rate.ts,
-          .exchange_sequence = {},
-          .sending_time_utc = {},
-      };
-      create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-    }
+void WebSocket::operator()(Trace<json::Subbed> const &event) {
+  profile_.subbed([&]() {
+    auto &[trace_info, subbed] = event;
+    log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void WebSocket2::operator()(Trace<json::Accounts> const &) {
+void WebSocket::operator()(Trace<json::BBO> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::Positions> const &) {
+void WebSocket::operator()(Trace<json::Depth> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::MatchOrders> const &) {
+void WebSocket::operator()(Trace<json::Trade> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::Orders> const &) {
+void WebSocket::operator()(Trace<json::Detail> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::AccountsCross> const &) {
-  log::fatal("Unexpected"sv);
+void WebSocket::operator()(Trace<json::EstimatedRate> const &event) {
+  profile_.estimated_rate([&]() {
+    auto &[trace_info, estimated_rate] = event;
+    log::info<3>("estimated_rate={}"sv, estimated_rate);
+  });
 }
 
-void WebSocket2::operator()(Trace<json::PositionsCross> const &) {
-  log::fatal("Unexpected"sv);
+void WebSocket::operator()(Trace<json::PremiumIndex> const &event) {
+  profile_.premium_index([&]() {
+    auto &[trace_info, premium_index] = event;
+    log::info<3>("premium_index={}"sv, premium_index);
+  });
 }
 
-void WebSocket2::operator()(Trace<json::MatchOrdersCross> const &) {
-  log::fatal("Unexpected"sv);
+void WebSocket::operator()(Trace<json::Index> const &event) {
+  profile_.index([&]() {
+    auto &[trace_info, index] = event;
+    log::info<3>("index={}"sv, index);
+    auto symbol = json::extract_symbol(index.ch);
+    auto &tick = index.tick;
+    auto statistics = Statistics{
+        .type = StatisticsType::INDEX_VALUE,
+        .value = tick.close,
+        .begin_time_utc = {},
+        .end_time_utc = {},
+    };
+    auto statistics_update = StatisticsUpdate{
+        .stream_id = stream_id_,
+        .exchange = shared_.settings.exchange,
+        .symbol = symbol,
+        .statistics = {&statistics, 1u},
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = index.ts,
+        .exchange_sequence = {},
+        .sending_time_utc = {},
+    };
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+  });
 }
 
-void WebSocket2::operator()(Trace<json::OrdersCross> const &) {
-  log::fatal("Unexpected"sv);
+void WebSocket::operator()(Trace<json::Basis> const &event) {
+  profile_.basis([&]() {
+    auto &[trace_info, basis] = event;
+    log::info<3>("basis={}"sv, basis);
+  });
 }
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

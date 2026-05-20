@@ -22,23 +22,27 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx_futures/shared.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/json/parser.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
-struct WebSocket final : public web::socket::Client::Handler, public json::Parser::Handler {
+struct MarketData final : public web::socket::Client::Handler, public json::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
+    virtual void operator()(Trace<TopOfBook> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<TradeSummary> const &, bool is_last) = 0;
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
-  WebSocket(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
+  MarketData(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  WebSocket(WebSocket const &) = delete;
+  MarketData(MarketData const &) = delete;
 
   bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
@@ -64,6 +68,8 @@ struct WebSocket final : public web::socket::Client::Handler, public json::Parse
 
   void subscribe(std::span<Symbol const> const &symbols);
   void subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme);
+  void subscribe_with_data_type(
+      std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme, std::string_view const &data_type);
 
   void send_pong(std::chrono::milliseconds timestamp);
 
@@ -101,7 +107,7 @@ struct WebSocket final : public web::socket::Client::Handler, public json::Parse
     utils::metrics::Counter disconnect, total_bytes_received;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, error, subbed, estimated_rate, premium_index, basis, index;
+    utils::metrics::Profile parse, ping, error, subbed, bbo, depth, trade, detail;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;
@@ -115,5 +121,6 @@ struct WebSocket final : public web::socket::Client::Handler, public json::Parse
   std::vector<std::byte> inflate_buffer_;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

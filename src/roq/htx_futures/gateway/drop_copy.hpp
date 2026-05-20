@@ -14,30 +14,34 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/core/download.hpp"
 #include "roq/core/zlib/inflate.hpp"
+
+#include "roq/core/download.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
 
-#include "roq/htx_futures/shared.hpp"
+#include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/json/parser_2.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
-struct WebSocket2 final : public web::socket::Client::Handler, public json::Parser2::Handler {
+struct DropCopy final : public web::socket::Client::Handler, public json::Parser2::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<PositionUpdate> const &, bool is_last) = 0;
   };
 
-  WebSocket2(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  WebSocket2(WebSocket2 const &) = delete;
+  DropCopy(DropCopy const &) = delete;
 
   bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
@@ -46,8 +50,6 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   void operator()(Event<Timer> const &);
 
   void operator()(metrics::Writer &) const;
-
-  void subscribe(size_t start_from = 0);
 
  protected:
   void operator()(web::socket::Client::Connected const &) override;
@@ -61,10 +63,12 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
  private:
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  void subscribe(std::span<Symbol const> const &symbols);
-  void subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme);
-
   void send_pong(std::chrono::milliseconds timestamp);
+
+  void send_login();
+
+  void subscribe();
+  void subscribe(std::string_view const &topic);
 
   void parse(std::string_view const &message);
 
@@ -88,21 +92,23 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   // config
   uint16_t const stream_id_;
   std::string const name_;
-  size_t const index_;
   // web socket
   std::unique_ptr<web::socket::Client> const connection_;
   // buffers
   core::json::BufferStack decode_buffer_;
   // metrics
   struct {
-    utils::metrics::Counter disconnect, total_bytes_received;
+    utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, close, error, ping, sub, funding_rate;
+    utils::metrics::Profile parse, close, error, ping, auth, sub, accounts, positions, match_orders, orders;
   } profile_;
   struct {
     utils::metrics::Latency ping;
   } latency_;
+  // account
+  Account &account_;
+  std::string const auth_path_;
   // cache
   Shared &shared_;
   // state
@@ -112,5 +118,6 @@ struct WebSocket2 final : public web::socket::Client::Handler, public json::Pars
   std::vector<std::byte> inflate_buffer_;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

@@ -1,11 +1,12 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/account.hpp"
+#include "roq/htx_futures/gateway/account.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 // === HELPERS ===
 
@@ -32,5 +33,6 @@ std::string_view Account::create_query(web::http::Method method, std::string_vie
   return crypto_.create_query(method, path, now_utc);
 }
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

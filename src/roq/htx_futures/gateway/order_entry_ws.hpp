@@ -22,35 +22,48 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx_futures/account.hpp"
-#include "roq/htx_futures/shared.hpp"
+#include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/order_entry.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
 
-#include "roq/htx_futures/json/parser_2.hpp"
+#include "roq/htx_futures/json/parser_3.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
-struct DropCopy final : public web::socket::Client::Handler, public json::Parser2::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
-    virtual void operator()(Trace<PositionUpdate> const &, bool is_last) = 0;
-  };
+struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public json::Parser3::Handler {
+  OrderEntryWS(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
-
-  DropCopy(DropCopy const &) = delete;
+  OrderEntryWS(OrderEntryWS const &) = delete;
 
   bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
 
-  void operator()(metrics::Writer &) const;
+  void operator()(metrics::Writer &) const override;
+
+  uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
+  uint16_t operator()(
+      Event<ModifyOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) override;
+  uint16_t operator()(
+      Event<CancelOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) override;
+
+  uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) override;
 
  protected:
+  // web::socket::Client::Handler
+
   void operator()(web::socket::Client::Connected const &) override;
   void operator()(web::socket::Client::Disconnected const &) override;
   void operator()(web::socket::Client::Ready const &) override;
@@ -66,28 +79,18 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
 
   void send_login();
 
-  void subscribe();
-  void subscribe(std::string_view const &topic);
-
   void parse(std::string_view const &message);
+
+  // json::Parser3::Handler
 
   void operator()(Trace<json::Close2> const &) override;
   void operator()(Trace<json::Error2> const &) override;
   void operator()(Trace<json::Ping> const &) override;
   void operator()(Trace<json::Auth> const &) override;
-  void operator()(Trace<json::Sub> const &) override;
-  void operator()(Trace<json::FundingRate> const &) override;
-  void operator()(Trace<json::Accounts> const &) override;
-  void operator()(Trace<json::Positions> const &) override;
-  void operator()(Trace<json::MatchOrders> const &) override;
-  void operator()(Trace<json::Orders> const &) override;
-  void operator()(Trace<json::AccountsCross> const &) override;
-  void operator()(Trace<json::PositionsCross> const &) override;
-  void operator()(Trace<json::MatchOrdersCross> const &) override;
-  void operator()(Trace<json::OrdersCross> const &) override;
+  void operator()(Trace<json::Response> const &) override;
 
  private:
-  Handler &handler_;
+  OrderEntry::Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
@@ -100,7 +103,9 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, close, error, ping, auth, sub, accounts, positions, match_orders, orders;
+    utils::metrics::Profile parse,  //
+        close, error, ping, auth,   //
+        create_order, cancel_order, cancel_all_orders;
   } profile_;
   struct {
     utils::metrics::Latency ping;
@@ -112,10 +117,13 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
+  // buffers
+  std::string encode_buffer_;
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

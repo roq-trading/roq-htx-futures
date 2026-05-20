@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/order_entry_ws.hpp"
+#include "roq/htx_futures/gateway/order_entry_ws.hpp"
 
 #include "roq/mask.hpp"
 
@@ -22,6 +22,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -359,5 +360,6 @@ void OrderEntryWS::operator()(Trace<json::Response> const &event) {
   }
 }
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

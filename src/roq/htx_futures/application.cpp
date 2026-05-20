@@ -2,9 +2,10 @@
 
 #include "roq/htx_futures/application.hpp"
 
-#include "roq/htx_futures/config.hpp"
-#include "roq/htx_futures/gateway.hpp"
-#include "roq/htx_futures/settings.hpp"
+#include "roq/htx_futures/flags/settings.hpp"
+
+#include "roq/htx_futures/gateway/config.hpp"
+#include "roq/htx_futures/gateway/controller.hpp"
 
 using namespace std::literals;
 
@@ -23,9 +24,9 @@ uint8_t const API_COIN_M_PERPETUAL = 0x2;
 
 namespace {
 auto parse_api(auto &settings) {
-  auto api = API::parse_api(settings);
+  auto api = gateway::API::parse_api(settings);
   switch (api) {
-    using enum API::Key;
+    using enum gateway::API::Key;
     case USDT_M_FUTURES:
       return API_USDT_M_FUTURES;
     case COIN_M_DELIVERY:
@@ -40,11 +41,11 @@ auto parse_api(auto &settings) {
 // === IMPLEMENTATION ===
 
 int Application::main(args::Parser const &args) {
-  Settings settings{args};
+  flags::Settings settings{args};
   auto api = parse_api(settings);
-  Config config{settings};
+  gateway::Config config{settings};
   auto context = server::create_io_context(settings);
-  server::Trading<Gateway>{settings, config, *context, api}.dispatch();
+  server::Trading<gateway::Controller>{settings, config, *context, api}.dispatch();
   return EXIT_SUCCESS;
 }
 

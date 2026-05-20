@@ -10,11 +10,12 @@
 
 #include "roq/core/symbols.hpp"
 
-#include "roq/htx_futures/api.hpp"
-#include "roq/htx_futures/settings.hpp"
+#include "roq/htx_futures/gateway/api.hpp"
+#include "roq/htx_futures/gateway/settings.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 struct Shared final {
   Shared(server::Dispatcher &, Settings const &);
@@ -48,5 +49,6 @@ struct Shared final {
   utils::unordered_set<std::string> all_symbols;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

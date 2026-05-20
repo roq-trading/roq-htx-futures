@@ -20,9 +20,9 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx_futures/account.hpp"
-#include "roq/htx_futures/order_entry.hpp"
-#include "roq/htx_futures/shared.hpp"
+#include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/order_entry.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/json/cancel_all_orders_ack.hpp"
 #include "roq/htx_futures/json/cancel_order_ack.hpp"
@@ -31,6 +31,7 @@
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handler {
   OrderEntryREST(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
@@ -151,5 +152,6 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   std::string encode_buffer_;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

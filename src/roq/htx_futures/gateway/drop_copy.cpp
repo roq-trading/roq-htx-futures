@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/drop_copy.hpp"
+#include "roq/htx_futures/gateway/drop_copy.hpp"
 
 #include "roq/mask.hpp"
 
@@ -19,6 +19,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -702,5 +703,6 @@ void DropCopy::operator()(Trace<json::OrdersCross> const &event) {
   });
 }
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

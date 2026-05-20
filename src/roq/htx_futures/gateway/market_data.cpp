@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/market_data.hpp"
+#include "roq/htx_futures/gateway/market_data.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -25,6 +25,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -483,5 +484,6 @@ void MarketData::operator()(Trace<json::Index> const &) {
   log::fatal("Unexpected"sv);
 }
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

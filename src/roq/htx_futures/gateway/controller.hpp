@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/compat.hpp"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,31 +15,36 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/htx_futures/account.hpp"
-#include "roq/htx_futures/config.hpp"
-#include "roq/htx_futures/settings.hpp"
-#include "roq/htx_futures/shared.hpp"
+#include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/config.hpp"
+#include "roq/htx_futures/gateway/settings.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
 
-#include "roq/htx_futures/drop_copy.hpp"
-#include "roq/htx_futures/market_data.hpp"
-#include "roq/htx_futures/order_entry.hpp"
-#include "roq/htx_futures/rest.hpp"
-#include "roq/htx_futures/web_socket.hpp"
-#include "roq/htx_futures/web_socket_2.hpp"
+#include "roq/htx_futures/gateway/drop_copy.hpp"
+#include "roq/htx_futures/gateway/market_data.hpp"
+#include "roq/htx_futures/gateway/order_entry.hpp"
+#include "roq/htx_futures/gateway/rest.hpp"
+#include "roq/htx_futures/gateway/web_socket.hpp"
+#include "roq/htx_futures/gateway/web_socket_2.hpp"
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
-struct Gateway final : public server::Handler,
-                       public Rest::Handler,
-                       public OrderEntry::Handler,
-                       public DropCopy::Handler,
-                       public MarketData::Handler,
-                       public WebSocket::Handler,
-                       public WebSocket2::Handler {
-  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+struct Controller final : public server::Handler,
+                          public Rest::Handler,
+                          public OrderEntry::Handler,
+                          public DropCopy::Handler,
+                          public MarketData::Handler,
+                          public WebSocket::Handler,
+                          public WebSocket2::Handler {
+  ROQ_PUBLIC static std::unique_ptr<server::Handler> create(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
-  Gateway(Gateway const &) = delete;
+  Controller(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+
+  Controller(Controller const &) = delete;
+
+  virtual ~Controller() = default;
 
  protected:
   // server::Handler
@@ -122,5 +129,6 @@ struct Gateway final : public server::Handler,
   std::vector<MBPUpdate> bids_, asks_;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq

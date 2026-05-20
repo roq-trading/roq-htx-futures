@@ -6,6 +6,7 @@
 
 namespace roq {
 namespace htx_futures {
+namespace gateway {
 
 struct OrderEntry {
   struct Handler {
@@ -42,5 +43,6 @@ struct OrderEntry {
   virtual uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) = 0;
 };
 
+}  // namespace gateway
 }  // namespace htx_futures
 }  // namespace roq
