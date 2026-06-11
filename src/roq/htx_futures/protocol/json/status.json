@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx_futures/protocol/json/Status",
+  "type": "enum",
+  "values": [
+    {
+      "name": "ok"
+    },
+    {
+      "name": "error"
+    }
+  ]
+}

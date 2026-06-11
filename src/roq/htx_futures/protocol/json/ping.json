@@ -1,0 +1,24 @@
+{
+  "name": "roq/htx_futures/protocol/json/Ping",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "op",
+      "type": "roq/htx_futures/protocol/json/Operator"
+    },
+    {
+      "name": "timestamp",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds",
+      "comment": "??? + ws-trade"
+    },
+    {
+      "name": "ping",
+      "type": "std/int64",
+      "comment": "???"
+    }
+  ]
+}

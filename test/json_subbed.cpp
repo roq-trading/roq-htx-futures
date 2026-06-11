@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Subbed;
+using value_type = protocol::json::Subbed;
 
 // note! just a struct
 TEST_CASE("simple", "[json_subbed]") {

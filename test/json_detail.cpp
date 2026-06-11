@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Detail;
+using value_type = protocol::json::Detail;
 
 TEST_CASE("inverse", "[json_detail]") {
   auto message = R"({)"

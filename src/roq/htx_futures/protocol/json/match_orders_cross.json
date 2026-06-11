@@ -1,0 +1,129 @@
+{
+  "name": "roq/htx_futures/protocol/json/MatchOrdersCross",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "contract_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "pair",
+      "type": "std/string_view"
+    },
+    {
+      "name": "business_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "op",
+      "type": "roq/htx_futures/protocol/json/Operator"
+    },
+    {
+      "name": "topic",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "uid",
+      "type": "std/string_view"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "status",
+      "type": "std/int32"
+    },
+    {
+      "name": "order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "order_id_str",
+      "type": "std/string_view"
+    },
+    {
+      "name": "client_order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "order_type",
+      "type": "std/int32"
+    },
+    {
+      "name": "volume",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_volume",
+      "type": "std/double"
+    },
+    {
+      "name": "created_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "direction",
+      "type": "roq/htx_futures/protocol/json/Direction"
+    },
+    {
+      "name": "offset",
+      "type": "roq/htx_futures/protocol/json/Offset"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "order_source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "order_price_type",
+      "type": "roq/htx_futures/protocol/json/OrderPriceType"
+    },
+    {
+      "name": "trade"
+    },
+    {
+      "name": "margin_mode",
+      "type": "roq/htx_futures/protocol/json/MarginMode"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view"
+    },
+    {
+      "name": "is_tpsl",
+      "type": "std/int32"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    },
+    {
+      "name": "reduce_only",
+      "type": "std/int32"
+    },
+    {
+      "name": "self-match-prevent",
+      "type": "std/int32"
+    },
+    {
+      "name": "self_match_prevent_new",
+      "type": "std/string_view"
+    }
+  ]
+}

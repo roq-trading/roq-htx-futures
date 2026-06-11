@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Depth;
+using value_type = protocol::json::Depth;
 
 // note! reduced
 TEST_CASE("simple", "[json_depth]") {
@@ -56,7 +56,7 @@ TEST_CASE("simple", "[json_depth]") {
     CHECK(b1.price == 37.709_a);
     CHECK(b1.vol == 170.0_a);
     CHECK(tick.ch == "market.FIL211231.depth.size_150.high_freq"sv);
-    CHECK(tick.event == json::Event::SNAPSHOT);
+    CHECK(tick.event == protocol::json::Event::SNAPSHOT);
     CHECK(tick.id == 149496559186);
     CHECK(tick.mrid == 149496559186);
     CHECK(tick.ts == 1639630955318ms);

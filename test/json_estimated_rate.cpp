@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::EstimatedRate;
+using value_type = protocol::json::EstimatedRate;
 
 TEST_CASE("swap", "[json_estimated_rate]") {
   auto message = R"({)"

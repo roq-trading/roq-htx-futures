@@ -1,0 +1,34 @@
+{
+  "name": "roq/htx_futures/protocol/json/Response",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx_futures/protocol/json/Status"
+    },
+    {
+      "name": "err_code",
+      "type": "std/int32"
+    },
+    {
+      "name": "err_msg",
+      "type": "std/string_view"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx_futures/protocol/json/ResponseData"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "cid",
+      "type": "std/string_view"
+    },
+    {
+      "name": "rate_limit",
+      "type": "roq/htx_futures/protocol/json/RateLimit"
+    }
+  ]
+}

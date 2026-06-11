@@ -2,13 +2,13 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx_futures/json/parser_3.hpp"
+#include "roq/htx_futures/protocol/json/parser_3.hpp"
 
 namespace roq {
 namespace htx_futures {
 
 template <typename T>
-struct Parser3Tester final : public json::Parser3::Handler {
+struct Parser3Tester final : public protocol::json::Parser3::Handler {
   using value_type = std::remove_cvref_t<T>;
   using callback_type = std::function<void(value_type const &)>;
 
@@ -21,7 +21,7 @@ struct Parser3Tester final : public json::Parser3::Handler {
     // parser
     // XXX FIXME TODO catch2 block ???
     Parser3Tester handler{callback};
-    auto res = json::Parser3::dispatch(handler, message, buffers, {}, false);
+    auto res = protocol::json::Parser3::dispatch(handler, message, buffers, {}, false);
     CHECK(res == true);
     CHECK(handler.found_ == true);
   }
@@ -29,11 +29,11 @@ struct Parser3Tester final : public json::Parser3::Handler {
  protected:
   explicit Parser3Tester(callback_type const &callback) : callback_{callback} {}
 
-  void operator()(Trace<json::Close2> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Error2> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Ping> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Auth> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Response> const &event) override { dispatch(event); }
+  void operator()(Trace<protocol::json::Close2> const &event) override { dispatch(event); }
+  void operator()(Trace<protocol::json::Error2> const &event) override { dispatch(event); }
+  void operator()(Trace<protocol::json::Ping> const &event) override { dispatch(event); }
+  void operator()(Trace<protocol::json::Auth> const &event) override { dispatch(event); }
+  void operator()(Trace<protocol::json::Response> const &event) override { dispatch(event); }
 
   template <typename U>
   void dispatch(Trace<U> const &event) {

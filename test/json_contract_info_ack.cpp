@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/contract_info_ack.hpp"
+#include "roq/htx_futures/protocol/json/contract_info_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::ContractInfoAck;
+using value_type = protocol::json::ContractInfoAck;
 
 // note! reduced
 TEST_CASE("usdt_m_futures", "[json_contract_info_ack]") {
@@ -60,7 +60,7 @@ TEST_CASE("usdt_m_futures", "[json_contract_info_ack]") {
                  R"(],)"
                  R"("ts":1763791421826)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);
@@ -96,7 +96,7 @@ TEST_CASE("coin_m_delivery", "[json_contract_info_ack]") {
                  R"(],)"
                  R"("ts":1763791626928)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);
@@ -128,7 +128,7 @@ TEST_CASE("coin_m_perpetual", "[json_contract_info_ack]") {
                  R"(],)"
                  R"("ts":1763791707461)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);

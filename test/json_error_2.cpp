@@ -12,13 +12,13 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Error2;
+using value_type = protocol::json::Error2;
 
 TEST_CASE("simple", "[json_error_2]") {
   auto message = R"({)"
                  R"("op":"error",)"
                  R"("ts":1763860751249)"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::ERROR); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::ERROR); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }

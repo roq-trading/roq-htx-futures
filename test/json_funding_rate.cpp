@@ -4,8 +4,8 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/funding_rate.hpp"
-// #include "roq/htx_futures/json/parser.hpp"
+#include "roq/htx_futures/protocol/json/funding_rate.hpp"
+// #include "roq/htx_futures/protocol/json/parser.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -34,8 +34,8 @@ TEST_CASE("swap", "[json_funding_rate]") {
                  R"(})";
   core::json::BufferStack buffers{8192, 1};
   // simple
-  json::FundingRate obj{message, buffers};
-  CHECK(obj.op == json::Operator::NOTIFY);
+  protocol::json::FundingRate obj{message, buffers};
+  CHECK(obj.op == protocol::json::Operator::NOTIFY);
   CHECK(obj.topic == "public.BTC-USDT.funding_rate"sv);
   CHECK(obj.ts == 1643960260995ms);
   auto &data = obj.data;
@@ -51,22 +51,22 @@ TEST_CASE("swap", "[json_funding_rate]") {
   CHECK(d0.trade_partition == "USDT"sv);
   // parser
   /*
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Depth> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &) override { FAIL(); }
-    void operator()(Trace<json::EstimatedRate> const &) override { FAIL(); }
-    void operator()(Trace<json::PremiumIndex> const &) override { FAIL(); }
-    void operator()(Trace<json::Basis> const &) override { FAIL(); }
-    void operator()(Trace<json::Index> const &) override { FAIL(); }
+  struct Handler final : public protocol::json::Parser::Handler {
+    void operator()(Trace<protocol::json::Ping> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Error> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Subbed> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::BBO> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Depth> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Trade> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Detail> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::EstimatedRate> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::PremiumIndex> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Basis> const &) override { FAIL(); }
+    void operator()(Trace<protocol::json::Index> const &) override { FAIL(); }
 
     bool found = false;
   } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
+  auto res = protocol::json::Parser::dispatch(handler, message, buffers, {}, false);
   CHECK(res == true);
   CHECK(handler.found == true);
   */

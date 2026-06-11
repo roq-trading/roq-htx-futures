@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::PremiumIndex;
+using value_type = protocol::json::PremiumIndex;
 
 TEST_CASE("json_premium_index_simple_swap", "[json_premium_index]") {
   auto message = R"({)"

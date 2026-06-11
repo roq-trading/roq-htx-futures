@@ -1,0 +1,195 @@
+{
+  "name": "roq/htx_futures/protocol/json/OpenOrdersAckDataOrdersItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "update_time",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "volume",
+      "type": "std/double"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "order_price_type",
+      "type": "roq/htx_futures/protocol/json/OrderPriceType"
+    },
+    {
+      "name": "order_type",
+      "type": "std/int32"
+    },
+    {
+      "name": "direction",
+      "type": "roq/htx_futures/protocol/json/Direction"
+    },
+    {
+      "name": "offset",
+      "type": "roq/htx_futures/protocol/json/Offset"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "client_order_id",
+      "type": "std/int64"
+    },
+    {
+      "name": "created_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "trade_volume",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_turnover",
+      "type": "std/double"
+    },
+    {
+      "name": "fee",
+      "type": "std/double"
+    },
+    {
+      "name": "trade_avg_price",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "profit",
+      "type": "std/double"
+    },
+    {
+      "name": "status",
+      "type": "std/int32"
+    },
+    {
+      "name": "order_source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "canceled_source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "order_id_str",
+      "type": "std/string_view"
+    },
+    {
+      "name": "fee_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "liquidation_type"
+    },
+    {
+      "name": "canceled_at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "is_tpsl",
+      "type": "std/int32"
+    },
+    {
+      "name": "real_profit",
+      "type": "std/double"
+    },
+    {
+      "name": "self_match_prevent",
+      "type": "std/int32"
+    },
+    {
+      "name": "tp_trigger_price",
+      "type": "std/double"
+    },
+    {
+      "name": "sl_trigger_price",
+      "type": "std/double"
+    },
+    {
+      "raw": "updateTime",
+      "name": "updateTime2",
+      "type": "std/milliseconds",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "business_type",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "contract_type",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "pair",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "remark2",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "fee_amount",
+      "type": "std/double",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "fee_quote_amount",
+      "type": "std/double",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "margin_asset",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "margin_mode",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "reduce_only",
+      "type": "std/int32",
+      "comment": "usdt-m"
+    },
+    {
+      "name": "self_match_prevent_new",
+      "type": "std/string_view",
+      "comment": "usdt-m"
+    }
+  ]
+}

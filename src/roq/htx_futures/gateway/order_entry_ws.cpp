@@ -14,9 +14,9 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/htx_futures/json/encoder.hpp"
-#include "roq/htx_futures/json/map.hpp"
-#include "roq/htx_futures/json/utils.hpp"
+#include "roq/htx_futures/protocol/json/encoder.hpp"
+#include "roq/htx_futures/protocol/json/map.hpp"
+#include "roq/htx_futures/protocol/json/utils.hpp"
 
 using namespace std::literals;
 
@@ -136,7 +136,7 @@ uint16_t OrderEntryWS::operator()(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     auto &[message_info, create_order] = event;
-    auto message = json::Encoder::create_order_ws(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
+    auto message = protocol::json::Encoder::create_order_ws(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
@@ -161,7 +161,8 @@ uint16_t OrderEntryWS::operator()(
     std::string_view const &previous_request_id) {
   profile_.cancel_order([&]() {
     auto &[message_info, cancel_order] = event;
-    auto message = json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id, account_.margin_mode);
+    auto message =
+        protocol::json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id, account_.margin_mode);
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
@@ -172,7 +173,7 @@ uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::stri
   profile_.cancel_all_orders([&]() {
     auto &[message_info, cancel_all_orders] = event;
     auto helper = [&](auto &symbol) {
-      auto message = json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol, account_.margin_mode);
+      auto message = protocol::json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol, account_.margin_mode);
       log::debug_info<2>(R"(message="{}")"sv, message);
       (*connection_).send_text(message);
     };
@@ -275,7 +276,7 @@ void OrderEntryWS::parse(std::string_view const &message) {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser3::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser3::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -285,30 +286,30 @@ void OrderEntryWS::parse(std::string_view const &message) {
   });
 }
 
-// json::Parser3::Handler
+// protocol::json::Parser3::Handler
 
-void OrderEntryWS::operator()(Trace<json::Close2> const &) {
+void OrderEntryWS::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
   });
 }
 
-void OrderEntryWS::operator()(Trace<json::Error2> const &event) {
+void OrderEntryWS::operator()(Trace<protocol::json::Error2> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::error("error={}"sv, error);
   });
 }
 
-void OrderEntryWS::operator()(Trace<json::Ping> const &event) {
+void OrderEntryWS::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void OrderEntryWS::operator()(Trace<json::Auth> const &event) {
+void OrderEntryWS::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
@@ -320,24 +321,24 @@ void OrderEntryWS::operator()(Trace<json::Auth> const &event) {
   });
 }
 
-void OrderEntryWS::operator()(Trace<json::Response> const &event) {
+void OrderEntryWS::operator()(Trace<protocol::json::Response> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
-  auto [request_type, request_id, version] = json::Encoder::split_cid(response.cid);
+  auto [request_type, request_id, version] = protocol::json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
   if (request_type == RequestType::UNDEFINED) {  // note! cancel-all-orders
     return;
   }
   auto [request_status, error, text] = [&]() -> std::tuple<RequestStatus, Error, std::string_view> {
-    if (response.status == json::Status::OK) {
+    if (response.status == protocol::json::Status::OK) {
       return {RequestStatus::ACCEPTED, {}, {}};
     }
     if (std::empty(response.data.errors)) {
-      return {RequestStatus::REJECTED, json::guess_error(response.err_code), response.err_msg};
+      return {RequestStatus::REJECTED, protocol::json::guess_error(response.err_code), response.err_msg};
     }
     if (std::size(response.data.errors) == 1) {
       auto &error = response.data.errors[0];
-      return {RequestStatus::REJECTED, json::guess_error(error.err_code), error.err_msg};
+      return {RequestStatus::REJECTED, protocol::json::guess_error(error.err_code), error.err_msg};
     }
     log::fatal("Unexpected: response={}"sv, response);  // note! more errors, why?
   }();

@@ -1,0 +1,15 @@
+{
+  "name": "roq/htx_futures/protocol/json/Offset",
+  "type": "enum",
+  "values": [
+    {
+      "name": "open"
+    },
+    {
+      "name": "close"
+    },
+    {
+      "name": "both"
+    }
+  ]
+}

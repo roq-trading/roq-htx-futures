@@ -1,0 +1,42 @@
+{
+  "name": "roq/htx_futures/protocol/json/Event",
+  "type": "enum",
+  "values": [
+    {
+      "name": "init"
+    },
+    {
+      "name": "snapshot"
+    },
+    {
+      "name": "update"
+    },
+    {
+      "name": "settlement"
+    },
+    {
+      "raw": "order.open",
+      "name": "order_open"
+    },
+    {
+      "raw": "order.cancel",
+      "name": "order_cancel"
+    },
+    {
+      "raw": "order.match",
+      "name": "order_match"
+    },
+    {
+      "raw": "order.close",
+      "name": "order_close"
+    },
+    {
+      "raw": "contract.system",
+      "name": "contract_system"
+    },
+    {
+      "raw": "contract.transfer",
+      "name": "contract_transfer"
+    }
+  ]
+}

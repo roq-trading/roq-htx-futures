@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx_futures/json/cancel_all_orders_ack.hpp"
+#include "roq/htx_futures/protocol/json/cancel_all_orders_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::CancelAllOrdersAck;
+using value_type = protocol::json::CancelAllOrdersAck;
 
 TEST_CASE("success", "[json_cancel_all_orders_ack]") {
   auto message = R"({)"
@@ -23,7 +23,7 @@ TEST_CASE("success", "[json_cancel_all_orders_ack]") {
                  R"(},)"
                  R"("ts":1763975842675)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   value_type obj{message};
   helper(obj);
 }
@@ -35,7 +35,7 @@ TEST_CASE("failure", "[json_cancel_all_orders_ack]") {
                  R"("err_msg":"Incorrect signature method [错误的签名方法]",)"
                  R"("ts":1763892684776)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::ERROR); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::ERROR); };
   value_type obj{message};
   helper(obj);
 }

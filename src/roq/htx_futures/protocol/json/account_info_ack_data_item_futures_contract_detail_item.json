@@ -1,0 +1,62 @@
+{
+  "name": "roq/htx_futures/protocol/json/AccountInfoAckDataItemFuturesContractDetailItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_position",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_available",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_unreal",
+      "type": "std/double"
+    },
+    {
+      "name": "liquidation_price",
+      "type": "std/double"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "adjust_factor",
+      "type": "std/double"
+    },
+    {
+      "name": "contract_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "pair",
+      "type": "std/string_view"
+    },
+    {
+      "name": "business_type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    },
+    {
+      "name": "cross_max_available",
+      "type": "std/double"
+    }
+  ]
+}

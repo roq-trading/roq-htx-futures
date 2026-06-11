@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::OrdersCross;
+using value_type = protocol::json::OrdersCross;
 
 TEST_CASE("init", "[json_orders_cross]") {
   auto message = R"({)"
@@ -59,6 +59,6 @@ TEST_CASE("init", "[json_orders_cross]") {
                  R"("self_match_prevent_new":"cancel_taker",)"
                  R"("canceled_source":"api")"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::NOTIFY); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::NOTIFY); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }

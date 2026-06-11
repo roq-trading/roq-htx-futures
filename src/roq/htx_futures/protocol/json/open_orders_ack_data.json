@@ -1,0 +1,28 @@
+{
+  "name": "roq/htx_futures/protocol/json/OpenOrdersAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "orders",
+      "type": "roq/htx_futures/protocol/json/OpenOrdersAckDataOrdersItem",
+      "array": "std/span"
+    },
+    {
+      "name": "total_page",
+      "type": "std/int32"
+    },
+    {
+      "name": "current_page",
+      "type": "std/int32"
+    },
+    {
+      "name": "total_size",
+      "type": "std/int32"
+    },
+    {
+      "name": "exceed_limit",
+      "type": "std/bool",
+      "comment": "usdt-m"
+    }
+  ]
+}

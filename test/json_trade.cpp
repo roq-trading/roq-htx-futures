@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Trade;
+using value_type = protocol::json::Trade;
 
 TEST_CASE("inverse", "[json_trade]") {
   auto message = R"({)"
@@ -46,7 +46,7 @@ TEST_CASE("inverse", "[json_trade]") {
     CHECK(d0.ts == 1639629424028ms);
     CHECK(d0.id == 1503025353300000);
     CHECK(d0.price == 49888.88_a);
-    CHECK(d0.direction == json::Direction::BUY);
+    CHECK(d0.direction == protocol::json::Direction::BUY);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
@@ -93,7 +93,7 @@ TEST_CASE("linear", "[json_trade]") {
     CHECK(d0.ts == 1640775632497ms);
     CHECK(d0.id == 897471171570000);
     CHECK(d0.price == 47701.1_a);
-    CHECK(d0.direction == json::Direction::SELL);
+    CHECK(d0.direction == protocol::json::Direction::SELL);
     auto &d1 = data[1];
     CHECK(d1.amount == 2.0_a);
     CHECK(d1.quantity == 0.002_a);
@@ -101,7 +101,7 @@ TEST_CASE("linear", "[json_trade]") {
     CHECK(d1.ts == 1640775632497ms);
     CHECK(d1.id == 897471171570001);
     CHECK(d1.price == 47701.1_a);
-    CHECK(d1.direction == json::Direction::SELL);
+    CHECK(d1.direction == protocol::json::Direction::SELL);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

@@ -15,7 +15,7 @@
 #include "roq/htx_futures/gateway/order_entry_rest.hpp"
 #include "roq/htx_futures/gateway/order_entry_ws.hpp"
 
-#include "roq/htx_futures/json/utils.hpp"
+#include "roq/htx_futures/protocol/json/utils.hpp"
 
 using namespace std::literals;
 

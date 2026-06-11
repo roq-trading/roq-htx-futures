@@ -12,8 +12,8 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/htx_futures/json/map.hpp"
-#include "roq/htx_futures/json/utils.hpp"
+#include "roq/htx_futures/protocol/json/map.hpp"
+#include "roq/htx_futures/protocol/json/utils.hpp"
 
 using namespace std::literals;
 
@@ -254,7 +254,7 @@ void DropCopy::parse(std::string_view const &message) {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -264,28 +264,28 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Close2> const &) {
+void DropCopy::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
   });
 }
 
-void DropCopy::operator()(Trace<json::Error2> const &) {
+void DropCopy::operator()(Trace<protocol::json::Error2> const &) {
   profile_.error([&]() {
     log::warn("*** ERROR ***"sv);
     (*connection_).close();
   });
 }
 
-void DropCopy::operator()(Trace<json::Ping> const &event) {
+void DropCopy::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void DropCopy::operator()(Trace<json::Auth> const &event) {
+void DropCopy::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
@@ -298,7 +298,7 @@ void DropCopy::operator()(Trace<json::Auth> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Sub> const &event) {
+void DropCopy::operator()(Trace<protocol::json::Sub> const &event) {
   profile_.sub([&]() {
     auto &[trace_info, sub] = event;
     if (sub.err_code != 0) {
@@ -307,11 +307,11 @@ void DropCopy::operator()(Trace<json::Sub> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::FundingRate> const &) {
+void DropCopy::operator()(Trace<protocol::json::FundingRate> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::Accounts> const &event) {
+void DropCopy::operator()(Trace<protocol::json::Accounts> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, accounts] = event;
     log::info<2>("accounts={}"sv, accounts);
@@ -336,7 +336,7 @@ void DropCopy::operator()(Trace<json::Accounts> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Positions> const &event) {
+void DropCopy::operator()(Trace<protocol::json::Positions> const &event) {
   profile_.positions([&]() {
     auto &[trace_info, positions] = event;
     auto update_type = map(positions.event).template get<UpdateType>();
@@ -372,7 +372,7 @@ void DropCopy::operator()(Trace<json::Positions> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
+void DropCopy::operator()(Trace<protocol::json::MatchOrders> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
     log::debug("match_orders={}"sv, match_orders);
@@ -438,7 +438,7 @@ void DropCopy::operator()(Trace<json::MatchOrders> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Orders> const &event) {
+void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
     log::debug("orders={}"sv, orders);
@@ -504,7 +504,7 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::AccountsCross> const &event) {
+void DropCopy::operator()(Trace<protocol::json::AccountsCross> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, accounts] = event;
     log::info<2>("accounts={}"sv, accounts);
@@ -531,7 +531,7 @@ void DropCopy::operator()(Trace<json::AccountsCross> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::PositionsCross> const &event) {
+void DropCopy::operator()(Trace<protocol::json::PositionsCross> const &event) {
   profile_.positions([&]() {
     auto &[trace_info, positions] = event;
     auto update_type = map(positions.event).template get<UpdateType>();
@@ -567,7 +567,7 @@ void DropCopy::operator()(Trace<json::PositionsCross> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::MatchOrdersCross> const &event) {
+void DropCopy::operator()(Trace<protocol::json::MatchOrdersCross> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
     log::debug("match_orders={}"sv, match_orders);
@@ -635,7 +635,7 @@ void DropCopy::operator()(Trace<json::MatchOrdersCross> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::OrdersCross> const &event) {
+void DropCopy::operator()(Trace<protocol::json::OrdersCross> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
     log::debug("orders={}"sv, orders);

@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::PositionsCross;
+using value_type = protocol::json::PositionsCross;
 
 TEST_CASE("usdt_m_futures_init", "[json_positions_across]") {
   auto message = R"({)"
@@ -124,6 +124,6 @@ TEST_CASE("usdt_m_futures_init", "[json_positions_across]") {
                  R"(],)"
                  R"("uid":"573242943")"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::NOTIFY); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::NOTIFY); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }

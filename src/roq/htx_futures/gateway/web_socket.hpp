@@ -24,13 +24,13 @@
 
 #include "roq/htx_futures/gateway/shared.hpp"
 
-#include "roq/htx_futures/json/parser.hpp"
+#include "roq/htx_futures/protocol/json/parser.hpp"
 
 namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct WebSocket final : public web::socket::Client::Handler, public json::Parser::Handler {
+struct WebSocket final : public web::socket::Client::Handler, public protocol::json::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
@@ -70,20 +70,20 @@ struct WebSocket final : public web::socket::Client::Handler, public json::Parse
 
   void parse(std::string_view const &message);
 
-  void operator()(Trace<json::Ping> const &) override;
+  void operator()(Trace<protocol::json::Ping> const &) override;
 
-  void operator()(Trace<json::Error> const &) override;
-  void operator()(Trace<json::Subbed> const &) override;
+  void operator()(Trace<protocol::json::Error> const &) override;
+  void operator()(Trace<protocol::json::Subbed> const &) override;
 
-  void operator()(Trace<json::BBO> const &) override;
-  void operator()(Trace<json::Depth> const &) override;
-  void operator()(Trace<json::Trade> const &) override;
-  void operator()(Trace<json::Detail> const &) override;
+  void operator()(Trace<protocol::json::BBO> const &) override;
+  void operator()(Trace<protocol::json::Depth> const &) override;
+  void operator()(Trace<protocol::json::Trade> const &) override;
+  void operator()(Trace<protocol::json::Detail> const &) override;
 
-  void operator()(Trace<json::EstimatedRate> const &) override;
-  void operator()(Trace<json::PremiumIndex> const &) override;
-  void operator()(Trace<json::Basis> const &) override;
-  void operator()(Trace<json::Index> const &) override;
+  void operator()(Trace<protocol::json::EstimatedRate> const &) override;
+  void operator()(Trace<protocol::json::PremiumIndex> const &) override;
+  void operator()(Trace<protocol::json::Basis> const &) override;
+  void operator()(Trace<protocol::json::Index> const &) override;
 
  private:
   Handler &handler_;

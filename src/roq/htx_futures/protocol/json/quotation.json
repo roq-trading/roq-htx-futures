@@ -1,0 +1,14 @@
+{
+  "name": "roq/htx_futures/protocol/json/Quotation",
+  "type": "by_index",
+  "values": [
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "vol",
+      "type": "std/double"
+    }
+  ]
+}

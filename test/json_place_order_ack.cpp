@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx_futures/json/place_order_ack.hpp"
+#include "roq/htx_futures/protocol/json/place_order_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::PlaceOrderAck;
+using value_type = protocol::json::PlaceOrderAck;
 
 TEST_CASE("success", "[json_place_order_ack]") {
   auto message = R"({)"
@@ -24,7 +24,7 @@ TEST_CASE("success", "[json_place_order_ack]") {
                  R"(},)"
                  R"("ts":1763891916921)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   value_type obj{message};
   helper(obj);
 }
@@ -36,7 +36,7 @@ TEST_CASE("failure", "[json_place_order_ack]") {
                  R"("err_msg":"Insufficient margin available.",)"
                  R"("ts":1763867554021)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::ERROR); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::ERROR); };
   value_type obj{message};
   helper(obj);
 }

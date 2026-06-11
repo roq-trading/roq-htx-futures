@@ -1,0 +1,19 @@
+{
+  "name": "roq/htx_futures/protocol/json/AccountInfoAck",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx_futures/protocol/json/Status"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx_futures/protocol/json/AccountInfoAckDataItem",
+      "array": "std/span"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    }
+  ]
+}

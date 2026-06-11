@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx_futures/json/open_orders_ack.hpp"
+#include "roq/htx_futures/protocol/json/open_orders_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::OpenOrdersAck;
+using value_type = protocol::json::OpenOrdersAck;
 
 TEST_CASE("coin_m_perpetual_empty", "[json_open_orders_ack]") {
   auto message = R"({)"
@@ -27,7 +27,7 @@ TEST_CASE("coin_m_perpetual_empty", "[json_open_orders_ack]") {
                  R"(},)"
                  R"("ts":1763987974231)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);
@@ -74,7 +74,7 @@ TEST_CASE("coin_m_perpetual_1", "[json_open_orders_ack]") {
                  R"("total_size":1},)"
                  R"("ts":1763988814735)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);
@@ -123,7 +123,7 @@ TEST_CASE("coin_m_perpetual_2", "[json_open_orders_ack]") {
                  R"("total_size":1},)"
                  R"("ts":1764653131151)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);
@@ -187,7 +187,7 @@ TEST_CASE("usdt_m_futures", "[json_open_orders_ack]") {
                  R"(},)"
                  R"("ts":1764843734292)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);

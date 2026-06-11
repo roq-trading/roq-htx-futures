@@ -13,7 +13,7 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/htx_futures/json/utils.hpp"
+#include "roq/htx_futures/protocol/json/utils.hpp"
 
 using namespace std::literals;
 
@@ -233,7 +233,7 @@ void WebSocket2::parse(std::string_view const &message) {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -243,21 +243,21 @@ void WebSocket2::parse(std::string_view const &message) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Close2> const &) {
+void WebSocket2::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
   });
 }
 
-void WebSocket2::operator()(Trace<json::Error2> const &) {
+void WebSocket2::operator()(Trace<protocol::json::Error2> const &) {
   profile_.close([&]() {
     log::warn("*** ERROR ***"sv);
     (*connection_).close();
   });
 }
 
-void WebSocket2::operator()(Trace<json::Ping> const &event) {
+void WebSocket2::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::info<4>("ping={}"sv, ping);
@@ -265,11 +265,11 @@ void WebSocket2::operator()(Trace<json::Ping> const &event) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Auth> const &) {
+void WebSocket2::operator()(Trace<protocol::json::Auth> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::Sub> const &event) {
+void WebSocket2::operator()(Trace<protocol::json::Sub> const &event) {
   profile_.sub([&]() {
     auto &[trace_info, sub] = event;
     if (sub.err_code != 0) {
@@ -278,7 +278,7 @@ void WebSocket2::operator()(Trace<json::Sub> const &event) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
+void WebSocket2::operator()(Trace<protocol::json::FundingRate> const &event) {
   profile_.funding_rate([&]() {
     auto &[trace_info, funding_rate] = event;
     log::info<3>("funding_rate={}"sv, funding_rate);
@@ -313,35 +313,35 @@ void WebSocket2::operator()(Trace<json::FundingRate> const &event) {
   });
 }
 
-void WebSocket2::operator()(Trace<json::Accounts> const &) {
+void WebSocket2::operator()(Trace<protocol::json::Accounts> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::Positions> const &) {
+void WebSocket2::operator()(Trace<protocol::json::Positions> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::MatchOrders> const &) {
+void WebSocket2::operator()(Trace<protocol::json::MatchOrders> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::Orders> const &) {
+void WebSocket2::operator()(Trace<protocol::json::Orders> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::AccountsCross> const &) {
+void WebSocket2::operator()(Trace<protocol::json::AccountsCross> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::PositionsCross> const &) {
+void WebSocket2::operator()(Trace<protocol::json::PositionsCross> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::MatchOrdersCross> const &) {
+void WebSocket2::operator()(Trace<protocol::json::MatchOrdersCross> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket2::operator()(Trace<json::OrdersCross> const &) {
+void WebSocket2::operator()(Trace<protocol::json::OrdersCross> const &) {
   log::fatal("Unexpected"sv);
 }
 

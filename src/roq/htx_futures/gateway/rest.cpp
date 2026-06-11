@@ -230,7 +230,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::ContractInfoAck contract_info_ack{body, decode_buffer_};
+        protocol::json::ContractInfoAck contract_info_ack{body, decode_buffer_};
         // XXX debug -- saw something 20220603 -- maybe like this
         if (std::empty(contract_info_ack.data)) {
           log::warn(R"(DEBUG: body="{}")"sv, body);
@@ -248,7 +248,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
   });
 }
 
-void Rest::operator()(Trace<json::ContractInfoAck> const &event) {
+void Rest::operator()(Trace<protocol::json::ContractInfoAck> const &event) {
   auto &[trace_info, contract_info_ack] = event;
   log::info<4>("contract_info_ack={}"sv, contract_info_ack);
   std::vector<Symbol> symbols;

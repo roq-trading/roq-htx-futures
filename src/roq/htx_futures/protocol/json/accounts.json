@@ -1,0 +1,31 @@
+{
+  "name": "roq/htx_futures/protocol/json/Accounts",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "op",
+      "type": "roq/htx_futures/protocol/json/Operator"
+    },
+    {
+      "name": "topic",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "event",
+      "type": "roq/htx_futures/protocol/json/Event"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx_futures/protocol/json/AccountsDataItem",
+      "array": "std/span"
+    },
+    {
+      "name": "uid",
+      "type": "std/string_view"
+    }
+  ]
+}

@@ -26,13 +26,13 @@
 #include "roq/htx_futures/gateway/order_entry.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
-#include "roq/htx_futures/json/parser_3.hpp"
+#include "roq/htx_futures/protocol/json/parser_3.hpp"
 
 namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public json::Parser3::Handler {
+struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public protocol::json::Parser3::Handler {
   OrderEntryWS(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
   OrderEntryWS(OrderEntryWS const &) = delete;
@@ -81,13 +81,13 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
 
   void parse(std::string_view const &message);
 
-  // json::Parser3::Handler
+  // protocol::json::Parser3::Handler
 
-  void operator()(Trace<json::Close2> const &) override;
-  void operator()(Trace<json::Error2> const &) override;
-  void operator()(Trace<json::Ping> const &) override;
-  void operator()(Trace<json::Auth> const &) override;
-  void operator()(Trace<json::Response> const &) override;
+  void operator()(Trace<protocol::json::Close2> const &) override;
+  void operator()(Trace<protocol::json::Error2> const &) override;
+  void operator()(Trace<protocol::json::Ping> const &) override;
+  void operator()(Trace<protocol::json::Auth> const &) override;
+  void operator()(Trace<protocol::json::Response> const &) override;
 
  private:
   OrderEntry::Handler &handler_;

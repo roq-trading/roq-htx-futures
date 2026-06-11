@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::AccountsCross;
+using value_type = protocol::json::AccountsCross;
 
 TEST_CASE("usdt_m_futures_init", "[json_accounts_across]") {
   auto message = R"({)"
@@ -68,6 +68,6 @@ TEST_CASE("usdt_m_futures_init", "[json_accounts_across]") {
                  R"(],)"
                  R"("uid":"573242943")"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::NOTIFY); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::NOTIFY); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 2);
 }

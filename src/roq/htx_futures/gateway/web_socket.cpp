@@ -15,7 +15,7 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/htx_futures/json/utils.hpp"
+#include "roq/htx_futures/protocol/json/utils.hpp"
 
 using namespace std::literals;
 
@@ -241,7 +241,7 @@ void WebSocket::parse(std::string_view const &message) {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -251,62 +251,62 @@ void WebSocket::parse(std::string_view const &message) {
   });
 }
 
-void WebSocket::operator()(Trace<json::Ping> const &event) {
+void WebSocket::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void WebSocket::operator()(Trace<json::Error> const &event) {
+void WebSocket::operator()(Trace<protocol::json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void WebSocket::operator()(Trace<json::Subbed> const &event) {
+void WebSocket::operator()(Trace<protocol::json::Subbed> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void WebSocket::operator()(Trace<json::BBO> const &) {
+void WebSocket::operator()(Trace<protocol::json::BBO> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::Depth> const &) {
+void WebSocket::operator()(Trace<protocol::json::Depth> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::Trade> const &) {
+void WebSocket::operator()(Trace<protocol::json::Trade> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::Detail> const &) {
+void WebSocket::operator()(Trace<protocol::json::Detail> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void WebSocket::operator()(Trace<json::EstimatedRate> const &event) {
+void WebSocket::operator()(Trace<protocol::json::EstimatedRate> const &event) {
   profile_.estimated_rate([&]() {
     auto &[trace_info, estimated_rate] = event;
     log::info<3>("estimated_rate={}"sv, estimated_rate);
   });
 }
 
-void WebSocket::operator()(Trace<json::PremiumIndex> const &event) {
+void WebSocket::operator()(Trace<protocol::json::PremiumIndex> const &event) {
   profile_.premium_index([&]() {
     auto &[trace_info, premium_index] = event;
     log::info<3>("premium_index={}"sv, premium_index);
   });
 }
 
-void WebSocket::operator()(Trace<json::Index> const &event) {
+void WebSocket::operator()(Trace<protocol::json::Index> const &event) {
   profile_.index([&]() {
     auto &[trace_info, index] = event;
     log::info<3>("index={}"sv, index);
-    auto symbol = json::extract_symbol(index.ch);
+    auto symbol = protocol::json::extract_symbol(index.ch);
     auto &tick = index.tick;
     auto statistics = Statistics{
         .type = StatisticsType::INDEX_VALUE,
@@ -328,7 +328,7 @@ void WebSocket::operator()(Trace<json::Index> const &event) {
   });
 }
 
-void WebSocket::operator()(Trace<json::Basis> const &event) {
+void WebSocket::operator()(Trace<protocol::json::Basis> const &event) {
   profile_.basis([&]() {
     auto &[trace_info, basis] = event;
     log::info<3>("basis={}"sv, basis);

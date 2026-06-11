@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Positions;
+using value_type = protocol::json::Positions;
 
 TEST_CASE("coin_m_perpetual", "[json_positions]") {
   auto message = R"({)"
@@ -88,7 +88,7 @@ TEST_CASE("coin_m_perpetual", "[json_positions]") {
                  R"(],)"
                  R"("uid":"573242943")"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::NOTIFY); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::NOTIFY); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
@@ -118,7 +118,7 @@ TEST_CASE("coin_m_perpetual_order_match", "[json_positions]") {
                  R"(],)"
                  R"("uid":"573242943")"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::NOTIFY); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::NOTIFY); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }
 
@@ -148,6 +148,6 @@ TEST_CASE("coin_m_perpetual_order_close", "[json_positions]") {
                  R"(],)"
                  R"("uid":"573242943")"
                  R"(})";
-  auto helper = [](value_type const &obj) { CHECK(obj.op == json::Operator::NOTIFY); };
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::NOTIFY); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }

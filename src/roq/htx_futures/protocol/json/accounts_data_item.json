@@ -1,0 +1,82 @@
+{
+  "name": "roq/htx_futures/protocol/json/AccountsDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_balance",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_static",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_position",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_frozen",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_available",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_real",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_unreal",
+      "type": "std/double"
+    },
+    {
+      "name": "withdraw_available",
+      "type": "std/double"
+    },
+    {
+      "name": "risk_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "liquidation_price",
+      "type": "std/double"
+    },
+    {
+      "name": "lever_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "adjust_factor",
+      "type": "std/double"
+    },
+    {
+      "name": "margin_asset",
+      "type": "std/string_view"
+    },
+    {
+      "name": "margin_mode",
+      "type": "roq/htx_futures/protocol/json/MarginMode"
+    },
+    {
+      "name": "margin_account",
+      "type": "std/string_view"
+    },
+    {
+      "name": "trade_partition",
+      "type": "std/string_view"
+    },
+    {
+      "name": "position_mode",
+      "type": "roq/htx_futures/protocol/json/PositionMode"
+    }
+  ]
+}

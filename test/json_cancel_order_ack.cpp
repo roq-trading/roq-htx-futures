@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx_futures/json/cancel_order_ack.hpp"
+#include "roq/htx_futures/protocol/json/cancel_order_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx_futures;
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::CancelOrderAck;
+using value_type = protocol::json::CancelOrderAck;
 
 TEST_CASE("success", "[json_cancel_order_ack]") {
   auto message = R"({)"
@@ -23,7 +23,7 @@ TEST_CASE("success", "[json_cancel_order_ack]") {
                  R"(},)"
                  R"("ts":1763961141034)"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   value_type obj{message};
   helper(obj);
 }
