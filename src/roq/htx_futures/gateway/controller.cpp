@@ -12,6 +12,8 @@
 
 #include "roq/server/oms/exceptions.hpp"
 
+#include "roq/htx_futures/gateway/api.hpp"
+
 #include "roq/htx_futures/gateway/order_entry_rest.hpp"
 #include "roq/htx_futures/gateway/order_entry_ws.hpp"
 
@@ -22,6 +24,14 @@ using namespace std::literals;
 namespace roq {
 namespace htx_futures {
 namespace gateway {
+
+// === CONSTANTS ===
+
+namespace {
+uint8_t const API_USDT_M_FUTURES = 0x0;
+uint8_t const API_COIN_M_DELIVERY = 0x1;
+uint8_t const API_COIN_M_PERPETUAL = 0x2;
+}  // namespace
 
 // === HELPERS ===
 
@@ -94,6 +104,20 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
 
 std::unique_ptr<server::Handler> Controller::create(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context) {
   return std::make_unique<Controller>(dispatcher, settings, config, context);
+}
+
+uint8_t Controller::parse_api(Settings const &settings) {
+  auto api = API::parse_api(settings);
+  switch (api) {
+    using enum gateway::API::Key;
+    case USDT_M_FUTURES:
+      return API_USDT_M_FUTURES;
+    case COIN_M_DELIVERY:
+      return API_COIN_M_DELIVERY;
+    case COIN_M_PERPETUAL:
+      return API_COIN_M_PERPETUAL;
+  }
+  log::fatal(R"(Unexpected: api="{}")"sv, settings.app.api);
 }
 
 Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)

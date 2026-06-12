@@ -40,6 +40,8 @@ struct Controller final : public server::Handler,
                           public WebSocket2::Handler {
   ROQ_PUBLIC static std::unique_ptr<server::Handler> create(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
+  ROQ_PUBLIC static uint8_t parse_api(Settings const &);
+
   Controller(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
   Controller(Controller const &) = delete;
