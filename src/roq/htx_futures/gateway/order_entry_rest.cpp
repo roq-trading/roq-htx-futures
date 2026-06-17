@@ -340,7 +340,7 @@ void OrderEntryREST::operator()(Trace<protocol::json::OpenOrdersAck> const &even
         .sending_time_utc = open_orders_ack.ts,
     };
     Trace event_2{trace_info, order_update};
-    (*this)(event_2, client_order_id);
+    (*this)(event_2);
   }
 }
 
@@ -714,9 +714,9 @@ void OrderEntryREST::operator()(Trace<server::oms::Response> const &event, uint8
   }
 }
 
-void OrderEntryREST::operator()(Trace<server::oms::OrderUpdate> const &event, std::string_view const &client_order_id) {
+void OrderEntryREST::operator()(Trace<server::oms::OrderUpdate> const &event) {
   auto &[trace_info, order_update] = event;
-  if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {})) {
+  if (shared_.update_order(stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }

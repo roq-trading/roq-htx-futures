@@ -356,7 +356,7 @@ void OrderEntryWS::operator()(Trace<protocol::json::Response> const &event) {
       .price = NaN,
   };
   auto helper = []([[maybe_unused]] auto &order) {};
-  if (shared_.update_order(request_id, stream_id_, trace_info, response_2, helper)) {
+  if (shared_.update_order(stream_id_, trace_info, response_2, helper)) {
   } else {
     log::warn(R"(Did not find order: request_id="{}")"sv, request_id);
   }

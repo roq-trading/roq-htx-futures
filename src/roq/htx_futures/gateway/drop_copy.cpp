@@ -422,7 +422,7 @@ void DropCopy::operator()(Trace<protocol::json::MatchOrders> const &event) {
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
-    if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&](auto &order) {
+    if (shared_.update_order(stream_id_, trace_info, order_update, [&](auto &order) {
           user_id = order.user_id;
           order_id = order.order_id;
           strategy_id = order.strategy_id;
@@ -488,7 +488,7 @@ void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
-    if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&](auto &order) {
+    if (shared_.update_order(stream_id_, trace_info, order_update, [&](auto &order) {
           user_id = order.user_id;
           order_id = order.order_id;
           strategy_id = order.strategy_id;
@@ -617,7 +617,7 @@ void DropCopy::operator()(Trace<protocol::json::MatchOrdersCross> const &event) 
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
-    if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&](auto &order) {
+    if (shared_.update_order(stream_id_, trace_info, order_update, [&](auto &order) {
           user_id = order.user_id;
           order_id = order.order_id;
           strategy_id = order.strategy_id;
@@ -685,7 +685,7 @@ void DropCopy::operator()(Trace<protocol::json::OrdersCross> const &event) {
     auto user_id = SOURCE_NONE;
     auto order_id = ORDER_ID_NONE;
     auto strategy_id = STRATEGY_ID_NONE;
-    if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, [&](auto &order) {
+    if (shared_.update_order(stream_id_, trace_info, order_update, [&](auto &order) {
           user_id = order.user_id;
           order_id = order.order_id;
           strategy_id = order.strategy_id;
