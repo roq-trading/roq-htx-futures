@@ -355,11 +355,7 @@ void OrderEntryWS::operator()(Trace<protocol::json::Response> const &event) {
       .quantity = NaN,
       .price = NaN,
   };
-  auto helper = []([[maybe_unused]] auto &order) {};
-  if (shared_.update_order(stream_id_, trace_info, response_2, helper)) {
-  } else {
-    log::warn(R"(Did not find order: request_id="{}")"sv, request_id);
-  }
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id_);
 }
 
 }  // namespace gateway

@@ -112,11 +112,6 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
 
-  template <typename... Args>
-  void operator()(Trace<server::oms::Response> const &, uint8_t user_id, uint64_t order_id, Args &&...);
-
-  void operator()(Trace<server::oms::OrderUpdate> const &);
-
  private:
   OrderEntry::Handler &handler_;
   // config
