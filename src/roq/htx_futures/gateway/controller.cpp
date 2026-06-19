@@ -233,48 +233,7 @@ void Controller::operator()(metrics::Writer &writer) const {
   dispatch_helper(*this, writer);
 }
 
-// streams
-
-void Controller::operator()(Trace<StreamStatus> const &event) {
-  dispatcher_(event);
-}
-
-void Controller::operator()(Trace<ExternalLatency> const &event) {
-  dispatcher_(event);
-}
-
-void Controller::operator()(Trace<ReferenceData> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Controller::operator()(Trace<MarketStatus> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Controller::operator()(Trace<TopOfBook> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Controller::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
-  auto callback = []([[maybe_unused]] auto &market_by_price) {};
-  dispatcher_(event, is_last, bids_, asks_, callback);
-}
-
-void Controller::operator()(Trace<TradeSummary> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Controller::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Controller::operator()(Trace<FundsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Controller::operator()(Trace<PositionUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
+// Rest::Handler
 
 void Controller::operator()(Rest::SymbolsUpdate &symbols_update) {
   auto [size, start_from] = shared_.symbols(symbols_update.symbols);

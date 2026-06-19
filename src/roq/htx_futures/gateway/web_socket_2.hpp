@@ -30,11 +30,7 @@ namespace htx_futures {
 namespace gateway {
 
 struct WebSocket2 final : public web::socket::Client::Handler, public protocol::json::Parser2::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
-  };
+  struct Handler {};
 
   WebSocket2(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
