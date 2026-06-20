@@ -4,6 +4,8 @@
 
 #include "roq/api.hpp"
 
+#include "roq/server.hpp"
+
 namespace roq {
 namespace htx_futures {
 namespace gateway {

@@ -2,18 +2,13 @@
 
 #include "roq/htx_futures/gateway/web_socket.hpp"
 
-#include <algorithm>
+#include "roq/logging.hpp"
 
 #include "roq/mask.hpp"
-
-#include "roq/utils/safe_cast.hpp"
-#include "roq/utils/update.hpp"
 
 #include "roq/utils/exceptions/unhandled.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
-
-#include "roq/web/socket/client.hpp"
 
 #include "roq/htx_futures/protocol/json/utils.hpp"
 

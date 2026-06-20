@@ -3,8 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
-#include <vector>
 
 #include "roq/utils/metrics/counter.hpp"
 #include "roq/utils/metrics/latency.hpp"
@@ -38,8 +36,6 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   OrderEntryREST(OrderEntry const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
   void operator()(Event<Timer> const &) override;
@@ -68,6 +64,10 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   void operator()(Trace<web::rest::Client::Connected> const &) override;
   void operator()(Trace<web::rest::Client::Disconnected> const &) override;
   void operator()(Trace<web::rest::Client::Latency> const &) override;
+
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 

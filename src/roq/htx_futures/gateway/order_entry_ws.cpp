@@ -4,15 +4,11 @@
 
 #include "roq/mask.hpp"
 
-#include "roq/utils/update.hpp"
-
 #include "roq/utils/exceptions/unhandled.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
 
 #include "roq/server/oms/exceptions.hpp"
-
-#include "roq/web/socket/client.hpp"
 
 #include "roq/htx_futures/protocol/json/encoder.hpp"
 #include "roq/htx_futures/protocol/json/map.hpp"

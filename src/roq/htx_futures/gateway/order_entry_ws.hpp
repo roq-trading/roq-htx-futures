@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "roq/utils/metrics/counter.hpp"
@@ -15,8 +14,6 @@
 #include "roq/web/socket/client.hpp"
 
 #include "roq/core/zlib/inflate.hpp"
-
-#include "roq/core/download.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
 
@@ -36,8 +33,6 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   OrderEntryWS(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
   OrderEntryWS(OrderEntryWS const &) = delete;
-
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
@@ -72,7 +67,10 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
 
- private:
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void send_pong(std::chrono::milliseconds timestamp);

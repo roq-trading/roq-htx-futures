@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "roq/utils/metrics/counter.hpp"
@@ -15,8 +14,6 @@
 #include "roq/web/socket/client.hpp"
 
 #include "roq/core/zlib/inflate.hpp"
-
-#include "roq/core/download.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
 
@@ -38,8 +35,6 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
 
   DropCopy(DropCopy const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
@@ -47,6 +42,8 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
   void operator()(metrics::Writer &) const;
 
  protected:
+  // web::socket::Client::Handler
+
   void operator()(web::socket::Client::Connected const &) override;
   void operator()(web::socket::Client::Disconnected const &) override;
   void operator()(web::socket::Client::Ready const &) override;
@@ -55,7 +52,10 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
 
- private:
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void send_pong(std::chrono::milliseconds timestamp);
@@ -66,6 +66,8 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
   void subscribe(std::string_view const &topic);
 
   void parse(std::string_view const &message);
+
+  // protocol::json::Parser2::Handler
 
   void operator()(Trace<protocol::json::Close2> const &) override;
   void operator()(Trace<protocol::json::Error2> const &) override;

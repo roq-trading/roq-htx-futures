@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "roq/utils/metrics/counter.hpp"
@@ -14,7 +13,6 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/core/download.hpp"
 #include "roq/core/zlib/inflate.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
@@ -36,8 +34,6 @@ struct WebSocket2 final : public web::socket::Client::Handler, public protocol::
 
   WebSocket2(WebSocket2 const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
@@ -47,6 +43,8 @@ struct WebSocket2 final : public web::socket::Client::Handler, public protocol::
   void subscribe(size_t start_from = 0);
 
  protected:
+  // web::socket::Client::Handler
+
   void operator()(web::socket::Client::Connected const &) override;
   void operator()(web::socket::Client::Disconnected const &) override;
   void operator()(web::socket::Client::Ready const &) override;
@@ -55,7 +53,10 @@ struct WebSocket2 final : public web::socket::Client::Handler, public protocol::
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
 
- private:
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void subscribe(std::span<Symbol const> const &symbols);
@@ -64,6 +65,8 @@ struct WebSocket2 final : public web::socket::Client::Handler, public protocol::
   void send_pong(std::chrono::milliseconds timestamp);
 
   void parse(std::string_view const &message);
+
+  // protocol::json::Parser2::Handler
 
   void operator()(Trace<protocol::json::Close2> const &) override;
   void operator()(Trace<protocol::json::Error2> const &) override;
