@@ -88,7 +88,7 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   void operator()(Trace<protocol::json::Response> const &) override;
 
  private:
-  OrderEntry::Handler &handler_;
+  [[maybe_unused]] OrderEntry::Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
