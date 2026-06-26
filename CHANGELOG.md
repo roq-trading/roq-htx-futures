@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Removed
+
+* BREAKING CHANGE: Remove default URIs (#611)
+
 ### Changed
 
 * BREAKING CHANGE: ClOrdID now using 3 bits for API and 3 bits for instance number (#607)

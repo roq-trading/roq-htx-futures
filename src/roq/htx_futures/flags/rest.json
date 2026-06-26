@@ -7,7 +7,6 @@
       "name": "uri",
       "type": "roq/io/web/URI",
       "validator": "roq/core/flags/URI",
-      "default": "https://api.hbdm.com",
       "description": "Exchange end-point"
     },
     {
