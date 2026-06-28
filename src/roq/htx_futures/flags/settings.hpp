@@ -19,7 +19,7 @@ namespace roq {
 namespace htx_futures {
 namespace flags {
 
-struct ROQ_PUBLIC Settings final : public server::flags::Settings {
+struct ROQ_PUBLIC Settings : public server::flags::Settings {
   explicit Settings(args::Parser const &);
 
   std::string_view exchange;
