@@ -6,7 +6,7 @@
 
 namespace roq {
 namespace htx_futures {
-namespace proto_bridge {
+namespace bridge {
 
 struct Application final : public Service {
   using Service::Service;
@@ -15,6 +15,6 @@ struct Application final : public Service {
   int main(args::Parser const &) override;
 };
 
-}  // namespace proto_bridge
+}  // namespace bridge
 }  // namespace htx_futures
 }  // namespace roq
