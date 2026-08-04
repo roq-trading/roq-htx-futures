@@ -75,6 +75,10 @@
     {
       "name": "settlement_period",
       "type": "std/int32"
+    },
+    {
+      "name": "scheduled_open_time",
+      "type": "std/milliseconds"
     }
   ]
 }
