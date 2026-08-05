@@ -78,7 +78,7 @@
     },
     {
       "name": "scheduled_open_time",
-      "type": "std/milliseconds"
+      "type": "std/string_view"
     }
   ]
 }
