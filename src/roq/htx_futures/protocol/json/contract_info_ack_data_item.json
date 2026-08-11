@@ -79,6 +79,12 @@
     {
       "name": "scheduled_open_time",
       "type": "std/milliseconds"
+    },
+    {
+      "name": "labels"
+    },
+    {
+      "name": "tradfi_labels"
     }
   ]
 }
