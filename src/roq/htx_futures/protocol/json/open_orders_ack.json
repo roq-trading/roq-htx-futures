@@ -13,6 +13,14 @@
     {
       "name": "ts",
       "type": "std/milliseconds"
+    },
+    {
+      "name": "err_code",
+      "type": "std/int32"
+    },
+    {
+      "name": "err_msg",
+      "type": "std/string_view"
     }
   ]
 }

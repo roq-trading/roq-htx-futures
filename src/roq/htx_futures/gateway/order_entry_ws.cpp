@@ -311,8 +311,13 @@ void OrderEntryWS::operator()(Trace<protocol::json::Auth> const &event) {
     if (auth.err_code == 0) {
       (*this)(ConnectionStatus::READY);
     } else {
-      log::error(R"(Authentication failed: code={}, msg="{}")"sv, auth.err_code, auth.err_msg);
-      (*connection_).close();
+      if (shared_.settings.experimental.retry_logon) {
+        log::error("auth={}"sv, auth);
+        log::warn("Disconneting..."sv);
+        (*connection_).close();
+      } else {
+        log::fatal("auth={}"sv, auth);
+      }
     }
   });
 }
