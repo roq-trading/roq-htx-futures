@@ -289,11 +289,11 @@ void DropCopy::operator()(Trace<protocol::json::Auth> const &event) {
       (*this)(ConnectionStatus::READY);
     } else {
       if (shared_.settings.experimental.retry_logon) {
-        log::error("auth={}"sv, auth);
+        log::error("[{}] auth={}"sv, account_.name, auth);
         log::warn("Disconnecting..."sv);
         (*connection_).close();
       } else {
-        log::fatal("auth={}"sv, auth);
+        log::fatal("[{}] auth={}"sv, account_.name, auth);
       }
     }
   });
