@@ -23,11 +23,13 @@ namespace tools {
 // === HELPERS ===
 
 namespace {
+#ifdef USE_ED25
 template <typename R>
 auto create_ed25519(auto &secret) {
   using result_type = std::remove_cvref_t<R>;
   return result_type::create(secret, false);
 }
+#endif
 }  // namespace
 
 // === IMPLEMENTATION ===
