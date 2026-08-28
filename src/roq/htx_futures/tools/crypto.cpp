@@ -23,10 +23,6 @@ namespace tools {
 // === HELPERS ===
 
 namespace {
-auto create_hmac_sha256(auto const &secret) {
-  return utils::mac::HMAC<utils::hash::SHA256>{secret};
-}
-
 template <typename R>
 auto create_ed25519(auto &secret) {
   using result_type = std::remove_cvref_t<R>;
