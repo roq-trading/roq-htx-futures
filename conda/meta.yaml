@@ -27,9 +27,9 @@ requirements:
     - catch2
     - fmt
     - libabseil
-    - libopenssl-static  # note! roq-utils
+    - libopenssl-static  # roq-utils
     - magic_enum
-    - openssl  # note! roq-utils
+    - openssl  # roq-utils
     - roq-api
     - roq-cache
     - roq-codec
@@ -48,7 +48,6 @@ requirements:
     - unordered_dense
   run:
     - benchmark
-    - zstd  # ???
 
 about:
   home: https://roq-trading.com
