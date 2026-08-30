@@ -25,6 +25,7 @@ requirements:
     - catch2
     - fmt
     - libabseil
+    - libopenssl-static  # note! roq-utils
     - magic_enum
     - roq-api
     - roq-cache
