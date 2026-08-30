@@ -27,6 +27,7 @@ requirements:
     - libabseil
     - libopenssl-static  # note! roq-utils
     - magic_enum
+    - openssl  # note! roq-utils
     - roq-api
     - roq-cache
     - roq-codec
