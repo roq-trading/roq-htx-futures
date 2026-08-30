@@ -46,6 +46,7 @@ requirements:
     - unordered_dense
   run:
     - benchmark
+    - zstd  # ???
 
 about:
   home: https://roq-trading.com
