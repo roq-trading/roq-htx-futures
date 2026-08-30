@@ -8,6 +8,8 @@ source:
 build:
   skip: true  # [not unix]
   number: {{ ROQ_BUILD_NUMBER if ROQ_BUILD_NUMBER is defined else GIT_DESCRIBE_NUMBER }}
+  ignore_run_exports_from:
+    - openssl
 
 requirements:
   build:
