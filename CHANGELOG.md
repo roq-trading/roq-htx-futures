@@ -4,6 +4,8 @@ All notable changes will be documented in this file.
 
 ## Head
 
+## 1.1.8 &ndash; 2026-09-04
+
 ### Changed
 
 * Exchange logon policy (experimental) (#625)
