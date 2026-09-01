@@ -23,8 +23,7 @@ requirements:
     - pkg-config
     - roq-autogen
   host:
-    - benchmark
-    - catch2
+    - catch2  # [osx]
     - fmt
     - libabseil
     - libopenssl-static  # roq-utils
@@ -39,6 +38,8 @@ requirements:
     - roq-io
     - roq-logging
     - roq-market
+    - roq-oss-benchmark
+    - roq-oss-catch2  # [linux]
     - roq-oss-nameof
     - roq-oss-tomlplusplus
     - roq-oss-zlib-ng
@@ -46,8 +47,6 @@ requirements:
     - roq-utils
     - roq-web
     - unordered_dense
-  run:
-    - benchmark
 
 about:
   home: https://roq-trading.com
