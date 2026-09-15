@@ -264,6 +264,7 @@ void Rest::operator()(Trace<protocol::json::ContractInfoAck> const &event) {
         .description = item.contract_code,
         .security_type = {},
         .external_security_id = {},
+        .market_segment = {},
         .cfi_code = {},
         .base_currency = {},
         .quote_currency = {},
