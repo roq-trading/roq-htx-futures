@@ -307,6 +307,7 @@ void OrderEntryREST::operator()(Trace<protocol::json::OpenOrdersAck> const &even
         .order_type = map(item.order_price_type),
         .time_in_force = {},
         .execution_instructions = {},
+        .execution_destination = {},
         .create_time_utc = item.created_at,
         .update_time_utc = item.created_at,
         .external_account = {},
