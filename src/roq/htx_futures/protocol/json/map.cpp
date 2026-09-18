@@ -95,6 +95,70 @@ std::optional<roq::UpdateType> Map<htx_futures::protocol::json::Event>::helper()
   return Helper{args_};
 }
 
+// htx_futures::protocol::json::Event5 ==> roq::UpdateType
+
+template <>
+template <>
+constexpr Helper<htx_futures::protocol::json::Event5>::operator std::optional<roq::UpdateType>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::protocol::json::Event5::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::UpdateType::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::UpdateType::UNDEFINED;
+    case SNAPSHOT:
+      return roq::UpdateType::SNAPSHOT;
+    case CREATE_ORDER:
+      return roq::UpdateType::INCREMENTAL;
+    case CANCEL_ORDER:
+      return roq::UpdateType::INCREMENTAL;
+    case FILLED:
+      return roq::UpdateType::INCREMENTAL;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::UNDEFINED_INTERNAL}} == roq::UpdateType::UNDEFINED);
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::SNAPSHOT}} == roq::UpdateType::SNAPSHOT);
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::CREATE_ORDER}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::CANCEL_ORDER}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::FILLED}} == roq::UpdateType::INCREMENTAL);
+
+template <>
+template <>
+std::optional<roq::UpdateType> Map<htx_futures::protocol::json::Event5>::helper() const {
+  return Helper{args_};
+}
+
+// htx_futures::protocol::json::MarginMode ==> roq::MarginMode
+
+template <>
+template <>
+constexpr Helper<htx_futures::protocol::json::MarginMode>::operator std::optional<roq::MarginMode>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::protocol::json::MarginMode::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::MarginMode::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::MarginMode::UNDEFINED;
+    case ISOLATED:
+      return roq::MarginMode::ISOLATED;
+    case CROSS:
+      return roq::MarginMode::CROSS;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::protocol::json::MarginMode{htx_futures::protocol::json::MarginMode::UNDEFINED_INTERNAL}} == roq::MarginMode::UNDEFINED);
+static_assert(Helper{htx_futures::protocol::json::MarginMode{htx_futures::protocol::json::MarginMode::ISOLATED}} == roq::MarginMode::ISOLATED);
+static_assert(Helper{htx_futures::protocol::json::MarginMode{htx_futures::protocol::json::MarginMode::CROSS}} == roq::MarginMode::CROSS);
+
+template <>
+template <>
+std::optional<roq::MarginMode> Map<htx_futures::protocol::json::MarginMode>::helper() const {
+  return Helper{args_};
+}
+
 // htx_futures::protocol::json::Offset ==> roq::PositionEffect
 
 template <>
@@ -202,6 +266,157 @@ std::optional<roq::OrderType> Map<htx_futures::protocol::json::OrderPriceType>::
   return Helper{args_};
 }
 
+// htx_futures::protocol::json::OrderState ==> roq::OrderStatus
+
+template <>
+template <>
+constexpr Helper<htx_futures::protocol::json::OrderState>::operator std::optional<roq::OrderStatus>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::protocol::json::OrderState::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::OrderStatus::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::OrderStatus::UNDEFINED;
+    case NEW:
+      return roq::OrderStatus::WORKING;
+    case CANCELED:
+      return roq::OrderStatus::CANCELED;
+    case FILLED:
+      return roq::OrderStatus::COMPLETED;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::UNDEFINED_INTERNAL}} == roq::OrderStatus::UNDEFINED);
+static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::NEW}} == roq::OrderStatus::WORKING);
+static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::CANCELED}} == roq::OrderStatus::CANCELED);
+static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::FILLED}} == roq::OrderStatus::COMPLETED);
+
+template <>
+template <>
+std::optional<roq::OrderStatus> Map<htx_futures::protocol::json::OrderState>::helper() const {
+  return Helper{args_};
+}
+
+// htx_futures::protocol::json::OrderType ==> roq::OrderType
+
+template <>
+template <>
+constexpr Helper<htx_futures::protocol::json::OrderType>::operator std::optional<roq::OrderType>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::protocol::json::OrderType::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::OrderType::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::OrderType::UNDEFINED;
+    case MARKET:
+      return roq::OrderType::MARKET;
+    case LIMIT:
+      return roq::OrderType::LIMIT;
+    case POST_ONLY:
+      return roq::OrderType::LIMIT;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::UNDEFINED_INTERNAL}} == roq::OrderType::UNDEFINED);
+static_assert(Helper{htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::MARKET}} == roq::OrderType::MARKET);
+static_assert(Helper{htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::LIMIT}} == roq::OrderType::LIMIT);
+static_assert(Helper{htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::POST_ONLY}} == roq::OrderType::LIMIT);
+
+template <>
+template <>
+std::optional<roq::OrderType> Map<htx_futures::protocol::json::OrderType>::helper() const {
+  return Helper{args_};
+}
+
+// {htx_futures::protocol::json::PositionSide, htx_futures::protocol::json::Side} ==> roq::PositionEffect
+
+template <>
+template <>
+constexpr Helper<htx_futures::protocol::json::PositionSide, htx_futures::protocol::json::Side>::operator std::optional<roq::PositionEffect>() const {
+  auto &[position_side, side] = args_;
+  switch (position_side) {
+    using enum htx_futures::protocol::json::PositionSide::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::PositionEffect::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::PositionEffect::UNDEFINED;
+    case LONG:
+      switch (side) {
+        using enum htx_futures::protocol::json::Side::type_t;
+        case UNDEFINED_INTERNAL:
+          return roq::PositionEffect::UNDEFINED;
+        case UNKNOWN_INTERNAL:
+          return roq::PositionEffect::UNDEFINED;
+        case BUY:
+          return roq::PositionEffect::OPEN;
+        case SELL:
+          return roq::PositionEffect::CLOSE;
+      }
+      break;
+    case SHORT:
+      switch (side) {
+        using enum htx_futures::protocol::json::Side::type_t;
+        case UNDEFINED_INTERNAL:
+          return roq::PositionEffect::UNDEFINED;
+        case UNKNOWN_INTERNAL:
+          return roq::PositionEffect::UNDEFINED;
+        case BUY:
+          return roq::PositionEffect::CLOSE;
+        case SELL:
+          return roq::PositionEffect::OPEN;
+      }
+      break;
+    case BOTH:
+      return roq::PositionEffect::UNDEFINED;
+  }
+  return {};
+}
+
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::UNDEFINED_INTERNAL},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::UNDEFINED_INTERNAL}} == roq::PositionEffect::UNDEFINED);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::UNDEFINED_INTERNAL},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::BUY}} == roq::PositionEffect::UNDEFINED);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::UNDEFINED_INTERNAL},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::SELL}} == roq::PositionEffect::UNDEFINED);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::LONG},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::BUY}} == roq::PositionEffect::OPEN);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::LONG},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::SELL}} == roq::PositionEffect::CLOSE);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::SHORT},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::BUY}} == roq::PositionEffect::CLOSE);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::SHORT},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::SELL}} == roq::PositionEffect::OPEN);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::BOTH},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::BUY}} == roq::PositionEffect::UNDEFINED);
+static_assert(
+    Helper{
+        htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::BOTH},
+        htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::SELL}} == roq::PositionEffect::UNDEFINED);
+
+template <>
+template <>
+std::optional<roq::PositionEffect> Map<htx_futures::protocol::json::PositionSide, htx_futures::protocol::json::Side>::helper() const {
+  return Helper{args_};
+}
+
 // htx_futures::protocol::json::Role ==> roq::Liquidity
 
 template <>
@@ -228,6 +443,35 @@ static_assert(Helper{htx_futures::protocol::json::Role{htx_futures::protocol::js
 template <>
 template <>
 std::optional<roq::Liquidity> Map<htx_futures::protocol::json::Role>::helper() const {
+  return Helper{args_};
+}
+
+// htx_futures::protocol::json::Side ==> roq::Side
+
+template <>
+template <>
+constexpr Helper<htx_futures::protocol::json::Side>::operator std::optional<roq::Side>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx_futures::protocol::json::Side::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::Side::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::Side::UNDEFINED;
+    case BUY:
+      return roq::Side::BUY;
+    case SELL:
+      return roq::Side::SELL;
+  }
+  return {};
+}
+
+static_assert(Helper{htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::UNDEFINED_INTERNAL}} == roq::Side::UNDEFINED);
+static_assert(Helper{htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::BUY}} == roq::Side::BUY);
+static_assert(Helper{htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::SELL}} == roq::Side::SELL);
+
+template <>
+template <>
+std::optional<roq::Side> Map<htx_futures::protocol::json::Side>::helper() const {
   return Helper{args_};
 }
 
@@ -267,6 +511,74 @@ std::optional<roq::OrderStatus> Map<std::int32_t>::helper() const {
   return Helper{args_};
 }
 // roq ==> htx_futures::json
+
+// roq::MarginMode ==> htx_futures::protocol::json::MarginMode
+
+template <>
+template <>
+constexpr Helper<roq::MarginMode>::operator std::optional<htx_futures::protocol::json::MarginMode>() const {
+  switch (std::get<0>(args_)) {
+    using enum roq::MarginMode;
+    case UNDEFINED:
+      return htx_futures::protocol::json::MarginMode::UNDEFINED_INTERNAL;
+    case ISOLATED:
+      return htx_futures::protocol::json::MarginMode::ISOLATED;
+    case CROSS:
+      return htx_futures::protocol::json::MarginMode::CROSS;
+    case PORTFOLIO:
+      break;
+  }
+  return {};
+}
+
+static_assert(Helper{roq::MarginMode::UNDEFINED} == htx_futures::protocol::json::MarginMode{htx_futures::protocol::json::MarginMode::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::MarginMode::ISOLATED} == htx_futures::protocol::json::MarginMode{htx_futures::protocol::json::MarginMode::ISOLATED});
+static_assert(Helper{roq::MarginMode::CROSS} == htx_futures::protocol::json::MarginMode{htx_futures::protocol::json::MarginMode::CROSS});
+
+template <>
+template <>
+std::optional<htx_futures::protocol::json::MarginMode> Map<roq::MarginMode>::helper() const {
+  return Helper{args_};
+}
+
+// {roq::OrderType, Mask<roq::ExecutionInstruction>} ==> htx_futures::protocol::json::OrderType
+
+template <>
+template <>
+constexpr Helper<roq::OrderType, Mask<roq::ExecutionInstruction>>::operator std::optional<htx_futures::protocol::json::OrderType>() const {
+  auto &[order_type, execution_instructions] = args_;
+  switch (std::get<0>(args_)) {
+    using enum roq::OrderType;
+    case UNDEFINED:
+      return htx_futures::protocol::json::OrderType::UNDEFINED_INTERNAL;
+    case MARKET:
+      return htx_futures::protocol::json::OrderType::MARKET;
+    case LIMIT:
+      if (execution_instructions.has(ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE)) {
+        return htx_futures::protocol::json::OrderType::POST_ONLY;
+      }
+      return htx_futures::protocol::json::OrderType::LIMIT;
+  }
+  return {};
+}
+
+static_assert(
+    Helper{roq::OrderType::UNDEFINED, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::UNDEFINED_INTERNAL});
+static_assert(
+    Helper{roq::OrderType::MARKET, Mask<roq::ExecutionInstruction>{}} ==
+    htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::MARKET});
+static_assert(
+    Helper{roq::OrderType::LIMIT, Mask<roq::ExecutionInstruction>{}} == htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::LIMIT});
+static_assert(
+    Helper{roq::OrderType::LIMIT, Mask{ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE}} ==
+    htx_futures::protocol::json::OrderType{htx_futures::protocol::json::OrderType::POST_ONLY});
+
+template <>
+template <>
+std::optional<htx_futures::protocol::json::OrderType> Map<roq::OrderType, Mask<roq::ExecutionInstruction>>::helper() const {
+  return Helper{args_};
+}
 
 // {roq::OrderType, roq::TimeInForce} ==> htx_futures::protocol::json::OrderPriceType
 
@@ -370,6 +682,34 @@ std::optional<htx_futures::protocol::json::Offset> Map<roq::PositionEffect>::hel
   return Helper{args_};
 }
 
+// roq::PositionEffect ==> htx_futures::protocol::json::PositionSide
+
+template <>
+template <>
+constexpr Helper<roq::PositionEffect>::operator std::optional<htx_futures::protocol::json::PositionSide>() const {
+  switch (std::get<0>(args_)) {
+    using enum roq::PositionEffect;
+    case UNDEFINED:
+      return htx_futures::protocol::json::PositionSide::UNDEFINED_INTERNAL;
+    case OPEN:
+      return htx_futures::protocol::json::PositionSide::LONG;
+    case CLOSE:
+      return htx_futures::protocol::json::PositionSide::SHORT;
+  }
+  return {};
+}
+
+static_assert(
+    Helper{roq::PositionEffect::UNDEFINED} == htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::PositionEffect::OPEN} == htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::LONG});
+static_assert(Helper{roq::PositionEffect::CLOSE} == htx_futures::protocol::json::PositionSide{htx_futures::protocol::json::PositionSide::SHORT});
+
+template <>
+template <>
+std::optional<htx_futures::protocol::json::PositionSide> Map<roq::PositionEffect>::helper() const {
+  return Helper{args_};
+}
+
 // roq::Side ==> htx_futures::protocol::json::Direction
 
 template <>
@@ -394,6 +734,83 @@ static_assert(Helper{roq::Side::SELL} == htx_futures::protocol::json::Direction{
 template <>
 template <>
 std::optional<htx_futures::protocol::json::Direction> Map<roq::Side>::helper() const {
+  return Helper{args_};
+}
+
+// roq::Side ==> htx_futures::protocol::json::Side
+
+template <>
+template <>
+constexpr Helper<roq::Side>::operator std::optional<htx_futures::protocol::json::Side>() const {
+  switch (std::get<0>(args_)) {
+    using enum roq::Side;
+    case UNDEFINED:
+      return htx_futures::protocol::json::Side::UNDEFINED_INTERNAL;
+    case BUY:
+      return htx_futures::protocol::json::Side::BUY;
+    case SELL:
+      return htx_futures::protocol::json::Side::SELL;
+  }
+  return {};
+}
+
+static_assert(Helper{roq::Side::UNDEFINED} == htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::Side::BUY} == htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::BUY});
+static_assert(Helper{roq::Side::SELL} == htx_futures::protocol::json::Side{htx_futures::protocol::json::Side::SELL});
+
+template <>
+template <>
+std::optional<htx_futures::protocol::json::Side> Map<roq::Side>::helper() const {
+  return Helper{args_};
+}
+
+// roq::TimeInForce ==> htx_futures::protocol::json::TimeInForce
+
+template <>
+template <>
+constexpr Helper<roq::TimeInForce>::operator std::optional<htx_futures::protocol::json::TimeInForce>() const {
+  switch (std::get<0>(args_)) {
+    using enum roq::TimeInForce;
+    case UNDEFINED:
+      return htx_futures::protocol::json::TimeInForce::UNDEFINED_INTERNAL;
+    case GFD:
+      break;
+    case GTC:
+      return htx_futures::protocol::json::TimeInForce::GTC;
+    case OPG:
+      break;
+    case IOC:
+      return htx_futures::protocol::json::TimeInForce::IOC;
+    case FOK:
+      return htx_futures::protocol::json::TimeInForce::FOK;
+    case GTX:
+      break;
+    case GTD:
+      break;
+    case AT_THE_CLOSE:
+      break;
+    case GOOD_THROUGH_CROSSING:
+      break;
+    case AT_CROSSING:
+      break;
+    case GOOD_FOR_TIME:
+      break;
+    case GFA:
+      break;
+    case GFM:
+      break;
+  }
+  return {};
+}
+
+static_assert(Helper{roq::TimeInForce::UNDEFINED} == htx_futures::protocol::json::TimeInForce{htx_futures::protocol::json::TimeInForce::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::TimeInForce::GTC} == htx_futures::protocol::json::TimeInForce{htx_futures::protocol::json::TimeInForce::GTC});
+static_assert(Helper{roq::TimeInForce::IOC} == htx_futures::protocol::json::TimeInForce{htx_futures::protocol::json::TimeInForce::IOC});
+static_assert(Helper{roq::TimeInForce::FOK} == htx_futures::protocol::json::TimeInForce{htx_futures::protocol::json::TimeInForce::FOK});
+
+template <>
+template <>
+std::optional<htx_futures::protocol::json::TimeInForce> Map<roq::TimeInForce>::helper() const {
   return Helper{args_};
 }
 

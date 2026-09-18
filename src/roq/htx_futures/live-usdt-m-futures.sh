@@ -28,4 +28,5 @@ $PREFIX ./roq-htx-futures \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
   --api="$API" \
   --ws_api=$WS_API \
+  --download_symbols="APT-USDT,BTC-USDT,ETH-USDT" \
   $@

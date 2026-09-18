@@ -24,3 +24,15 @@ TEST_CASE("simple", "[json_sub]") {
   auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::SUB); };
   Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
 }
+
+TEST_CASE("account_v5", "[json_sub]") {
+  auto message = R"({)"
+                 R"("op":"sub",)"
+                 R"("topic":"account",)"
+                 R"("ts":1789703303179,)"
+                 R"("err-code":0,)"
+                 R"("contract_code":"")"
+                 R"(})";
+  auto helper = [](value_type const &obj) { CHECK(obj.op == protocol::json::Operator::SUB); };
+  Parser2Tester<value_type>::dispatch(helper, message, 8192, 1);
+}

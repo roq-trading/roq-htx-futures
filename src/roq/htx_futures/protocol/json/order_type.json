@@ -1,0 +1,15 @@
+{
+  "name": "roq/htx_futures/protocol/json/OrderType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "market"
+    },
+    {
+      "name": "limit"
+    },
+    {
+      "name": "post_only"
+    }
+  ]
+}

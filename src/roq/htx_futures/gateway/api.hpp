@@ -16,6 +16,7 @@ struct API final {
     std::string_view market_depth;
   } market_data;
   struct {
+    bool v5 = {};
     MarginMode default_margin_mode = {};
     // isolated
     std::string_view account_info = {};

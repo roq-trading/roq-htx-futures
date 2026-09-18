@@ -1,0 +1,66 @@
+{
+  "name": "roq/htx_futures/protocol/json/Account5DataDetailsItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "currency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "equity",
+      "type": "std/double"
+    },
+    {
+      "name": "available",
+      "type": "std/double"
+    },
+    {
+      "name": "profit_unreal",
+      "type": "std/double"
+    },
+    {
+      "name": "initial_margin",
+      "type": "std/double"
+    },
+    {
+      "name": "maintenance_margin",
+      "type": "std/double"
+    },
+    {
+      "name": "maintenance_margin_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "initial_margin_rate",
+      "type": "std/double"
+    },
+    {
+      "name": "voucher",
+      "type": "std/double"
+    },
+    {
+      "name": "voucher_value",
+      "type": "std/double"
+    },
+    {
+      "name": "created_time",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "updated_time",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "available_margin",
+      "type": "std/double"
+    },
+    {
+      "name": "isolated_equity",
+      "type": "std/double"
+    },
+    {
+      "name": "isolated_profit_unreal",
+      "type": "std/double"
+    }
+  ]
+}

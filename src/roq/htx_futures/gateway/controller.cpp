@@ -8,8 +8,14 @@
 
 #include "roq/htx_futures/gateway/api.hpp"
 
-#include "roq/htx_futures/gateway/order_entry_rest.hpp"
-#include "roq/htx_futures/gateway/order_entry_ws.hpp"
+#include "roq/htx_futures/gateway/drop_copy_1.hpp"
+#include "roq/htx_futures/gateway/drop_copy_5.hpp"
+
+#include "roq/htx_futures/gateway/order_entry_rest_1.hpp"
+#include "roq/htx_futures/gateway/order_entry_rest_5.hpp"
+
+#include "roq/htx_futures/gateway/order_entry_ws_1.hpp"
+#include "roq/htx_futures/gateway/order_entry_ws_5.hpp"
 
 #include "roq/htx_futures/protocol/json/utils.hpp"
 
@@ -65,7 +71,11 @@ R create_order_entry_rest(Controller &gateway, auto &context, auto &stream_id, a
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts) {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST>(gateway, context, ++stream_id, *account, shared));
+      if (shared.api.order_management.v5) {
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST5>(gateway, context, ++stream_id, *account, shared));
+      } else {
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST1>(gateway, context, ++stream_id, *account, shared));
+      }
     }
   }
   return result;
@@ -77,7 +87,11 @@ R create_order_entry_ws(Controller &gateway, auto &context, auto &stream_id, aut
   result_type result;
   if (shared.settings.ws_api && has_real_accounts) {
     for (auto &[name, account] : accounts) {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS>(gateway, context, ++stream_id, *account, shared));
+      if (shared.api.order_management.v5) {
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS5>(gateway, context, ++stream_id, *account, shared));
+      } else {
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS1>(gateway, context, ++stream_id, *account, shared));
+      }
     }
   }
   return result;
@@ -88,7 +102,11 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[name, account] : accounts) {
-    result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy>(gateway, context, ++stream_id, *account, shared));
+    if (shared.api.order_management.v5) {
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy5>(gateway, context, ++stream_id, *account, shared));
+    } else {
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy1>(gateway, context, ++stream_id, *account, shared));
+    }
   }
   return result;
 }
@@ -269,6 +287,7 @@ void Controller::ensure_symbol_slices(size_t size) {
     web_socket_.emplace_back(std::move(web_socket));
   }
   // web socket #2
+  /*
   while (std::size(web_socket_2_) < size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(web_socket_2_);
@@ -279,6 +298,7 @@ void Controller::ensure_symbol_slices(size_t size) {
     create_event_and_dispatch(*web_socket_2, message_info, start);
     web_socket_2_.emplace_back(std::move(web_socket_2));
   }
+  */
 }
 
 template <typename... Args>

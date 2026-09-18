@@ -67,6 +67,8 @@ inline std::string_view extract_topic(std::string_view const &channel) {
 extern roq::Error guess_error(int32_t err_code);
 extern roq::Error guess_error(std::string_view const &message);
 
+extern roq::Error guess_error_v5(int32_t code);
+
 }  // namespace json
 }  // namespace protocol
 }  // namespace htx_futures

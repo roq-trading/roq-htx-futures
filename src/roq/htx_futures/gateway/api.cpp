@@ -21,27 +21,28 @@ auto const API_USDT_M_FUTURES = API{
         .market_depth = "depth.size_150.high_freq"sv,
     },
     .order_management{
+        .v5 = true,
         .default_margin_mode = MarginMode::CROSS,
-        // isolated
+        // isolated (mode: 2), appears to not work ???
         .account_info = "/linear-swap-api/v1/swap_account_info"sv,
         .open_orders = "/linear-swap-api/v1/swap_openorders"sv,
         .place_order = "/linear-swap-api/v1/swap_order"sv,
         .cancel_order = "/linear-swap-api/v1/swap_cancel"sv,
         .cancel_all_orders = "/linear-swap-api/v1/swap_cancelall"sv,
-        .topic_accounts = "accounts.*"sv,
-        .topic_positions = "positions.*"sv,
-        .topic_match_orders = "matchOrders.*"sv,
-        .topic_orders = "orders.*"sv,
-        // cross
-        .account_info_cross = "/linear-swap-api/v1/swap_cross_account_info"sv,
-        .open_orders_cross = "/linear-swap-api/v1/swap_cross_openorders"sv,
-        .place_order_cross = "/linear-swap-api/v1/swap_cross_order"sv,
-        .cancel_order_cross = "/linear-swap-api/v1/swap_cross_cancel"sv,
-        .cancel_all_orders_cross = "/linear-swap-api/v1/swap_cross_cancelall"sv,
-        .topic_accounts_cross = "accounts_cross.*"sv,
-        .topic_positions_cross = "positions_cross.*"sv,
-        .topic_match_orders_cross = "matchOrders_cross.*"sv,
-        .topic_orders_cross = "orders_cross.*"sv,
+        .topic_accounts = "account"sv,
+        .topic_positions = "positions"sv,
+        .topic_match_orders = "match_orders"sv,
+        .topic_orders = "orders"sv,
+        // cross (mode: 1)
+        .account_info_cross = "/v5/account/balance"sv,  // XXX FIXME TODO unused
+        .open_orders_cross = "/v5/trade/order/opens"sv,
+        .place_order_cross = "/v5/trade/order"sv,
+        .cancel_order_cross = "/v5/trade/cancel_order"sv,
+        .cancel_all_orders_cross = "/v5/trade/cancel_all_orders"sv,
+        .topic_accounts_cross = "account"sv,
+        .topic_positions_cross = "positions"sv,
+        .topic_match_orders_cross = "match_orders"sv,
+        .topic_orders_cross = "orders"sv,
     },
 };
 
@@ -51,6 +52,7 @@ auto const API_COIN_M_DELIVERY = API{
         .market_depth = "depth.size_150.high_freq"sv,
     },
     .order_management{
+        .v5 = false,
         .default_margin_mode = MarginMode::ISOLATED,
         // isolated
         .account_info = "/api/v1/contract_account_info"sv,
@@ -81,6 +83,7 @@ auto const API_COIN_M_PERPETUAL = API{
         .market_depth = "depth.size_150.high_freq"sv,
     },
     .order_management{
+        .v5 = false,
         .default_margin_mode = MarginMode::ISOLATED,
         // isolated
         .account_info = "/swap-api/v1/swap_account_info"sv,

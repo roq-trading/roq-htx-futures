@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/gateway/order_entry_ws.hpp"
+#include "roq/htx_futures/gateway/order_entry_ws_5.hpp"
 
 #include "roq/mask.hpp"
 
@@ -77,7 +77,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntryWS::OrderEntryWS(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+OrderEntryWS5::OrderEntryWS5(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -99,19 +99,19 @@ OrderEntryWS::OrderEntryWS(OrderEntry::Handler &handler, io::Context &context, u
       account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
-void OrderEntryWS::operator()(Event<Start> const &) {
+void OrderEntryWS5::operator()(Event<Start> const &) {
   (*connection_).start();
 }
 
-void OrderEntryWS::operator()(Event<Stop> const &) {
+void OrderEntryWS5::operator()(Event<Stop> const &) {
   (*connection_).stop();
 }
 
-void OrderEntryWS::operator()(Event<Timer> const &event) {
+void OrderEntryWS5::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void OrderEntryWS::operator()(metrics::Writer &writer) const {
+void OrderEntryWS5::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -128,18 +128,18 @@ void OrderEntryWS::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-uint16_t OrderEntryWS::operator()(
+uint16_t OrderEntryWS5::operator()(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     auto &[message_info, create_order] = event;
-    auto message = protocol::json::Encoder::create_order_ws(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
+    auto message = protocol::json::Encoder::create_order_ws_v5(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
 }
 
-uint16_t OrderEntryWS::operator()(
+uint16_t OrderEntryWS5::operator()(
     Event<ModifyOrder> const &,
     server::oms::Order const &,
     server::oms::RefData const &,
@@ -149,7 +149,7 @@ uint16_t OrderEntryWS::operator()(
   return stream_id_;
 }
 
-uint16_t OrderEntryWS::operator()(
+uint16_t OrderEntryWS5::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
@@ -157,19 +157,18 @@ uint16_t OrderEntryWS::operator()(
     std::string_view const &previous_request_id) {
   profile_.cancel_order([&]() {
     auto &[message_info, cancel_order] = event;
-    auto message =
-        protocol::json::Encoder::cancel_order_ws(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id, account_.margin_mode);
+    auto message = protocol::json::Encoder::cancel_order_ws_v5(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
 }
 
-uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+uint16_t OrderEntryWS5::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   profile_.cancel_all_orders([&]() {
     auto &[message_info, cancel_all_orders] = event;
     auto helper = [&](auto &symbol) {
-      auto message = protocol::json::Encoder::cancel_all_orders_ws(encode_buffer_, cancel_all_orders, request_id, symbol, account_.margin_mode);
+      auto message = protocol::json::Encoder::cancel_all_orders_ws_v5(encode_buffer_, cancel_all_orders, request_id, symbol);
       log::debug_info<2>(R"(message="{}")"sv, message);
       (*connection_).send_text(message);
     };
@@ -183,24 +182,24 @@ uint16_t OrderEntryWS::operator()(Event<CancelAllOrders> const &event, std::stri
 
 // web::socket::Client::Handler
 
-void OrderEntryWS::operator()(web::socket::Client::Connected const &) {
+void OrderEntryWS5::operator()(web::socket::Client::Connected const &) {
 }
 
-void OrderEntryWS::operator()(web::socket::Client::Disconnected const &) {
+void OrderEntryWS5::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void OrderEntryWS::operator()(web::socket::Client::Ready const &) {
+void OrderEntryWS5::operator()(web::socket::Client::Ready const &) {
   send_login();
   // (*this)(ConnectionStatus::LOGIN_SENT);
   (*this)(ConnectionStatus::READY);
 }
 
-void OrderEntryWS::operator()(web::socket::Client::Close const &) {
+void OrderEntryWS5::operator()(web::socket::Client::Close const &) {
 }
 
-void OrderEntryWS::operator()(web::socket::Client::Latency const &latency) {
+void OrderEntryWS5::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -211,11 +210,11 @@ void OrderEntryWS::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void OrderEntryWS::operator()(web::socket::Client::Text const &) {
+void OrderEntryWS5::operator()(web::socket::Client::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void OrderEntryWS::operator()(web::socket::Client::Binary const &binary) {
+void OrderEntryWS5::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
@@ -226,7 +225,7 @@ void OrderEntryWS::operator()(web::socket::Client::Binary const &binary) {
   }
 }
 
-void OrderEntryWS::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void OrderEntryWS5::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
   connection_status_ = connection_status;
   TraceInfo trace_info;
   auto stream_status = StreamStatus{
@@ -248,7 +247,7 @@ void OrderEntryWS::operator()(ConnectionStatus connection_status, std::string_vi
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
-void OrderEntryWS::send_pong(std::chrono::milliseconds timestamp) {
+void OrderEntryWS5::send_pong(std::chrono::milliseconds timestamp) {
   auto message = fmt::format(
       R"({{)"
       R"("op":"pong",)"
@@ -259,20 +258,20 @@ void OrderEntryWS::send_pong(std::chrono::milliseconds timestamp) {
   (*connection_).send_text(message);
 }
 
-void OrderEntryWS::send_login() {
+void OrderEntryWS5::send_login() {
   auto now_utc = clock::get_realtime<std::chrono::seconds>();
   auto message = account_.create_ws_auth(auth_path_, now_utc);
   // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 
-void OrderEntryWS::parse(std::string_view const &message) {
+void OrderEntryWS5::parse(std::string_view const &message) {
   // log::debug("{}"sv, message);
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!protocol::json::Parser3::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -282,30 +281,30 @@ void OrderEntryWS::parse(std::string_view const &message) {
   });
 }
 
-// protocol::json::Parser3::Handler
+// protocol::json::Parser5::Handler
 
-void OrderEntryWS::operator()(Trace<protocol::json::Close2> const &) {
+void OrderEntryWS5::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
   });
 }
 
-void OrderEntryWS::operator()(Trace<protocol::json::Error2> const &event) {
+void OrderEntryWS5::operator()(Trace<protocol::json::Error2> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::error("error={}"sv, error);
   });
 }
 
-void OrderEntryWS::operator()(Trace<protocol::json::Ping> const &event) {
+void OrderEntryWS5::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void OrderEntryWS::operator()(Trace<protocol::json::Auth> const &event) {
+void OrderEntryWS5::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
@@ -322,26 +321,33 @@ void OrderEntryWS::operator()(Trace<protocol::json::Auth> const &event) {
   });
 }
 
-void OrderEntryWS::operator()(Trace<protocol::json::Response> const &event) {
+void OrderEntryWS5::operator()(Trace<protocol::json::Sub> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
   auto [request_type, request_id, version] = protocol::json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
-  if (request_type == RequestType::UNDEFINED) {  // note! cancel-all-orders
-    return;
+  switch (request_type) {
+    using enum RequestType;
+    case UNDEFINED:  // note! cancel-all-orders
+      return;
+    case CREATE_ORDER:
+      if (response.code == 200) {  // note! we don't know if the order was working or completed
+        return;
+      }
+      break;
+    case MODIFY_ORDER:
+    case CANCEL_ORDER:
+      break;
   }
   auto [request_status, error, text] = [&]() -> std::tuple<RequestStatus, Error, std::string_view> {
-    if (response.status == protocol::json::Status::OK) {
+    if (response.code == 200) {
       return {RequestStatus::ACCEPTED, {}, {}};
     }
-    if (std::empty(response.data.errors)) {
-      return {RequestStatus::REJECTED, protocol::json::guess_error(response.err_code), response.err_msg};
-    }
-    if (std::size(response.data.errors) == 1) {
-      auto &error = response.data.errors[0];
-      return {RequestStatus::REJECTED, protocol::json::guess_error(error.err_code), error.err_msg};
-    }
-    log::fatal("Unexpected: response={}"sv, response);  // note! more errors, why?
+    return {RequestStatus::REJECTED, protocol::json::guess_error_v5(response.code), response.message};
   }();
   auto response_2 = server::oms::Response{
       .request_type = request_type,
@@ -351,12 +357,28 @@ void OrderEntryWS::operator()(Trace<protocol::json::Response> const &event) {
       .text = text,
       .version = version,
       .request_id = request_id,
-      .external_order_id = response.data.order_id_str,
+      .external_order_id = response.data.order_id,
       .client_order_id = {},
       .quantity = NaN,
       .price = NaN,
   };
   create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id_);
+}
+
+void OrderEntryWS5::operator()(Trace<protocol::json::Account5> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void OrderEntryWS5::operator()(Trace<protocol::json::Positions5> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void OrderEntryWS5::operator()(Trace<protocol::json::MatchOrders5> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void OrderEntryWS5::operator()(Trace<protocol::json::Orders5> const &) {
+  log::fatal("Unexpected"sv);
 }
 
 }  // namespace gateway

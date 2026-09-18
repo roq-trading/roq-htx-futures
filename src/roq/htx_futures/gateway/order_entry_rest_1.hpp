@@ -31,10 +31,10 @@ namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handler {
-  OrderEntryREST(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+struct OrderEntryREST1 final : public OrderEntry, public web::rest::Client::Handler {
+  OrderEntryREST1(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  OrderEntryREST(OrderEntry const &) = delete;
+  OrderEntryREST1(OrderEntry const &) = delete;
 
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;

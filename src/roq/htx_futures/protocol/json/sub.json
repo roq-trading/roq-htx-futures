@@ -25,6 +25,10 @@
     {
       "name": "cid",
       "type": "std/string_view"
+    },
+    {
+      "name": "contract_code",
+      "type": "std/string_view"
     }
   ]
 }

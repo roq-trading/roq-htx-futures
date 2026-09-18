@@ -151,10 +151,13 @@ void WebSocket2::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void WebSocket2::operator()(web::socket::Client::Text const &) {
-  log::fatal("Unexpected"sv);
+// v5
+void WebSocket2::operator()(web::socket::Client::Text const &text) {
+  log::info<5>(R"(message="{}")"sv, text.payload);
+  parse(text.payload);
 }
 
+// v1
 void WebSocket2::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};

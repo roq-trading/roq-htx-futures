@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Changed
+
+* Support the USDT-M v5 protocol (#640)
+
 ## 1.1.8 &ndash; 2026-09-04
 
 ### Changed

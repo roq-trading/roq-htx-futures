@@ -1,0 +1,152 @@
+/* Copyright (c) 2017-2026, Hans Erik Thrane */
+
+#pragma once
+
+#include <string>
+
+#include "roq/utils/metrics/counter.hpp"
+#include "roq/utils/metrics/latency.hpp"
+#include "roq/utils/metrics/profile.hpp"
+
+#include "roq/io/context.hpp"
+
+#include "roq/core/download.hpp"
+
+#include "roq/web/rest/client.hpp"
+
+#include "roq/core/json/buffer_stack.hpp"
+
+#include "roq/server.hpp"
+
+#include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/order_entry.hpp"
+#include "roq/htx_futures/gateway/shared.hpp"
+
+#include "roq/htx_futures/protocol/json/cancel_all_orders_ack5.hpp"
+#include "roq/htx_futures/protocol/json/cancel_order_ack5.hpp"
+#include "roq/htx_futures/protocol/json/open_orders_ack5.hpp"
+#include "roq/htx_futures/protocol/json/place_order_ack5.hpp"
+
+namespace roq {
+namespace htx_futures {
+namespace gateway {
+
+struct OrderEntryREST5 final : public OrderEntry, public web::rest::Client::Handler {
+  OrderEntryREST5(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+
+  OrderEntryREST5(OrderEntry const &) = delete;
+
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
+
+  void operator()(metrics::Writer &) const override;
+
+  uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
+  uint16_t operator()(
+      Event<ModifyOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) override;
+  uint16_t operator()(
+      Event<CancelOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id) override;
+
+  uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) override;
+
+ protected:
+  // web::rest::client::Handler
+
+  void operator()(Trace<web::rest::Client::Connected> const &) override;
+  void operator()(Trace<web::rest::Client::Disconnected> const &) override;
+  void operator()(Trace<web::rest::Client::Latency> const &) override;
+
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+
+  void operator()(ConnectionStatus, std::string_view const &reason = {});
+
+  enum class State {
+    UNDEFINED = 0,
+    OPEN_ORDERS,
+    DONE,
+  };
+
+  uint32_t download(State);
+
+  // open-orders
+
+  void open_orders();
+  void open_orders_ack(Trace<web::rest::Response> const &);
+  void operator()(Trace<protocol::json::OpenOrdersAck5> const &);
+
+  // create-order
+
+  void create_order(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id);
+  void create_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<protocol::json::PlaceOrderAck5> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+
+  // cancel-order
+
+  void cancel_order(
+      Event<CancelOrder> const &,
+      server::oms::Order const &,
+      server::oms::RefData const &,
+      std::string_view const &request_id,
+      std::string_view const &previous_request_id);
+  void cancel_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<protocol::json::CancelOrderAck5> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+
+  // cancel-all-orders
+
+  void cancel_all_orders(Event<CancelAllOrders> const &, std::string_view const &request_id);
+  void cancel_all_orders_ack(Trace<web::rest::Response> const &, std::string_view const &request_id);
+  void operator()(Trace<protocol::json::CancelAllOrdersAck5> const &);
+
+  // helpers
+
+  void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
+
+ private:
+  [[maybe_unused]] OrderEntry::Handler &handler_;
+  // config
+  uint16_t const stream_id_;
+  std::string const name_;
+  // connection
+  std::unique_ptr<web::rest::Client> const connection_;
+  // buffers
+  core::json::BufferStack decode_buffer_;
+  // metrics
+  struct {
+    utils::metrics::Counter disconnect;
+  } counter_;
+  struct {
+    utils::metrics::Profile  //
+        open_orders,
+        open_orders_ack,                 //
+        create_order, create_order_ack,  //
+        cancel_order, cancel_order_ack,  //
+        cancel_all_orders, cancel_all_orders_ack;
+  } profile_;
+  struct {
+    utils::metrics::Latency ping;
+  } latency_;
+  // account
+  Account &account_;
+  // shared
+  Shared &shared_;
+  // state
+  ConnectionStatus connection_status_ = {};
+  core::Download<State> download_;
+  // buffers
+  std::string encode_buffer_;
+};
+
+}  // namespace gateway
+}  // namespace htx_futures
+}  // namespace roq

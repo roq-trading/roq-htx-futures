@@ -29,10 +29,10 @@ namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public protocol::json::Parser3::Handler {
-  OrderEntryWS(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+struct OrderEntryWS1 final : public OrderEntry, public web::socket::Client::Handler, public protocol::json::Parser3::Handler {
+  OrderEntryWS1(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  OrderEntryWS(OrderEntryWS const &) = delete;
+  OrderEntryWS1(OrderEntryWS1 const &) = delete;
 
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;

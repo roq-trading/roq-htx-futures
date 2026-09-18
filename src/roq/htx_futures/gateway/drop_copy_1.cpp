@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/gateway/drop_copy.hpp"
+#include "roq/htx_futures/gateway/drop_copy_1.hpp"
 
 #include "roq/mask.hpp"
 
@@ -72,7 +72,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+DropCopy1::DropCopy1(DropCopy::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -96,19 +96,19 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
       account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
-void DropCopy::operator()(Event<Start> const &) {
+void DropCopy1::operator()(Event<Start> const &) {
   (*connection_).start();
 }
 
-void DropCopy::operator()(Event<Stop> const &) {
+void DropCopy1::operator()(Event<Stop> const &) {
   (*connection_).stop();
 }
 
-void DropCopy::operator()(Event<Timer> const &event) {
+void DropCopy1::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void DropCopy::operator()(metrics::Writer &writer) const {
+void DropCopy1::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -127,23 +127,23 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-void DropCopy::operator()(web::socket::Client::Connected const &) {
+void DropCopy1::operator()(web::socket::Client::Connected const &) {
 }
 
-void DropCopy::operator()(web::socket::Client::Disconnected const &) {
+void DropCopy1::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void DropCopy::operator()(web::socket::Client::Ready const &) {
+void DropCopy1::operator()(web::socket::Client::Ready const &) {
   send_login();
   (*this)(ConnectionStatus::LOGIN_SENT);
 }
 
-void DropCopy::operator()(web::socket::Client::Close const &) {
+void DropCopy1::operator()(web::socket::Client::Close const &) {
 }
 
-void DropCopy::operator()(web::socket::Client::Latency const &latency) {
+void DropCopy1::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -154,11 +154,11 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(web::socket::Client::Text const &) {
+void DropCopy1::operator()(web::socket::Client::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(web::socket::Client::Binary const &binary) {
+void DropCopy1::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
@@ -169,7 +169,7 @@ void DropCopy::operator()(web::socket::Client::Binary const &binary) {
   }
 }
 
-void DropCopy::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void DropCopy1::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
   connection_status_ = connection_status;
   TraceInfo trace_info;
   auto stream_status = StreamStatus{
@@ -191,7 +191,7 @@ void DropCopy::operator()(ConnectionStatus connection_status, std::string_view c
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
-void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
+void DropCopy1::send_pong(std::chrono::milliseconds timestamp) {
   auto message = fmt::format(
       R"({{)"
       R"("op":"pong",)"
@@ -202,7 +202,7 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
   (*connection_).send_text(message);
 }
 
-void DropCopy::send_login() {
+void DropCopy1::send_login() {
   auto now_utc = clock::get_realtime<std::chrono::seconds>();
   auto message = account_.create_ws_auth(auth_path_, now_utc);
   // log::warn("DEBUG {}"sv, message);
@@ -210,7 +210,7 @@ void DropCopy::send_login() {
   (*connection_).send_text(message);
 }
 
-void DropCopy::subscribe() {
+void DropCopy1::subscribe() {
   switch (account_.margin_mode) {
     using enum MarginMode;
     case UNDEFINED:
@@ -232,7 +232,7 @@ void DropCopy::subscribe() {
   }
 }
 
-void DropCopy::subscribe(std::string_view const &topic) {
+void DropCopy1::subscribe(std::string_view const &topic) {
   auto message = fmt::format(
       R"({{)"
       R"("op":"sub",)"
@@ -244,7 +244,7 @@ void DropCopy::subscribe(std::string_view const &topic) {
   (*connection_).send_text(message);
 }
 
-void DropCopy::parse(std::string_view const &message) {
+void DropCopy1::parse(std::string_view const &message) {
   profile_.parse([&]() {
     log::info<5>(R"(message="{}")"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
@@ -260,28 +260,29 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Close2> const &) {
+void DropCopy1::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
     log::warn("Exchange requested connection closed"sv);
     (*connection_).close();
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Error2> const &) {
+void DropCopy1::operator()(Trace<protocol::json::Error2> const &event) {
   profile_.error([&]() {
-    log::warn("*** ERROR ***"sv);
+    auto &[trace_info, error] = event;
+    log::error("error={}"sv, error);
     (*connection_).close();
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Ping> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Auth> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
@@ -299,7 +300,7 @@ void DropCopy::operator()(Trace<protocol::json::Auth> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Sub> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::Sub> const &event) {
   profile_.sub([&]() {
     auto &[trace_info, sub] = event;
     if (sub.err_code != 0) {
@@ -308,11 +309,11 @@ void DropCopy::operator()(Trace<protocol::json::Sub> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::FundingRate> const &) {
+void DropCopy1::operator()(Trace<protocol::json::FundingRate> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<protocol::json::Accounts> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::Accounts> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, accounts] = event;
     log::info<2>("accounts={}"sv, accounts);
@@ -337,7 +338,7 @@ void DropCopy::operator()(Trace<protocol::json::Accounts> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Positions> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::Positions> const &event) {
   profile_.positions([&]() {
     auto &[trace_info, positions] = event;
     auto update_type = map(positions.event).template get<UpdateType>();
@@ -373,7 +374,7 @@ void DropCopy::operator()(Trace<protocol::json::Positions> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::MatchOrders> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::MatchOrders> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
     log::debug("match_orders={}"sv, match_orders);
@@ -437,7 +438,7 @@ void DropCopy::operator()(Trace<protocol::json::MatchOrders> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::Orders> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
     log::debug("orders={}"sv, orders);
@@ -501,7 +502,7 @@ void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::AccountsCross> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::AccountsCross> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, accounts] = event;
     log::info<2>("accounts={}"sv, accounts);
@@ -528,7 +529,7 @@ void DropCopy::operator()(Trace<protocol::json::AccountsCross> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::PositionsCross> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::PositionsCross> const &event) {
   profile_.positions([&]() {
     auto &[trace_info, positions] = event;
     auto update_type = map(positions.event).template get<UpdateType>();
@@ -564,7 +565,7 @@ void DropCopy::operator()(Trace<protocol::json::PositionsCross> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::MatchOrdersCross> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::MatchOrdersCross> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
     log::debug("match_orders={}"sv, match_orders);
@@ -630,7 +631,7 @@ void DropCopy::operator()(Trace<protocol::json::MatchOrdersCross> const &event) 
   });
 }
 
-void DropCopy::operator()(Trace<protocol::json::OrdersCross> const &event) {
+void DropCopy1::operator()(Trace<protocol::json::OrdersCross> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
     log::debug("orders={}"sv, orders);

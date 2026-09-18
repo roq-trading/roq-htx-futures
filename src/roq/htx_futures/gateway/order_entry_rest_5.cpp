@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx_futures/gateway/order_entry_rest.hpp"
+#include "roq/htx_futures/gateway/order_entry_rest_5.hpp"
 
 #include "roq/mask.hpp"
 
@@ -75,7 +75,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntryREST::OrderEntryREST(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+OrderEntryREST5::OrderEntryREST5(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.name)}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -97,19 +97,19 @@ OrderEntryREST::OrderEntryREST(OrderEntry::Handler &handler, io::Context &contex
       account_{account}, shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto state) { return download(state); }} {
 }
 
-void OrderEntryREST::operator()(Event<Start> const &) {
+void OrderEntryREST5::operator()(Event<Start> const &) {
   (*connection_).start();
 }
 
-void OrderEntryREST::operator()(Event<Stop> const &) {
+void OrderEntryREST5::operator()(Event<Stop> const &) {
   (*connection_).stop();
 }
 
-void OrderEntryREST::operator()(Event<Timer> const &event) {
+void OrderEntryREST5::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void OrderEntryREST::operator()(metrics::Writer &writer) const {
+void OrderEntryREST5::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -126,13 +126,13 @@ void OrderEntryREST::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-uint16_t OrderEntryREST::operator()(
+uint16_t OrderEntryREST5::operator()(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   create_order(event, order, ref_data, request_id);
   return stream_id_;
 }
 
-uint16_t OrderEntryREST::operator()(
+uint16_t OrderEntryREST5::operator()(
     Event<ModifyOrder> const &,
     server::oms::Order const &,
     server::oms::RefData const &,
@@ -142,7 +142,7 @@ uint16_t OrderEntryREST::operator()(
   return stream_id_;
 }
 
-uint16_t OrderEntryREST::operator()(
+uint16_t OrderEntryREST5::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
@@ -152,24 +152,24 @@ uint16_t OrderEntryREST::operator()(
   return stream_id_;
 }
 
-uint16_t OrderEntryREST::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+uint16_t OrderEntryREST5::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   cancel_all_orders(event, request_id);
   return stream_id_;
 }
 
 // web::rest::client::Handler
 
-void OrderEntryREST::operator()(Trace<web::rest::Client::Connected> const &) {
+void OrderEntryREST5::operator()(Trace<web::rest::Client::Connected> const &) {
   download_.begin();
 }
 
-void OrderEntryREST::operator()(Trace<web::rest::Client::Disconnected> const &) {
+void OrderEntryREST5::operator()(Trace<web::rest::Client::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
   download_.reset();
 }
 
-void OrderEntryREST::operator()(Trace<web::rest::Client::Latency> const &event) {
+void OrderEntryREST5::operator()(Trace<web::rest::Client::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -180,7 +180,7 @@ void OrderEntryREST::operator()(Trace<web::rest::Client::Latency> const &event) 
   latency_.ping.update(latency.sample);
 }
 
-void OrderEntryREST::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void OrderEntryREST5::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
   connection_status_ = connection_status;
   TraceInfo trace_info;
   auto stream_status = StreamStatus{
@@ -202,7 +202,7 @@ void OrderEntryREST::operator()(ConnectionStatus connection_status, std::string_
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
-uint32_t OrderEntryREST::download(State state) {
+uint32_t OrderEntryREST5::download(State state) {
   switch (state) {
     using enum State;
     case UNDEFINED:
@@ -222,10 +222,10 @@ uint32_t OrderEntryREST::download(State state) {
 
 // open-orders
 
-void OrderEntryREST::open_orders() {
+void OrderEntryREST5::open_orders() {
   profile_.open_orders([&]() {
     auto now_utc = clock::get_realtime<std::chrono::seconds>();
-    auto method = web::http::Method::POST;
+    auto method = web::http::Method::GET;
     auto path = [&]() -> std::string_view {
       switch (account_.margin_mode) {
         using enum MarginMode;
@@ -261,7 +261,7 @@ void OrderEntryREST::open_orders() {
   });
 }
 
-void OrderEntryREST::open_orders_ack(Trace<web::rest::Response> const &event) {
+void OrderEntryREST5::open_orders_ack(Trace<web::rest::Response> const &event) {
   auto const STATE = State::OPEN_ORDERS;
   profile_.open_orders_ack([&]() {
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
@@ -271,25 +271,24 @@ void OrderEntryREST::open_orders_ack(Trace<web::rest::Response> const &event) {
       }
     };
     auto handle_success = [&](auto &body) {
-      protocol::json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
-      if (open_orders_ack.status == protocol::json::Status::OK) {
+      protocol::json::OpenOrdersAck5 open_orders_ack{body, decode_buffer_};
+      if (open_orders_ack.code == 200) {
         Trace event_2{event, open_orders_ack};
         (*this)(event_2);
         download_.check_relaxed(STATE);
       } else {
-        // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(open_orders_ack.ret_code), open_orders_ack.ret_msg);
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error{}, ""sv);  // XXX FIXME TODO
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(open_orders_ack.code), open_orders_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
   });
 }
 
-void OrderEntryREST::operator()(Trace<protocol::json::OpenOrdersAck> const &event) {
+void OrderEntryREST5::operator()(Trace<protocol::json::OpenOrdersAck5> const &event) {
   auto &[trace_info, open_orders_ack] = event;
   log::info<2>("open_orders_ack={}"sv, open_orders_ack);
-  for (auto &item : open_orders_ack.data.orders) {
-    auto client_order_id = fmt::format("{}"sv, item.client_order_id);
+  log::info("open_orders_ack={}"sv, open_orders_ack);
+  for (auto &item : open_orders_ack.data) {
     auto remaining_quantity = [&]() {
       if (utils::compare(item.volume, 0.0) > 0) {
         return item.volume - item.trade_volume;  // note! can't modify order
@@ -300,20 +299,20 @@ void OrderEntryREST::operator()(Trace<protocol::json::OpenOrdersAck> const &even
         .account = account_.name,
         .exchange = shared_.settings.exchange,
         .symbol = item.contract_code,
-        .side = map(item.direction),
-        .position_effect = map(item.offset),
+        .side = map(item.side),
+        .position_effect = map(item.position_side, item.side),
         .margin_mode = {},
         .max_show_quantity = NaN,
-        .order_type = map(item.order_price_type),
+        .order_type = map(item.type),
         .time_in_force = {},
         .execution_instructions = {},
         .execution_destination = {},
-        .create_time_utc = item.created_at,
-        .update_time_utc = item.created_at,
+        .create_time_utc = item.created_time,
+        .update_time_utc = item.updated_time,
         .external_account = {},
-        .external_order_id = item.order_id_str,
-        .client_order_id = client_order_id,
-        .order_status = map(item.status),
+        .external_order_id = item.order_id,
+        .client_order_id = item.client_order_id,
+        .order_status = map(item.state),
         .error = {},
         .text = {},
         .quantity = item.volume,
@@ -339,7 +338,7 @@ void OrderEntryREST::operator()(Trace<protocol::json::OpenOrdersAck> const &even
 
 // create-order
 
-void OrderEntryREST::create_order(
+void OrderEntryREST5::create_order(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     if (!ready()) {
@@ -363,7 +362,8 @@ void OrderEntryREST::create_order(
       log::fatal("Unexpected"sv);
     }();
     auto query = account_.create_query(method, path, now_utc);
-    auto body = protocol::json::Encoder::create_order(encode_buffer_, create_order, order, ref_data, request_id);
+    auto body =
+        protocol::json::Encoder::create_order_v5(encode_buffer_, create_order, order, ref_data, request_id, shared_.api.order_management.default_margin_mode);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -385,7 +385,7 @@ void OrderEntryREST::create_order(
   });
 }
 
-void OrderEntryREST::create_order_ack(Trace<web::rest::Response> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
+void OrderEntryREST5::create_order_ack(Trace<web::rest::Response> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
   profile_.create_order_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
@@ -406,20 +406,20 @@ void OrderEntryREST::create_order_ack(Trace<web::rest::Response> const &event, u
       create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      protocol::json::PlaceOrderAck create_order_ack{body, decode_buffer_};
-      if (create_order_ack.err_code == 0) {
+      protocol::json::PlaceOrderAck5 create_order_ack{body, decode_buffer_};
+      if (create_order_ack.code == 200) {
         Trace event_2{event, create_order_ack};
         (*this)(event_2, user_id, order_id, version);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(create_order_ack.err_code), create_order_ack.err_msg);
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(create_order_ack.code), create_order_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
   });
 }
 
-void OrderEntryREST::operator()(
-    Trace<protocol::json::PlaceOrderAck> const &event,
+void OrderEntryREST5::operator()(
+    Trace<protocol::json::PlaceOrderAck5> const &event,
     [[maybe_unused]] uint8_t user_id,
     [[maybe_unused]] uint64_t order_id,
     [[maybe_unused]] uint32_t version) {
@@ -430,7 +430,7 @@ void OrderEntryREST::operator()(
 
 // cancel_order
 
-void OrderEntryREST::cancel_order(
+void OrderEntryREST5::cancel_order(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
@@ -480,7 +480,7 @@ void OrderEntryREST::cancel_order(
   });
 }
 
-void OrderEntryREST::cancel_order_ack(Trace<web::rest::Response> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
+void OrderEntryREST5::cancel_order_ack(Trace<web::rest::Response> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
   profile_.cancel_order_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
@@ -501,20 +501,20 @@ void OrderEntryREST::cancel_order_ack(Trace<web::rest::Response> const &event, u
       create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      protocol::json::CancelOrderAck cancel_order_ack{body, decode_buffer_};
-      if (cancel_order_ack.err_code == 0) {
+      protocol::json::CancelOrderAck5 cancel_order_ack{body, decode_buffer_};
+      if (cancel_order_ack.code == 200) {
         Trace event_2{event, cancel_order_ack};
         (*this)(event_2, user_id, order_id, version);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(cancel_order_ack.err_code), cancel_order_ack.err_msg);
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(cancel_order_ack.code), cancel_order_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
   });
 }
 
-void OrderEntryREST::operator()(
-    Trace<protocol::json::CancelOrderAck> const &event,
+void OrderEntryREST5::operator()(
+    Trace<protocol::json::CancelOrderAck5> const &event,
     [[maybe_unused]] uint8_t user_id,
     [[maybe_unused]] uint64_t order_id,
     [[maybe_unused]] uint32_t version) {
@@ -525,7 +525,7 @@ void OrderEntryREST::operator()(
 
 // cancel-all-orders
 
-void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+void OrderEntryREST5::cancel_all_orders(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   profile_.cancel_all_orders([&]() {
     if (!ready()) [[unlikely]] {
       throw server::oms::NotReady{"not ready"sv};
@@ -599,7 +599,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
   });
 }
 
-void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &event, std::string_view const &request_id) {
+void OrderEntryREST5::cancel_all_orders_ack(Trace<web::rest::Response> const &event, std::string_view const &request_id) {
   profile_.cancel_all_orders_ack([&]() {
     auto send_ack = [&](auto origin, auto status, Error error, std::string_view const &text) {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
@@ -627,19 +627,20 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
       send_ack(origin, status, error, text);
     };
     auto handle_success = [&](auto &body) {
-      protocol::json::CancelAllOrdersAck cancel_all_orders_ack{body, decode_buffer_};
-      if (cancel_all_orders_ack.err_code == 0) {
+      log::warn(R"(DEBUG body="{}")"sv, body);
+      protocol::json::CancelAllOrdersAck5 cancel_all_orders_ack{body, decode_buffer_};
+      if (cancel_all_orders_ack.code == 200) {
         Trace event_2{event, cancel_all_orders_ack};
         (*this)(event_2);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(cancel_all_orders_ack.err_code), cancel_all_orders_ack.err_msg);
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(cancel_all_orders_ack.code), cancel_all_orders_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
   });
 }
 
-void OrderEntryREST::operator()(Trace<protocol::json::CancelAllOrdersAck> const &event) {
+void OrderEntryREST5::operator()(Trace<protocol::json::CancelAllOrdersAck5> const &event) {
   auto &[trace_info, cancel_all_orders_ack] = event;
   log::info<2>("cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
   // note! no real information here
@@ -647,7 +648,7 @@ void OrderEntryREST::operator()(Trace<protocol::json::CancelAllOrdersAck> const 
 
 // helpers
 
-void OrderEntryREST::process_response(web::rest::Response const &response, auto error_handler, auto success_handler) {
+void OrderEntryREST5::process_response(web::rest::Response const &response, auto error_handler, auto success_handler) {
   try {
     auto [status, category, body] = response.result();
     switch (category) {

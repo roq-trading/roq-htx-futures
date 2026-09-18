@@ -5,10 +5,13 @@ set(SOURCES
     api.cpp
     config.cpp
     controller.cpp
-    drop_copy.cpp
+    drop_copy_1.cpp
+    drop_copy_5.cpp
     market_data.cpp
-    order_entry_rest.cpp
-    order_entry_ws.cpp
+    order_entry_rest_1.cpp
+    order_entry_rest_5.cpp
+    order_entry_ws_1.cpp
+    order_entry_ws_5.cpp
     rest.cpp
     shared.cpp
     web_socket_2.cpp

@@ -1,0 +1,30 @@
+{
+  "name": "roq/htx_futures/protocol/json/CancelAllOrdersAck5",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "code",
+      "type": "std/int32"
+    },
+    {
+      "name": "message",
+      "type": "std/string_view"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx_futures/protocol/json/CancelAllOrdersAck5DataItem",
+      "array": "std/span"
+    },
+    {
+      "name": "args"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "unknownException",
+      "type": "std/bool"
+    }
+  ]
+}

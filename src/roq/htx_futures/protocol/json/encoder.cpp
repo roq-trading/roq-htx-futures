@@ -30,6 +30,8 @@ constexpr auto const OP_CANCEL_ALL_ORDERS = "X"sv;
 
 // === IMPLEMENTATION ===
 
+// --- v1 ---
+
 // REST
 
 // lever_rate
@@ -116,10 +118,10 @@ std::string_view Encoder::create_order_ws(
     server::oms::Order const &,
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
-    MarginMode margin_mode) {
+    roq::MarginMode margin_mode) {
   auto op = [&]() -> std::string_view {
     switch (margin_mode) {
-      using enum MarginMode;
+      using enum roq::MarginMode;
       case UNDEFINED:
         break;
       case ISOLATED:
@@ -180,10 +182,10 @@ std::string_view Encoder::cancel_order_ws(
     server::oms::RefData const &,
     std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id,
-    MarginMode margin_mode) {
+    roq::MarginMode margin_mode) {
   auto op = [&]() -> std::string_view {
     switch (margin_mode) {
-      using enum MarginMode;
+      using enum roq::MarginMode;
       case UNDEFINED:
         break;
       case ISOLATED:
@@ -221,10 +223,10 @@ std::string_view Encoder::cancel_order_ws(
 }
 
 std::string_view Encoder::cancel_all_orders_ws(
-    std::string &buffer, CancelAllOrders const &, std::string_view const &request_id, std::string_view const &symbol, MarginMode margin_mode) {
+    std::string &buffer, CancelAllOrders const &, std::string_view const &request_id, std::string_view const &symbol, roq::MarginMode margin_mode) {
   auto op = [&]() -> std::string_view {
     switch (margin_mode) {
-      using enum MarginMode;
+      using enum roq::MarginMode;
       case UNDEFINED:
         break;
       case ISOLATED:
@@ -283,6 +285,169 @@ std::tuple<RequestType, std::string_view, uint32_t> Encoder::split_cid(std::stri
     }
   }
   return {};
+}
+
+// --- v5 ---
+
+// REST
+
+std::string_view Encoder::create_order_v5(
+    std::string &buffer,
+    CreateOrder const &create_order,
+    server::oms::Order const &,
+    server::oms::RefData const &ref_data,
+    std::string_view const &request_id,
+    roq::MarginMode default_margin_mode) {
+  buffer.clear();
+  auto margin_mode = [&]() -> protocol::json::MarginMode {
+    if (create_order.margin_mode == roq::MarginMode{}) {
+      return map(default_margin_mode).template get<protocol::json::MarginMode>();
+    }
+    return map(create_order.margin_mode).template get<protocol::json::MarginMode>();
+  }();
+  auto side = map(create_order.side).template get<protocol::json::Direction>();
+  auto type = map(create_order.order_type, create_order.execution_instructions).template get<protocol::json::OrderType>();
+  auto reduce_only = create_order.execution_instructions.has(ExecutionInstruction::DO_NOT_INCREASE);
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("contract_code":"{}",)"
+      R"("margin_mode":"{}",)"
+      R"("client_order_id":"{}",)"
+      R"("side":"{}",)"
+      R"("type":"{}",)"
+      R"("volume":"{}",)"
+      R"("reduce_only":{})"sv,
+      create_order.symbol,
+      margin_mode.as_raw_text(),
+      request_id,
+      side.as_raw_text(),
+      type.as_raw_text(),
+      Decimal{create_order.quantity, ref_data.quantity.precision},
+      reduce_only ? 1 : 0);
+  if (create_order.order_type != roq::OrderType::MARKET && create_order.time_in_force != roq::TimeInForce{}) {
+    auto time_in_force = map(create_order.time_in_force).template get<protocol::json::TimeInForce>();
+    fmt::format_to(std::back_inserter(buffer), R"(,"time_in_force":"{}")"sv, time_in_force.as_raw_text());
+  }
+  if (create_order.position_effect != PositionEffect{}) {
+    auto position_side = map(create_order.position_effect).template get<protocol::json::PositionSide>();
+    fmt::format_to(std::back_inserter(buffer), R"(,"position_side":"{}")"sv, position_side.as_raw_text());
+  }
+  if (!std::isnan(create_order.price)) {
+    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, ref_data.price.precision});
+  }
+  fmt::format_to(std::back_inserter(buffer), R"(}})"sv);
+  return buffer;
+}
+
+// XXX FIXME TODO cancel_order_v5 (it's unchanged)
+
+// WS
+
+std::string_view Encoder::create_order_ws_v5(
+    std::string &buffer,
+    CreateOrder const &create_order,
+    server::oms::Order const &,
+    server::oms::RefData const &ref_data,
+    std::string_view const &request_id,
+    roq::MarginMode default_margin_mode) {
+  buffer.clear();
+  auto margin_mode = [&]() -> protocol::json::MarginMode {
+    if (create_order.margin_mode == roq::MarginMode{}) {
+      return map(default_margin_mode).template get<protocol::json::MarginMode>();
+    }
+    return map(create_order.margin_mode).template get<protocol::json::MarginMode>();
+  }();
+  auto side = map(create_order.side).template get<protocol::json::Direction>();
+  auto type = map(create_order.order_type, create_order.execution_instructions).template get<protocol::json::OrderType>();
+  auto reduce_only = create_order.execution_instructions.has(ExecutionInstruction::DO_NOT_INCREASE);
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("op":"place_order",)"
+      R"("cid":"{}:{}:1",)"
+      R"("data":{{)"
+      R"("contract_code":"{}",)"
+      R"("margin_mode":"{}",)"
+      R"("client_order_id":"{}",)"
+      R"("side":"{}",)"
+      R"("type":"{}",)"
+      R"("volume":"{}",)"
+      R"("reduce_only":{})"sv,
+      OP_CREATE_ORDER,
+      request_id,
+      create_order.symbol,
+      margin_mode.as_raw_text(),
+      request_id,
+      side.as_raw_text(),
+      type.as_raw_text(),
+      Decimal{create_order.quantity, ref_data.quantity.precision},
+      reduce_only ? 1 : 0);
+  if (create_order.order_type != roq::OrderType::MARKET && create_order.time_in_force != roq::TimeInForce{}) {
+    auto time_in_force = map(create_order.time_in_force).template get<protocol::json::TimeInForce>();
+    fmt::format_to(std::back_inserter(buffer), R"(,"time_in_force":"{}")"sv, time_in_force.as_raw_text());
+  }
+  if (create_order.position_effect != PositionEffect{}) {
+    auto position_side = map(create_order.position_effect).template get<protocol::json::PositionSide>();
+    fmt::format_to(std::back_inserter(buffer), R"(,"position_side":"{}")"sv, position_side.as_raw_text());
+  }
+  if (!std::isnan(create_order.price)) {
+    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, ref_data.price.precision});
+  }
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"(}})"
+      R"(}})"sv);
+  return buffer;
+}
+
+std::string_view Encoder::cancel_order_ws_v5(
+    std::string &buffer,
+    CancelOrder const &cancel_order,
+    server::oms::Order const &order,
+    server::oms::RefData const &,
+    std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
+  buffer.clear();
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("op":"cancel_order",)"
+      R"("cid":"{}:{}:{}",)"
+      R"("data":{{)"
+      R"("contract_code":"{}")"sv,
+      OP_CANCEL_ORDER,
+      request_id,
+      cancel_order.version,
+      order.symbol);
+  if (std::empty(order.external_order_id)) {
+    fmt::format_to(std::back_inserter(buffer), R"(,"client_order_id":"{}")"sv, order.client_order_id);
+  } else {
+    fmt::format_to(std::back_inserter(buffer), R"(,"order_id":"{}")"sv, order.external_order_id);
+  }
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"(}})"
+      R"(}})"sv);
+  return buffer;
+}
+
+std::string_view Encoder::cancel_all_orders_ws_v5(
+    std::string &buffer, CancelAllOrders const &, std::string_view const &request_id, std::string_view const &symbol) {
+  buffer.clear();
+  fmt::format_to(
+      std::back_inserter(buffer),
+      R"({{)"
+      R"("op":"cancel_all_orders",)"
+      R"("cid":"{}:{}:0",)"
+      R"("data":{{)"
+      R"("contract_code":"{}")"
+      R"(}})"
+      R"(}})"sv,
+      OP_CANCEL_ALL_ORDERS,
+      request_id,
+      symbol);
+  return buffer;
 }
 
 }  // namespace json
