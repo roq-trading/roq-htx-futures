@@ -329,7 +329,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Sub> const &) {
 void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
-  log::warn(R"(DEBUG message="{}")"sv, message);
+  log::warn(R"(DEBUG response="{}")"sv, response);
   auto [request_type, request_id, version] = protocol::json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
   log::warn(R"(DEBUG request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
