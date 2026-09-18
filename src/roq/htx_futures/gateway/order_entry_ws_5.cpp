@@ -134,6 +134,7 @@ uint16_t OrderEntryWS5::operator()(
     auto &[message_info, create_order] = event;
     auto message = protocol::json::Encoder::create_order_ws_v5(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
     log::debug_info<2>(R"(message="{}")"sv, message);
+    log::warn(R"(DEBUG message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
@@ -328,8 +329,10 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Sub> const &) {
 void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
+  log::warn(R"(DEBUG message="{}")"sv, message);
   auto [request_type, request_id, version] = protocol::json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
+  log::warn(R"(DEBUG request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
   switch (request_type) {
     using enum RequestType;
     case UNDEFINED:  // note! cancel-all-orders

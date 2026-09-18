@@ -214,11 +214,9 @@ void DropCopy5::subscribe() {
       break;
     case CROSS:
       subscribe(shared_.api.order_management.topic_accounts);
-      for (auto &symbol : shared_.settings.download.symbols) {
-        subscribe(shared_.api.order_management.topic_positions, symbol);
-        subscribe(shared_.api.order_management.topic_match_orders, symbol);
-        subscribe(shared_.api.order_management.topic_orders, symbol);
-      }
+      subscribe(shared_.api.order_management.topic_positions, "*"sv);
+      subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
+      subscribe(shared_.api.order_management.topic_orders, "*"sv);
       break;
     case PORTFOLIO:
       break;
@@ -389,7 +387,8 @@ void DropCopy5::operator()(Trace<protocol::json::Positions5> const &event) {
 void DropCopy5::operator()(Trace<protocol::json::MatchOrders5> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
-    log::debug("match_orders={}"sv, match_orders);
+    log::info<2>("match_orders={}"sv, match_orders);
+    log::warn("DEBUG match_orders={}"sv, match_orders);
     for (auto &item : match_orders.data) {
       continue;  // note! DISABLED
       auto remaining_quantity = [&]() {
@@ -451,7 +450,8 @@ void DropCopy5::operator()(Trace<protocol::json::MatchOrders5> const &event) {
 void DropCopy5::operator()(Trace<protocol::json::Orders5> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
-    log::debug("orders={}"sv, orders);
+    log::info<2>("orders={}"sv, orders);
+    log::warn("DEBUG orders={}"sv, orders);
     auto remaining_quantity = [&]() {
       if (utils::compare(orders.data.volume, 0.0) > 0) {
         return orders.data.volume - orders.data.trade_volume;  // note! can't modify order
