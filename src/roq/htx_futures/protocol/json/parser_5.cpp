@@ -12,8 +12,6 @@
 
 using namespace std::literals;
 
-// {"ts":1789749543020,"err-code":2002,"err-msg":"invalid.auth.state"}
-
 namespace roq {
 namespace htx_futures {
 namespace protocol {

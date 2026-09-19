@@ -32,6 +32,7 @@ set(SOURCES
     json_trade.cpp
     json_utils.cpp
     #
+    json_response_5.cpp
     json_cancel_all_orders_ack_5.cpp
     json_cancel_order_ack_5.cpp
     json_orders_5.cpp
@@ -40,6 +41,7 @@ set(SOURCES
     json_positions_5.cpp
     json_open_orders_ack_5.cpp
     json_place_order_ack_5.cpp
+    #
     main.cpp)
 
 roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME})

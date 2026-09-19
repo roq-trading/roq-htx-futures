@@ -13,6 +13,12 @@
     },
     {
       "name": "filled"
+    },
+    {
+      "name": "funding_fee"
+    },
+    {
+      "name": "set_leverage"
     }
   ]
 }

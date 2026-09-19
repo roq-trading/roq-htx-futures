@@ -114,6 +114,10 @@ constexpr Helper<htx_futures::protocol::json::Event5>::operator std::optional<ro
       return roq::UpdateType::INCREMENTAL;
     case FILLED:
       return roq::UpdateType::INCREMENTAL;
+    case FUNDING_FEE:
+      return roq::UpdateType::INCREMENTAL;
+    case SET_LEVERAGE:
+      return roq::UpdateType::INCREMENTAL;
   }
   return {};
 }
@@ -123,6 +127,8 @@ static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::
 static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::CREATE_ORDER}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::CANCEL_ORDER}} == roq::UpdateType::INCREMENTAL);
 static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::FILLED}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::FUNDING_FEE}} == roq::UpdateType::INCREMENTAL);
+static_assert(Helper{htx_futures::protocol::json::Event5{htx_futures::protocol::json::Event5::SET_LEVERAGE}} == roq::UpdateType::INCREMENTAL);
 
 template <>
 template <>

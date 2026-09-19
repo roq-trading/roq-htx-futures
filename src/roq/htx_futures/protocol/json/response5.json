@@ -12,7 +12,7 @@
     },
     {
       "name": "data",
-      "type": "roq/htx_futures/protocol/json/Response5Data"
+      "type": "std/string_view"
     },
     {
       "name": "args"

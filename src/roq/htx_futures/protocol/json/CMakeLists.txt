@@ -15,7 +15,9 @@ set(AUTOGEN_SCHEMAS
     cancel_all_orders_ack5.json
     cancel_all_orders_ack5_data_item.json
     response5.json
-    response5_data.json
+    response5_single.json
+    response5_multiple.json
+    response5_multiple_item.json
     event5.json
     cancel_order_ack5.json
     cancel_order_ack5_data.json

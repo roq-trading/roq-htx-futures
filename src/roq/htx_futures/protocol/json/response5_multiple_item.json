@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx_futures/protocol/json/Response5MultipleItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "code",
+      "type": "std/int32"
+    },
+    {
+      "name": "message",
+      "type": "std/string_view"
+    },
+    {
+      "name": "order_id",
+      "type": "std/string_view"
+    },
+    {
+      "name": "client_order_id",
+      "type": "std/string_view"
+    }
+  ]
+}

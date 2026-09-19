@@ -3,7 +3,9 @@ roq-htx-futures-protocol-json
 cancel_all_orders_ack5.hpp
 cancel_all_orders_ack5_data_item.hpp
 response5.hpp
-response5_data.hpp
+response5_single.hpp
+response5_multiple.hpp
+response5_multiple_item.hpp
 event5.hpp
 cancel_order_ack5.hpp
 cancel_order_ack5_data.hpp
@@ -107,7 +109,9 @@ trade_tick.hpp
 cancel_all_orders_ack5.cpp
 cancel_all_orders_ack5_data_item.cpp
 response5.cpp
-response5_data.cpp
+response5_single.cpp
+response5_multiple.cpp
+response5_multiple_item.cpp
 event5.cpp
 cancel_order_ack5.cpp
 cancel_order_ack5_data.cpp

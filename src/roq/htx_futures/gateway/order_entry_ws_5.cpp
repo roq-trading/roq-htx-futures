@@ -4,6 +4,8 @@
 
 #include "roq/mask.hpp"
 
+#include "roq/utils/safe_cast.hpp"
+
 #include "roq/utils/exceptions/unhandled.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
@@ -13,6 +15,9 @@
 #include "roq/htx_futures/protocol/json/encoder.hpp"
 #include "roq/htx_futures/protocol/json/map.hpp"
 #include "roq/htx_futures/protocol/json/utils.hpp"
+
+#include "roq/htx_futures/protocol/json/response5_multiple.hpp"
+#include "roq/htx_futures/protocol/json/response5_single.hpp"
 
 using namespace std::literals;
 
@@ -219,6 +224,7 @@ void OrderEntryWS5::operator()(web::socket::Client::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
+        log::warn(R"(DEBUG message="{}")"sv, message);
         parse(message);
       })) {
   } else {
@@ -326,6 +332,9 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Sub> const &) {
   log::fatal("Unexpected"sv);
 }
 
+// note!
+//   we drop any response with success because there's virtually no information, instead we wait for the streaming update
+//   we process any response with failure because we get the error code/message
 void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
@@ -333,39 +342,64 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   auto [request_type, request_id, version] = protocol::json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
   log::warn(R"(DEBUG request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
+  auto request_status = response.code == 200 ? RequestStatus::ACCEPTED : RequestStatus::REJECTED;
+  auto helper = [&](Error error, std::string_view const &text, std::string_view const &external_order_id, std::string_view const &client_order_id) {
+    auto response_2 = server::oms::Response{
+        .request_type = request_type,
+        .origin = Origin::EXCHANGE,
+        .request_status = request_status,
+        .error = error,
+        .text = text,
+        .version = version,
+        .request_id = request_id,
+        .external_order_id = external_order_id,
+        .client_order_id = client_order_id,
+        .quantity = NaN,
+        .price = NaN,
+    };
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id_);
+  };
   switch (request_type) {
     using enum RequestType;
-    case UNDEFINED:  // note! cancel-all-orders
-      return;
-    case CREATE_ORDER:
-      if (response.code == 200) {  // note! we don't know if the order was working or completed
-        return;
+    case UNDEFINED: {  // note! cancel-all-orders
+      auto error = protocol::json::guess_error_v5(response.code);
+      protocol::json::Response5Multiple data{response.data, decode_buffer_};
+      auto cancel_all_orders_ack = CancelAllOrdersAck{
+          .stream_id = stream_id_,
+          .account = account_.name,
+          .order_id = {},
+          .exchange = shared_.settings.exchange,
+          .symbol = {},
+          .side = {},
+          .origin = Origin::EXCHANGE,
+          .request_status = request_status,
+          .error = error,
+          .text = response.message,
+          .request_id = request_id,
+          .external_account = {},
+          .number_of_affected_orders = roq::utils::safe_cast(std::size(data.data)),
+          .round_trip_latency = {},
+          .user = {},
+          .strategy_id = {},
+      };
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
+      for (auto &item : data.data) {
+        if (item.code != 200) {
+          log::warn("Failed to cancel: {}"sv, item);
+        }
       }
       break;
+    }
+    case CREATE_ORDER:
     case MODIFY_ORDER:
     case CANCEL_ORDER:
+      if (response.code != 200) {
+        protocol::json::Response5Single data{response.data};
+        auto error = protocol::json::guess_error_v5(response.code);
+        helper(error, response.message, data.order_id, data.client_order_id);
+      }
       break;
   }
-  auto [request_status, error, text] = [&]() -> std::tuple<RequestStatus, Error, std::string_view> {
-    if (response.code == 200) {
-      return {RequestStatus::ACCEPTED, {}, {}};
-    }
-    return {RequestStatus::REJECTED, protocol::json::guess_error_v5(response.code), response.message};
-  }();
-  auto response_2 = server::oms::Response{
-      .request_type = request_type,
-      .origin = Origin::EXCHANGE,
-      .request_status = request_status,
-      .error = error,
-      .text = text,
-      .version = version,
-      .request_id = request_id,
-      .external_order_id = response.data.order_id,
-      .client_order_id = {},
-      .quantity = NaN,
-      .price = NaN,
-  };
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id_);
 }
 
 void OrderEntryWS5::operator()(Trace<protocol::json::Account5> const &) {
