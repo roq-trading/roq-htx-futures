@@ -40,10 +40,34 @@ TEST_CASE("create_order_ack", "[json_response_5]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200);
     REQUIRE(!std::empty(obj.data));
-    CHECK(obj.data[0] == '{');
+    REQUIRE(obj.data[0] == '{');
     protocol::json::Response5Single data{obj.data};
     CHECK(data.order_id == "1550915326489534464"sv);
     CHECK(data.client_order_id == "577024243446975415"sv);
+  };
+  value_type obj{message};
+  helper(obj);
+}
+
+TEST_CASE("create_order_ack_failure", "[json_response_5]") {
+  auto message = R"({)"
+                 R"("code":1497,)"
+                 R"("message":"Position mode parameter passing error!",)"
+                 R"("data":null,)"
+                 R"("args":null,)"
+                 R"("ts":1789900759774,)"
+                 R"("unknownException":false,)"
+                 R"("cid":"P:577024244367613219:1",)"
+                 R"("rate_limit":{)"
+                 R"("limit":"72",)"
+                 R"("interval":"3000",)"
+                 R"("remaining":"71",)"
+                 R"("reset":"1789900762749")"
+                 R"(})"
+                 R"(})";
+  auto helper = [&](value_type &obj) {
+    CHECK(obj.code == 1497);
+    REQUIRE(std::empty(obj.data));
   };
   value_type obj{message};
   helper(obj);
@@ -71,7 +95,7 @@ TEST_CASE("cancel_order_ack", "[json_response_5]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200);
     REQUIRE(!std::empty(obj.data));
-    CHECK(obj.data[0] == '{');
+    REQUIRE(obj.data[0] == '{');
     protocol::json::Response5Single data{obj.data};
     CHECK(data.order_id == "1550915326489534464"sv);
     CHECK(data.client_order_id == "577024243446975415"sv);
@@ -105,7 +129,7 @@ TEST_CASE("cancel_all_orders_ack_1", "[json_response_5]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200);
     REQUIRE(!std::empty(obj.data));
-    CHECK(obj.data[0] == '[');
+    REQUIRE(obj.data[0] == '[');
     core::json::BufferStack buffers{8192, 1};
     protocol::json::Response5Multiple data{obj.data, buffers};
     REQUIRE(std::size(data.data) == 1);
@@ -149,7 +173,7 @@ TEST_CASE("cancel_all_orders_ack_2", "[json_response_5]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200);
     REQUIRE(!std::empty(obj.data));
-    CHECK(obj.data[0] == '[');
+    REQUIRE(obj.data[0] == '[');
     core::json::BufferStack buffers{8192, 1};
     protocol::json::Response5Multiple data{obj.data, buffers};
     REQUIRE(std::size(data.data) == 2);

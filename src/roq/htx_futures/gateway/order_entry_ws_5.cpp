@@ -394,9 +394,14 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
     case MODIFY_ORDER:
     case CANCEL_ORDER:
       if (response.code != 200) {
-        protocol::json::Response5Single data{response.data};
-        auto error = protocol::json::guess_error_v5(response.code);
-        helper(error, response.message, data.order_id, data.client_order_id);
+        if (std::empty(response.data)) {
+          auto error = protocol::json::guess_error_v5(response.code);
+          helper(error, response.message, {}, {});
+        } else {
+          protocol::json::Response5Single data{response.data};
+          auto error = protocol::json::guess_error_v5(response.code);
+          helper(error, response.message, data.order_id, data.client_order_id);
+        }
       }
       break;
   }
