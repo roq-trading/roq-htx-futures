@@ -289,6 +289,10 @@ constexpr Helper<htx_futures::protocol::json::OrderState>::operator std::optiona
       return roq::OrderStatus::CANCELED;
     case FILLED:
       return roq::OrderStatus::COMPLETED;
+    case PARTIALLY_CANCELED:
+      return roq::OrderStatus::CANCELED;
+    case PARTIALLY_FILLED:
+      return roq::OrderStatus::WORKING;
   }
   return {};
 }
@@ -297,6 +301,8 @@ static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protoc
 static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::NEW}} == roq::OrderStatus::WORKING);
 static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::CANCELED}} == roq::OrderStatus::CANCELED);
 static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::FILLED}} == roq::OrderStatus::COMPLETED);
+static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::PARTIALLY_CANCELED}} == roq::OrderStatus::CANCELED);
+static_assert(Helper{htx_futures::protocol::json::OrderState{htx_futures::protocol::json::OrderState::PARTIALLY_FILLED}} == roq::OrderStatus::WORKING);
 
 template <>
 template <>

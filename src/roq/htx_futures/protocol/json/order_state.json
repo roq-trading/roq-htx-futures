@@ -10,6 +10,12 @@
     },
     {
       "name": "filled"
+    },
+    {
+      "name": "partially_canceled"
+    },
+    {
+      "name": "partially_filled"
     }
   ]
 }
