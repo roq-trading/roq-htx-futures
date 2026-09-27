@@ -13,6 +13,8 @@
 #include "roq/htx_futures/gateway/api.hpp"
 #include "roq/htx_futures/gateway/settings.hpp"
 
+#include "roq/htx_futures/tools/rate_limit.hpp"
+
 namespace roq {
 namespace htx_futures {
 namespace gateway {
@@ -26,6 +28,8 @@ struct Shared final {
 
   Settings const &settings;
   API const api;
+
+  tools::RateLimit rate_limit;
 
   core::Symbols symbols;
   utils::unordered_set<std::string> all_symbols;

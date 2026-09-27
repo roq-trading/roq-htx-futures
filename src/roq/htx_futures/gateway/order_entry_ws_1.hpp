@@ -61,9 +61,9 @@ struct OrderEntryWS1 final : public OrderEntry, public web::socket::Client::Hand
 
   void operator()(web::socket::Client::Connected const &) override;
   void operator()(web::socket::Client::Disconnected const &) override;
+  void operator()(web::socket::Client::Latency const &) override;
   void operator()(web::socket::Client::Ready const &) override;
   void operator()(web::socket::Client::Close const &) override;
-  void operator()(web::socket::Client::Latency const &) override;
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
 

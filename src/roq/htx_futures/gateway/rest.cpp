@@ -36,7 +36,7 @@ auto create_name(auto stream_id) {
   return fmt::format("{}:{}"sv, stream_id, NAME);
 }
 
-auto create_connection(auto &handler, auto &settings, auto &context) {
+auto create_connection(auto &handler, auto &settings, auto &context, auto &shared) {
   auto uri = settings.rest.uri;
   auto config = web::rest::Client::Config{
       // connection
@@ -63,7 +63,7 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::rest::Client::create(handler, context, config);
+  return web::rest::Client::create(handler, context, config, shared.rate_limit);
 }
 
 struct create_metrics final : public utils::metrics::Factory {
@@ -74,7 +74,7 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context)},
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -98,12 +98,13 @@ void Rest::operator()(Event<Stop> const &) {
 }
 
 void Rest::operator()(Event<Timer> const &event) {
-  auto now = event.value.now;
-  (*connection_).refresh(now);
-  if (ready() && next_refresh_.count() && next_refresh_ < now && !download_.downloading()) {
-    next_refresh_ = {};
-    download_.reset();
-    download_.begin();
+  auto &[message_info, timer] = event;
+  if ((*connection_).refresh(timer.now)) {
+    if (ready() && next_refresh_.count() && next_refresh_ < timer.now && !download_.downloading()) {
+      next_refresh_ = {};
+      download_.reset();
+      download_.begin();
+    }
   }
 }
 
@@ -142,7 +143,7 @@ void Rest::operator()(ConnectionStatus connection_status, std::string_view const
 
 // web::rest::Client::Handler
 
-void Rest::operator()(Trace<web::rest::Client::Connected> const &) {
+void Rest::operator()(Trace<web::rest::Connected> const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
@@ -150,7 +151,7 @@ void Rest::operator()(Trace<web::rest::Client::Connected> const &) {
   }
 }
 
-void Rest::operator()(Trace<web::rest::Client::Disconnected> const &) {
+void Rest::operator()(Trace<web::rest::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
   if (!download_.downloading()) {
@@ -159,7 +160,7 @@ void Rest::operator()(Trace<web::rest::Client::Disconnected> const &) {
   next_refresh_ = {};
 }
 
-void Rest::operator()(Trace<web::rest::Client::Latency> const &event) {
+void Rest::operator()(Trace<web::rest::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -218,8 +219,12 @@ void Rest::get_contract_info() {
 }
 
 void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  constexpr auto const STATE = State::CONTRACT_INFO;
+  auto const STATE = State::CONTRACT_INFO;
   profile_.contract_info_ack([&]() {
+    auto handle_error = [&]([[maybe_unused]] auto origin, [[maybe_unused]] auto status, auto error, auto text) {
+      log::warn(R"(error={}, text="{}")"sv, error, text);
+      download_.retry(STATE);
+    };
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
@@ -234,11 +239,7 @@ void Rest::get_contract_info_ack(Trace<web::rest::Response> const &event, uint32
         download_.check(STATE);
       }
     };
-    auto handle_error = [&]([[maybe_unused]] auto origin, [[maybe_unused]] auto status, auto error, auto text) {
-      log::warn(R"(error={}, text="{}")"sv, error, text);
-      download_.retry(STATE);
-    };
-    process_response(event, handle_success, handle_error);
+    process_response(event, handle_error, handle_success);
   });
 }
 
@@ -315,8 +316,8 @@ void Rest::operator()(Trace<protocol::json::ContractInfoAck> const &event) {
 
 // helpers
 
-template <typename SuccessHandler, typename ErrorHandler>
-void Rest::process_response(web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {
+void Rest::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
+  auto &[trace, response] = event;
   try {
     auto [status, category, body] = response.result();
     log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
@@ -325,11 +326,7 @@ void Rest::process_response(web::rest::Response const &response, SuccessHandler 
       case SUCCESS:  // 2xx
         success_handler(body);
         break;
-      case CLIENT_ERROR: {  // 4xx
-        auto text = fmt::format("{}"sv, status);
-        error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN, text);
-        break;
-      }
+      case CLIENT_ERROR:    // 4xx
       case SERVER_ERROR: {  // 5xx
         auto text = fmt::format("{}"sv, status);
         error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN, text);

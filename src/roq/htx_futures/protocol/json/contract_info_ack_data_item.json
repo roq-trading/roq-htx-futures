@@ -87,8 +87,7 @@
       "name": "tradfi_labels"
     },
     {
-      "name": "enable_rpi",
-      "type": "std/milliseconds"
+      "name": "enable_rpi"
     }
   ]
 }

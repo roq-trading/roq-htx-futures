@@ -38,7 +38,7 @@ auto create_name(auto stream_id, auto const &account) {
   return fmt::format("{}:{}:{}"sv, stream_id, NAME, account);
 }
 
-auto create_connection(auto &handler, auto &settings, auto &context) {
+auto create_connection(auto &handler, auto &settings, auto &context, auto &shared) {
   auto uri = settings.rest.uri;
   auto config = web::rest::Client::Config{
       // connection
@@ -65,7 +65,7 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::rest::Client::create(handler, context, config);
+  return web::rest::Client::create(handler, context, config, shared.rate_limit);
 }
 
 struct create_metrics final : public utils::metrics::Factory {
@@ -76,8 +76,8 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 OrderEntryREST5::OrderEntryREST5(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.name)}, connection_{create_connection(*this, shared.settings, context)},
-      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.name)},
+      connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -106,7 +106,8 @@ void OrderEntryREST5::operator()(Event<Stop> const &) {
 }
 
 void OrderEntryREST5::operator()(Event<Timer> const &event) {
-  (*connection_).refresh(event.value.now);
+  auto &[message_info, timer] = event;
+  (*connection_).refresh(timer.now);
 }
 
 void OrderEntryREST5::operator()(metrics::Writer &writer) const {
@@ -159,17 +160,17 @@ uint16_t OrderEntryREST5::operator()(Event<CancelAllOrders> const &event, std::s
 
 // web::rest::client::Handler
 
-void OrderEntryREST5::operator()(Trace<web::rest::Client::Connected> const &) {
+void OrderEntryREST5::operator()(Trace<web::rest::Connected> const &) {
   download_.begin();
 }
 
-void OrderEntryREST5::operator()(Trace<web::rest::Client::Disconnected> const &) {
+void OrderEntryREST5::operator()(Trace<web::rest::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
   download_.reset();
 }
 
-void OrderEntryREST5::operator()(Trace<web::rest::Client::Latency> const &event) {
+void OrderEntryREST5::operator()(Trace<web::rest::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
@@ -648,7 +649,8 @@ void OrderEntryREST5::operator()(Trace<protocol::json::CancelAllOrdersAck5> cons
 
 // helpers
 
-void OrderEntryREST5::process_response(web::rest::Response const &response, auto error_handler, auto success_handler) {
+void OrderEntryREST5::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
+  auto &[trace, response] = event;
   try {
     auto [status, category, body] = response.result();
     switch (category) {
@@ -666,7 +668,6 @@ void OrderEntryREST5::process_response(web::rest::Response const &response, auto
         switch (status) {
           using enum web::http::Status;
           case FORBIDDEN:            // 403
-          case I_AM_A_TEAPOT:        // 418
           case TOO_MANY_REQUESTS: {  // 429
             auto text = fmt::format("{}"sv, status);
             error_handler(Origin::EXCHANGE, RequestStatus::REJECTED, Error::REQUEST_RATE_LIMIT_REACHED, text);
