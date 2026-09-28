@@ -45,13 +45,13 @@ struct WebSocket2 final : public web::socket::Client::Handler, public protocol::
  protected:
   // web::socket::Client::Handler
 
-  void operator()(web::socket::Client::Connected const &) override;
-  void operator()(web::socket::Client::Disconnected const &) override;
-  void operator()(web::socket::Client::Latency const &) override;
-  void operator()(web::socket::Client::Ready const &) override;
-  void operator()(web::socket::Client::Close const &) override;
-  void operator()(web::socket::Client::Text const &) override;
-  void operator()(web::socket::Client::Binary const &) override;
+  void operator()(Trace<web::socket::Connected> const &) override;
+  void operator()(Trace<web::socket::Disconnected> const &) override;
+  void operator()(Trace<web::socket::Latency> const &) override;
+  void operator()(Trace<web::socket::Ready> const &) override;
+  void operator()(Trace<web::socket::Close> const &) override;
+  void operator()(Trace<web::socket::Text> const &) override;
+  void operator()(Trace<web::socket::Binary> const &) override;
 
   // helpers
 

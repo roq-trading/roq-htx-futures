@@ -59,7 +59,7 @@ auto create_connection(auto &handler, auto &settings, auto &context, auto &share
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::socket::Client::create(handler, context, config, shared.rate_limit, []() { return std::string(); });
+  return web::socket::Client::create(handler, context, config, shared.throttle, []() { return std::string(); });
 }
 
 struct create_metrics final : public utils::metrics::Factory {
@@ -125,21 +125,21 @@ void WebSocket2::subscribe(size_t start_from) {
   }
 }
 
-void WebSocket2::operator()(web::socket::Client::Connected const &) {
+void WebSocket2::operator()(Trace<web::socket::Connected> const &) {
 }
 
-void WebSocket2::operator()(web::socket::Client::Disconnected const &) {
+void WebSocket2::operator()(Trace<web::socket::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void WebSocket2::operator()(web::socket::Client::Ready const &) {
+void WebSocket2::operator()(Trace<web::socket::Ready> const &) {
   (*this)(ConnectionStatus::READY);
   subscribe();
 }
 
-void WebSocket2::operator()(web::socket::Client::Latency const &latency) {
-  TraceInfo trace_info;
+void WebSocket2::operator()(Trace<web::socket::Latency> const &event) {
+  auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = {},
@@ -149,17 +149,19 @@ void WebSocket2::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void WebSocket2::operator()(web::socket::Client::Close const &) {
+void WebSocket2::operator()(Trace<web::socket::Close> const &) {
 }
 
 // v5
-void WebSocket2::operator()(web::socket::Client::Text const &text) {
+void WebSocket2::operator()(Trace<web::socket::Text> const &event) {
+  auto &[trace_info, text] = event;
   log::info<5>(R"(message="{}")"sv, text.payload);
   parse(text.payload);
 }
 
 // v1
-void WebSocket2::operator()(web::socket::Client::Binary const &binary) {
+void WebSocket2::operator()(Trace<web::socket::Binary> const &event) {
+  auto &[trace_info, binary] = event;
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);

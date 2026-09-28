@@ -9,7 +9,7 @@ namespace gateway {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
-    : dispatcher{dispatcher}, settings{settings}, api{API::create(settings)}, rate_limit{settings}, symbols{settings.ws.max_subscriptions_per_stream} {
+    : dispatcher{dispatcher}, settings{settings}, api{API::create(settings)}, throttle{settings}, symbols{settings.ws.max_subscriptions_per_stream} {
 }
 
 }  // namespace gateway

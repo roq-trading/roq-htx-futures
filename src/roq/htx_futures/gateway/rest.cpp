@@ -63,7 +63,7 @@ auto create_connection(auto &handler, auto &settings, auto &context, auto &share
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::rest::Client::create(handler, context, config, shared.rate_limit);
+  return web::rest::Client::create(handler, context, config, shared.throttle);
 }
 
 struct create_metrics final : public utils::metrics::Factory {

@@ -58,7 +58,7 @@ auto create_connection(auto &handler, auto &settings, auto &context, auto &share
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::socket::Client::create(handler, context, config, shared.rate_limit, []() { return std::string(); });
+  return web::socket::Client::create(handler, context, config, shared.throttle, []() { return std::string(); });
 }
 
 auto create_auth_path(auto &settings) {
@@ -128,16 +128,16 @@ void DropCopy1::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-void DropCopy1::operator()(web::socket::Client::Connected const &) {
+void DropCopy1::operator()(Trace<web::socket::Connected> const &) {
 }
 
-void DropCopy1::operator()(web::socket::Client::Disconnected const &) {
+void DropCopy1::operator()(Trace<web::socket::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void DropCopy1::operator()(web::socket::Client::Latency const &latency) {
-  TraceInfo trace_info;
+void DropCopy1::operator()(Trace<web::socket::Latency> const &event) {
+  auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = account_.name,
@@ -147,19 +147,20 @@ void DropCopy1::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy1::operator()(web::socket::Client::Ready const &) {
+void DropCopy1::operator()(Trace<web::socket::Ready> const &) {
   send_login();
   (*this)(ConnectionStatus::LOGIN_SENT);
 }
 
-void DropCopy1::operator()(web::socket::Client::Close const &) {
+void DropCopy1::operator()(Trace<web::socket::Close> const &) {
 }
 
-void DropCopy1::operator()(web::socket::Client::Text const &) {
+void DropCopy1::operator()(Trace<web::socket::Text> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy1::operator()(web::socket::Client::Binary const &binary) {
+void DropCopy1::operator()(Trace<web::socket::Binary> const &event) {
+  auto &[trace_info, binary] = event;
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
