@@ -385,6 +385,8 @@ void MarketData::operator()(Trace<protocol::json::Trade> const &event) {
     shared_.trades.clear();
     auto emplace_back = [](auto &result, auto &value) {
       auto trade = Trade{
+          .trade_conditions = {},
+          .trade_type = {},
           .side = map(value.direction),
           .price = value.price,
           .quantity = value.amount,
