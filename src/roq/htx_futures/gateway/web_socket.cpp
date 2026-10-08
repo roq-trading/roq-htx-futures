@@ -94,6 +94,8 @@ WebSocket::WebSocket(Handler &handler, io::Context &context, uint16_t stream_id,
       shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
+// server::Stream
+
 void WebSocket::operator()(Event<Start> const &) {
   (*connection_).start();
 }
@@ -124,59 +126,9 @@ void WebSocket::operator()(metrics::Writer &writer) const {
       .write(latency_.heartbeat, metrics::Type::LATENCY);
 }
 
-void WebSocket::subscribe(size_t start_from) {
-  if (ready()) {
-    subscribe(shared_.symbols.get_slice(index_, start_from));
-  }
-}
-
-void WebSocket::operator()(Trace<web::socket::Connected> const &) {
-}
-
-void WebSocket::operator()(Trace<web::socket::Disconnected> const &) {
-  ++counter_.disconnect;
-  (*this)(ConnectionStatus::DISCONNECTED);
-}
-
-void WebSocket::operator()(Trace<web::socket::Latency> const &event) {
-  auto &[trace_info, latency] = event;
-  auto external_latency = ExternalLatency{
-      .stream_id = stream_id_,
-      .account = {},
-      .latency = latency.sample,
-  };
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
-  latency_.ping.update(latency.sample);
-}
-
-void WebSocket::operator()(Trace<web::socket::Ready> const &) {
-  (*this)(ConnectionStatus::READY);
-  subscribe();
-}
-
-void WebSocket::operator()(Trace<web::socket::Close> const &) {
-}
-
-void WebSocket::operator()(Trace<web::socket::Text> const &) {
-  log::fatal("Unexpected"sv);
-}
-
-void WebSocket::operator()(Trace<web::socket::Binary> const &event) {
-  auto &[trace_info, binary] = event;
-  if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
-        std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
-        log::info<5>(R"(message="{}")"sv, message);
-        parse(message);
-      })) {
-  } else {
-    log::fatal("Failed to decode message"sv);
-  }
-  counter_.total_bytes_received.update((*connection_).total_bytes_received());
-}
-
-void WebSocket::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void WebSocket::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
   connection_status_ = connection_status;
-  TraceInfo trace_info;
   auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = {},
@@ -194,6 +146,64 @@ void WebSocket::operator()(ConnectionStatus connection_status, std::string_view 
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+}
+
+// server::MarketDataStream
+
+void WebSocket::subscribe(size_t start_from) {
+  if (ready()) {
+    subscribe(shared_.symbols.get_slice(index_, start_from));
+  }
+}
+
+// web::socket::Client::Handler
+
+void WebSocket::operator()(Trace<web::socket::Connected> const &) {
+}
+
+void WebSocket::operator()(Trace<web::socket::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
+  ++counter_.disconnect;
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
+}
+
+void WebSocket::operator()(Trace<web::socket::Latency> const &event) {
+  auto &[trace_info, latency] = event;
+  auto external_latency = ExternalLatency{
+      .stream_id = stream_id_,
+      .account = {},
+      .latency = latency.sample,
+  };
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
+  latency_.ping.update(latency.sample);
+}
+
+void WebSocket::operator()(Trace<web::socket::Ready> const &event) {
+  auto &[trace_info, ready] = event;
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+  subscribe();
+}
+
+void WebSocket::operator()(Trace<web::socket::Close> const &event) {
+  auto &[trace_info, close] = event;
+  log::warn("close={}"sv, close);
+}
+
+void WebSocket::operator()(Trace<web::socket::Text> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void WebSocket::operator()(Trace<web::socket::Binary> const &event) {
+  auto &[trace_info, binary] = event;
+  if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
+        std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        log::info<5>(R"(message="{}")"sv, message);
+        parse(message);
+      })) {
+  } else {
+    log::fatal("Failed to decode message"sv);
+  }
+  counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
 void WebSocket::subscribe(std::span<Symbol const> const &symbols) {

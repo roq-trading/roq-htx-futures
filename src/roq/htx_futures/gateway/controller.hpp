@@ -19,9 +19,13 @@
 #include "roq/htx_futures/gateway/settings.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
-#include "roq/htx_futures/gateway/drop_copy.hpp"
+#include "roq/htx_futures/gateway/drop_copy_1.hpp"
+#include "roq/htx_futures/gateway/drop_copy_5.hpp"
 #include "roq/htx_futures/gateway/market_data.hpp"
-#include "roq/htx_futures/gateway/order_entry.hpp"
+#include "roq/htx_futures/gateway/order_entry_rest_1.hpp"
+#include "roq/htx_futures/gateway/order_entry_rest_5.hpp"
+#include "roq/htx_futures/gateway/order_entry_ws_1.hpp"
+#include "roq/htx_futures/gateway/order_entry_ws_5.hpp"
 #include "roq/htx_futures/gateway/rest.hpp"
 #include "roq/htx_futures/gateway/web_socket.hpp"
 #include "roq/htx_futures/gateway/web_socket_2.hpp"
@@ -32,8 +36,12 @@ namespace gateway {
 
 struct Controller final : public server::Handler,
                           public Rest::Handler,
-                          public OrderEntry::Handler,
-                          public DropCopy::Handler,
+                          public OrderEntryREST1::Handler,
+                          public OrderEntryREST5::Handler,
+                          public OrderEntryWS1::Handler,
+                          public OrderEntryWS5::Handler,
+                          public DropCopy1::Handler,
+                          public DropCopy5::Handler,
                           public MarketData::Handler,
                           public WebSocket::Handler,
                           public WebSocket2::Handler {
@@ -93,7 +101,7 @@ struct Controller final : public server::Handler,
   template <typename... Args>
   static void dispatch_helper(auto &self, Args &&...);
 
-  OrderEntry &get_order_entry(std::string_view const &account);
+  server::OrderActionStream &get_order_entry(std::string_view const &account);
 
  private:
   server::Dispatcher &dispatcher_;
@@ -106,13 +114,13 @@ struct Controller final : public server::Handler,
   // seed
   uint16_t stream_id_ = {};
   // streams
-  Rest rest_;
-  utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_rest_;
-  utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_ws_;
-  utils::unordered_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
-  std::vector<std::unique_ptr<MarketData>> market_data_;
-  std::vector<std::unique_ptr<WebSocket>> web_socket_;
-  std::vector<std::unique_ptr<WebSocket2>> web_socket_2_;
+  std::unique_ptr<server::Stream> rest_;
+  utils::unordered_map<std::string, std::unique_ptr<server::OrderActionStream>> order_entry_rest_;
+  utils::unordered_map<std::string, std::unique_ptr<server::OrderActionStream>> order_entry_ws_;
+  utils::unordered_map<std::string, std::unique_ptr<server::Stream>> drop_copy_;
+  std::vector<std::unique_ptr<server::MarketDataStream>> market_data_;
+  std::vector<std::unique_ptr<server::MarketDataStream>> web_socket_;
+  std::vector<std::unique_ptr<server::MarketDataStream>> web_socket_2_;
 };
 
 }  // namespace gateway

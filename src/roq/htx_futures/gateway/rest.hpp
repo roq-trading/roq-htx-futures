@@ -12,11 +12,13 @@
 
 #include "roq/web/rest/client.hpp"
 
-#include "roq/core/download.hpp"
+#include "roq/core/download_2.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
+
+#include "roq/server/stream.hpp"
 
 #include "roq/htx_futures/gateway/shared.hpp"
 
@@ -26,7 +28,7 @@ namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct Rest final : public web::rest::Client::Handler {
+struct Rest final : public Base<Rest>, public server::Stream, public web::rest::Client::Handler {
   struct SymbolsUpdate final {
     std::span<Symbol const> symbols;
   };
@@ -37,13 +39,22 @@ struct Rest final : public web::rest::Client::Handler {
 
   Rest(Handler &, io::Context &context, uint16_t stream_id, Shared &);
 
-  Rest(Rest const &) = delete;
+  // protected:
+  friend base_type;
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  // server::Stream
 
-  void operator()(metrics::Writer &) const;
+  uint16_t stream_id() const override { return stream_id_; }
+
+  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
+
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
+
+  void operator()(metrics::Writer &) const override;
+
+  void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
 
  protected:
   // web::rest::Client::Handler
@@ -52,11 +63,7 @@ struct Rest final : public web::rest::Client::Handler {
   void operator()(Trace<web::rest::Disconnected> const &) override;
   void operator()(Trace<web::rest::Latency> const &) override;
 
-  // helpers
-
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
-  void operator()(ConnectionStatus, std::string_view const &reason = {});
+  // core::Download
 
   enum class State {
     UNDEFINED = 0,
@@ -64,7 +71,7 @@ struct Rest final : public web::rest::Client::Handler {
     DONE,
   };
 
-  uint32_t download(State);
+  int32_t download(Trace<State> const &);
 
   // contract-info
 
@@ -99,7 +106,7 @@ struct Rest final : public web::rest::Client::Handler {
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<State> download_;
+  core::Download2<State> download_;
   // experimental
   std::chrono::nanoseconds next_refresh_ = {};
 };

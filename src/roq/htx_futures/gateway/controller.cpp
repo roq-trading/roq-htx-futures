@@ -8,15 +8,6 @@
 
 #include "roq/htx_futures/gateway/api.hpp"
 
-#include "roq/htx_futures/gateway/drop_copy_1.hpp"
-#include "roq/htx_futures/gateway/drop_copy_5.hpp"
-
-#include "roq/htx_futures/gateway/order_entry_rest_1.hpp"
-#include "roq/htx_futures/gateway/order_entry_rest_5.hpp"
-
-#include "roq/htx_futures/gateway/order_entry_ws_1.hpp"
-#include "roq/htx_futures/gateway/order_entry_ws_5.hpp"
-
 #include "roq/htx_futures/protocol/json/utils.hpp"
 
 using namespace std::literals;
@@ -62,6 +53,14 @@ R create_accounts(auto &config, auto &settings, auto &api) {
     }
     result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, margin_mode, settings.ws.order_uri));
   }
+  return result;
+}
+
+template <typename R>
+R create_rest(Controller &gateway, auto &context, auto &stream_id, auto &shared) {
+  using result_type = std::remove_cvref_t<R>;
+  result_type result;
+  result = std::make_unique<Rest>(gateway, context, ++stream_id, shared);
   return result;
 }
 
@@ -134,7 +133,7 @@ uint8_t Controller::parse_api(Settings const &settings) {
 
 Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher, settings}, accounts_{create_accounts<decltype(accounts_)>(config, settings, shared_.api)},
-      rest_{*this, context_, ++stream_id_, shared_},
+      rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
       order_entry_rest_{create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       order_entry_ws_{create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
@@ -309,7 +308,7 @@ void Controller::dispatch(Args &&...args) {
 template <typename... Args>
 void Controller::dispatch_helper(auto &self, Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
-  helper(self.rest_);
+  helper(*self.rest_);
   for (auto &[_, item] : self.order_entry_rest_) {
     helper(*item);
   }
@@ -332,7 +331,7 @@ void Controller::dispatch_helper(auto &self, Args &&...args) {
   }
 }
 
-OrderEntry &Controller::get_order_entry(std::string_view const &account) {
+server::OrderActionStream &Controller::get_order_entry(std::string_view const &account) {
   if (shared_.settings.ws_api) {
     auto iter = order_entry_ws_.find(account);
     if (iter != std::end(order_entry_ws_)) {

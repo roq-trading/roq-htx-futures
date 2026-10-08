@@ -72,7 +72,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy5::DropCopy5(DropCopy::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -95,6 +95,8 @@ DropCopy5::DropCopy5(DropCopy::Handler &handler, io::Context &context, uint16_t 
       },
       account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared} {
 }
+
+// server::Stream
 
 void DropCopy5::operator()(Event<Start> const &) {
   (*connection_).start();
@@ -128,46 +130,9 @@ void DropCopy5::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-void DropCopy5::operator()(Trace<web::socket::Connected> const &) {
-}
-
-void DropCopy5::operator()(Trace<web::socket::Disconnected> const &) {
-  ++counter_.disconnect;
-  (*this)(ConnectionStatus::DISCONNECTED);
-}
-
-void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
-  auto &[trace_info, latency] = event;
-  auto external_latency = ExternalLatency{
-      .stream_id = stream_id_,
-      .account = account_.name,
-      .latency = latency.sample,
-  };
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
-  latency_.ping.update(latency.sample);
-}
-
-void DropCopy5::operator()(Trace<web::socket::Ready> const &) {
-  send_login();
-  (*this)(ConnectionStatus::LOGIN_SENT);
-}
-
-void DropCopy5::operator()(Trace<web::socket::Close> const &) {
-}
-
-void DropCopy5::operator()(Trace<web::socket::Text> const &event) {
-  auto &[trace_info, text] = event;
-  log::info<5>(R"(message="{}")"sv, text.payload);
-  parse(text.payload);
-}
-
-void DropCopy5::operator()(Trace<web::socket::Binary> const &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy5::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void DropCopy5::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
   connection_status_ = connection_status;
-  TraceInfo trace_info;
   auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = account_.name,
@@ -187,83 +152,50 @@ void DropCopy5::operator()(ConnectionStatus connection_status, std::string_view 
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
-void DropCopy5::send_pong(std::chrono::milliseconds timestamp) {
-  auto message = fmt::format(
-      R"({{)"
-      R"("op":"pong",)"
-      R"("ts":{})"
-      R"(}})"sv,
-      timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
+// web::socket::Client::Handler
+
+void DropCopy5::operator()(Trace<web::socket::Connected> const &) {
 }
 
-void DropCopy5::send_login() {
-  auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  auto message = account_.create_ws_auth(auth_path_, now_utc);
-  // log::warn("DEBUG {}"sv, message);
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
+void DropCopy5::operator()(Trace<web::socket::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
+  ++counter_.disconnect;
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
-void DropCopy5::subscribe() {
-  switch (account_.margin_mode) {
-    using enum MarginMode;
-    case UNDEFINED:
-      break;
-    case ISOLATED:
-      log::fatal("Unexpected: UNTESTED"sv);
-      break;
-    case CROSS:
-      subscribe(shared_.api.order_management.topic_accounts);
-      subscribe(shared_.api.order_management.topic_positions, "*"sv);
-      subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
-      subscribe(shared_.api.order_management.topic_orders, "*"sv);
-      break;
-    case PORTFOLIO:
-      break;
-  }
+void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
+  auto &[trace_info, latency] = event;
+  auto external_latency = ExternalLatency{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .latency = latency.sample,
+  };
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
+  latency_.ping.update(latency.sample);
 }
 
-void DropCopy5::subscribe(std::string_view const &topic) {
-  auto message = fmt::format(
-      R"({{)"
-      R"("op":"sub",)"
-      R"("topic":"{}")"
-      R"(}})"sv,
-      topic);
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
+void DropCopy5::operator()(Trace<web::socket::Ready> const &event) {
+  auto &[trace_info, ready] = event;
+  send_login();
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
 }
 
-void DropCopy5::subscribe(std::string_view const &topic, std::string_view const &contract_code) {
-  auto message = fmt::format(
-      R"({{)"
-      R"("op":"sub",)"
-      R"("topic":"{}",)"
-      R"("contract_code":"{}")"
-      R"(}})"sv,
-      topic,
-      contract_code);
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
+void DropCopy5::operator()(Trace<web::socket::Close> const &event) {
+  auto &[trace_info, close] = event;
+  log::warn("close={}"sv, close);
 }
 
-void DropCopy5::parse(std::string_view const &message) {
-  profile_.parse([&]() {
-    log::info<5>(R"(message="{}")"sv, message);
-    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
-    try {
-      TraceInfo trace_info;
-      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
-        log_message();
-      }
-    } catch (...) {
-      log_message();
-      utils::exceptions::Unhandled::terminate();
-    }
-  });
+void DropCopy5::operator()(Trace<web::socket::Text> const &event) {
+  auto &[trace_info, text] = event;
+  log::info<5>(R"(message="{}")"sv, text.payload);
+  parse(text.payload);
 }
+
+void DropCopy5::operator()(Trace<web::socket::Binary> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+// protocol::json::Parser5::Handler
 
 void DropCopy5::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
@@ -292,7 +224,7 @@ void DropCopy5::operator()(Trace<protocol::json::Auth> const &event) {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
       subscribe();
-      (*this)(ConnectionStatus::READY);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
     } else {
       if (shared_.settings.experimental.retry_logon) {
         log::error("[{}] auth={}"sv, account_.name, auth);
@@ -507,6 +439,87 @@ void DropCopy5::operator()(Trace<protocol::json::Orders5> const &event) {
     };
     create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
     // XXX FIXME TODO trades
+  });
+}
+
+// helpers
+
+void DropCopy5::send_pong(std::chrono::milliseconds timestamp) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"pong",)"
+      R"("ts":{})"
+      R"(}})"sv,
+      timestamp.count());
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void DropCopy5::send_login() {
+  auto now_utc = clock::get_realtime<std::chrono::seconds>();
+  auto message = account_.create_ws_auth(auth_path_, now_utc);
+  // log::warn("DEBUG {}"sv, message);
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void DropCopy5::subscribe() {
+  switch (account_.margin_mode) {
+    using enum MarginMode;
+    case UNDEFINED:
+      break;
+    case ISOLATED:
+      log::fatal("Unexpected: UNTESTED"sv);
+      break;
+    case CROSS:
+      subscribe(shared_.api.order_management.topic_accounts);
+      subscribe(shared_.api.order_management.topic_positions, "*"sv);
+      subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
+      subscribe(shared_.api.order_management.topic_orders, "*"sv);
+      break;
+    case PORTFOLIO:
+      break;
+  }
+}
+
+void DropCopy5::subscribe(std::string_view const &topic) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"sub",)"
+      R"("topic":"{}")"
+      R"(}})"sv,
+      topic);
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void DropCopy5::subscribe(std::string_view const &topic, std::string_view const &contract_code) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"sub",)"
+      R"("topic":"{}",)"
+      R"("contract_code":"{}")"
+      R"(}})"sv,
+      topic,
+      contract_code);
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void DropCopy5::parse(std::string_view const &message) {
+  profile_.parse([&]() {
+    log::info<5>(R"(message="{}")"sv, message);
+    log::warn(R"(DEBUG message="{}")"sv, message);
+    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
+    try {
+      TraceInfo trace_info;
+      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+        log_message();
+      }
+    } catch (...) {
+      log_message();
+      utils::exceptions::Unhandled::terminate();
+    }
   });
 }
 

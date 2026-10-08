@@ -90,6 +90,8 @@ WebSocket2::WebSocket2(Handler &handler, io::Context &context, uint16_t stream_i
       shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
+// server::Stream
+
 void WebSocket2::operator()(Event<Start> const &) {
   (*connection_).start();
 }
@@ -119,22 +121,50 @@ void WebSocket2::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
+void WebSocket2::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
+  connection_status_ = connection_status;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::WS,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+}
+
+// server::MarketDataStream
+
 void WebSocket2::subscribe(size_t start_from) {
   if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
   }
 }
 
+// web::socket::Client::Handler
+
 void WebSocket2::operator()(Trace<web::socket::Connected> const &) {
 }
 
-void WebSocket2::operator()(Trace<web::socket::Disconnected> const &) {
+void WebSocket2::operator()(Trace<web::socket::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
-  (*this)(ConnectionStatus::DISCONNECTED);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
-void WebSocket2::operator()(Trace<web::socket::Ready> const &) {
-  (*this)(ConnectionStatus::READY);
+void WebSocket2::operator()(Trace<web::socket::Ready> const &event) {
+  auto &[trace_info, ready] = event;
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
   subscribe();
 }
 
@@ -149,7 +179,9 @@ void WebSocket2::operator()(Trace<web::socket::Latency> const &event) {
   latency_.ping.update(latency.sample);
 }
 
-void WebSocket2::operator()(Trace<web::socket::Close> const &) {
+void WebSocket2::operator()(Trace<web::socket::Close> const &event) {
+  auto &[trace_info, close] = event;
+  log::warn("close={}"sv, close);
 }
 
 // v5
@@ -173,78 +205,7 @@ void WebSocket2::operator()(Trace<web::socket::Binary> const &event) {
   counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
-void WebSocket2::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
-  connection_status_ = connection_status;
-  TraceInfo trace_info;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = {},
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::WS,
-      .encoding = {Encoding::JSON},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_).get_interface(),
-      .authority = (*connection_).get_current_authority(),
-      .path = (*connection_).get_current_path(),
-      .proxy = (*connection_).get_proxy(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
-}
-
-void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols)) {
-    return;
-  }
-  subscribe(symbols, "public"sv, "funding_rate"sv);
-}
-
-void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
-  assert(!std::empty(symbols));
-  for (auto &symbol : symbols) {
-    auto message = fmt::format(
-        R"({{)"
-        R"("op":"sub",)"
-        R"("topic":"{}.{}.{}",)"
-        R"("cid":"xxx")"
-        R"(}})"sv,
-        source,
-        symbol,
-        theme);
-    log::debug(R"(message="{}")"sv, message);
-    (*connection_).send_text(message);
-  }
-}
-
-void WebSocket2::send_pong(std::chrono::milliseconds timestamp) {
-  auto message = fmt::format(
-      R"({{)"
-      R"("op":"pong",)"
-      R"("ts":{})"
-      R"(}})"sv,
-      timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
-}
-
-void WebSocket2::parse(std::string_view const &message) {
-  profile_.parse([&]() {
-    log::info<5>(R"(message="{}")"sv, message);
-    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
-    try {
-      TraceInfo trace_info;
-      if (!protocol::json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
-        log_message();
-      }
-    } catch (...) {
-      log_message();
-      utils::exceptions::Unhandled::terminate();
-    }
-  });
-}
+// protocol::json::Parser2::Handler
 
 void WebSocket2::operator()(Trace<protocol::json::Close2> const &) {
   profile_.close([&]() {
@@ -346,6 +307,59 @@ void WebSocket2::operator()(Trace<protocol::json::MatchOrdersCross> const &) {
 
 void WebSocket2::operator()(Trace<protocol::json::OrdersCross> const &) {
   log::fatal("Unexpected"sv);
+}
+
+// helpers
+
+void WebSocket2::subscribe(std::span<Symbol const> const &symbols) {
+  if (std::empty(symbols)) {
+    return;
+  }
+  subscribe(symbols, "public"sv, "funding_rate"sv);
+}
+
+void WebSocket2::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
+  assert(!std::empty(symbols));
+  for (auto &symbol : symbols) {
+    auto message = fmt::format(
+        R"({{)"
+        R"("op":"sub",)"
+        R"("topic":"{}.{}.{}",)"
+        R"("cid":"xxx")"
+        R"(}})"sv,
+        source,
+        symbol,
+        theme);
+    log::debug(R"(message="{}")"sv, message);
+    (*connection_).send_text(message);
+  }
+}
+
+void WebSocket2::send_pong(std::chrono::milliseconds timestamp) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"pong",)"
+      R"("ts":{})"
+      R"(}})"sv,
+      timestamp.count());
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void WebSocket2::parse(std::string_view const &message) {
+  profile_.parse([&]() {
+    log::info<5>(R"(message="{}")"sv, message);
+    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
+    try {
+      TraceInfo trace_info;
+      if (!protocol::json::Parser2::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+        log_message();
+      }
+    } catch (...) {
+      log_message();
+      utils::exceptions::Unhandled::terminate();
+    }
+  });
 }
 
 }  // namespace gateway

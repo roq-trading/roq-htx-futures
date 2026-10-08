@@ -82,7 +82,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntryWS5::OrderEntryWS5(OrderEntry::Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+OrderEntryWS5::OrderEntryWS5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -103,6 +103,8 @@ OrderEntryWS5::OrderEntryWS5(OrderEntry::Handler &handler, io::Context &context,
       },
       account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
+
+// server::Stream
 
 void OrderEntryWS5::operator()(Event<Start> const &) {
   (*connection_).start();
@@ -133,6 +135,30 @@ void OrderEntryWS5::operator()(metrics::Writer &writer) const {
       // latency
       .write(latency_.ping, metrics::Type::LATENCY);
 }
+
+void OrderEntryWS5::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
+  connection_status_ = connection_status;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::WS,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+}
+
+// server::OrderActionStream
 
 uint16_t OrderEntryWS5::operator()(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
@@ -192,9 +218,10 @@ uint16_t OrderEntryWS5::operator()(Event<CancelAllOrders> const &event, std::str
 void OrderEntryWS5::operator()(Trace<web::socket::Connected> const &) {
 }
 
-void OrderEntryWS5::operator()(Trace<web::socket::Disconnected> const &) {
+void OrderEntryWS5::operator()(Trace<web::socket::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
-  (*this)(ConnectionStatus::DISCONNECTED);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
 void OrderEntryWS5::operator()(Trace<web::socket::Latency> const &event) {
@@ -208,13 +235,16 @@ void OrderEntryWS5::operator()(Trace<web::socket::Latency> const &event) {
   latency_.ping.update(latency.sample);
 }
 
-void OrderEntryWS5::operator()(Trace<web::socket::Ready> const &) {
+void OrderEntryWS5::operator()(Trace<web::socket::Ready> const &event) {
+  auto &[trace_info, ready] = event;
   send_login();
-  // (*this)(ConnectionStatus::LOGIN_SENT);
-  (*this)(ConnectionStatus::READY);
+  // create_trace_and_dispatch_2(trace_info,ConnectionStatus::LOGIN_SENT);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
 }
 
-void OrderEntryWS5::operator()(Trace<web::socket::Close> const &) {
+void OrderEntryWS5::operator()(Trace<web::socket::Close> const &event) {
+  auto &[trace_info, close] = event;
+  log::warn("close={}"sv, close);
 }
 
 void OrderEntryWS5::operator()(Trace<web::socket::Text> const &) {
@@ -225,69 +255,11 @@ void OrderEntryWS5::operator()(Trace<web::socket::Binary> const &event) {
   auto &[trace_info, binary] = event;
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
-        log::info<5>(R"(message="{}")"sv, message);
-        log::warn(R"(DEBUG message="{}")"sv, message);
         parse(message);
       })) {
   } else {
     log::fatal("Failed to decode message"sv);
   }
-}
-
-void OrderEntryWS5::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
-  connection_status_ = connection_status;
-  TraceInfo trace_info;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.name,
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::WS,
-      .encoding = {Encoding::JSON},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_).get_interface(),
-      .authority = (*connection_).get_current_authority(),
-      .path = (*connection_).get_current_path(),
-      .proxy = (*connection_).get_proxy(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
-}
-
-void OrderEntryWS5::send_pong(std::chrono::milliseconds timestamp) {
-  auto message = fmt::format(
-      R"({{)"
-      R"("op":"pong",)"
-      R"("ts":{})"
-      R"(}})"sv,
-      timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
-}
-
-void OrderEntryWS5::send_login() {
-  auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  auto message = account_.create_ws_auth(auth_path_, now_utc);
-  // log::debug(R"(message="{}")"sv, message);
-  (*connection_).send_text(message);
-}
-
-void OrderEntryWS5::parse(std::string_view const &message) {
-  // log::debug("{}"sv, message);
-  profile_.parse([&]() {
-    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
-    try {
-      TraceInfo trace_info;
-      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
-        log_message();
-      }
-    } catch (...) {
-      log_message();
-      utils::exceptions::Unhandled::terminate();
-    }
-  });
 }
 
 // protocol::json::Parser5::Handler
@@ -317,7 +289,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
-      (*this)(ConnectionStatus::READY);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
     } else {
       if (shared_.settings.experimental.retry_logon) {
         log::error("auth={}"sv, auth);
@@ -423,6 +395,43 @@ void OrderEntryWS5::operator()(Trace<protocol::json::MatchOrders5> const &) {
 
 void OrderEntryWS5::operator()(Trace<protocol::json::Orders5> const &) {
   log::fatal("Unexpected"sv);
+}
+
+// helpers
+
+void OrderEntryWS5::send_pong(std::chrono::milliseconds timestamp) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"pong",)"
+      R"("ts":{})"
+      R"(}})"sv,
+      timestamp.count());
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void OrderEntryWS5::send_login() {
+  auto now_utc = clock::get_realtime<std::chrono::seconds>();
+  auto message = account_.create_ws_auth(auth_path_, now_utc);
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void OrderEntryWS5::parse(std::string_view const &message) {
+  log::info<5>(R"(message="{}")"sv, message);
+  log::warn(R"(DEBUG message="{}")"sv, message);
+  profile_.parse([&]() {
+    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
+    try {
+      TraceInfo trace_info;
+      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+        log_message();
+      }
+    } catch (...) {
+      log_message();
+      utils::exceptions::Unhandled::terminate();
+    }
+  });
 }
 
 }  // namespace gateway

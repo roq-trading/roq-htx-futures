@@ -10,7 +10,7 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/core/download.hpp"
+#include "roq/core/download_2.hpp"
 
 #include "roq/web/rest/client.hpp"
 
@@ -18,8 +18,9 @@
 
 #include "roq/server.hpp"
 
+#include "roq/server/stream.hpp"
+
 #include "roq/htx_futures/gateway/account.hpp"
-#include "roq/htx_futures/gateway/order_entry.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/cancel_all_orders_ack.hpp"
@@ -31,16 +32,29 @@ namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct OrderEntryREST1 final : public OrderEntry, public web::rest::Client::Handler {
-  OrderEntryREST1(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::OrderActionStream, public web::rest::Client::Handler {
+  struct Handler {};
 
-  OrderEntryREST1(OrderEntry const &) = delete;
+  OrderEntryREST1(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+
+  // protected:
+  friend base_type;
+
+  // server::Stream
+
+  uint16_t stream_id() const override { return stream_id_; }
+
+  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
   void operator()(Event<Timer> const &) override;
 
   void operator()(metrics::Writer &) const override;
+
+  void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
+
+  // server::OrderActionStream
 
   uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
   uint16_t operator()(
@@ -67,9 +81,7 @@ struct OrderEntryREST1 final : public OrderEntry, public web::rest::Client::Hand
 
   // helpers
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
-  void operator()(ConnectionStatus, std::string_view const &reason = {});
+  // core::Download
 
   enum class State {
     UNDEFINED = 0,
@@ -77,7 +89,7 @@ struct OrderEntryREST1 final : public OrderEntry, public web::rest::Client::Hand
     DONE,
   };
 
-  uint32_t download(State);
+  int32_t download(Trace<State> const &);
 
   // open-orders
 
@@ -113,7 +125,7 @@ struct OrderEntryREST1 final : public OrderEntry, public web::rest::Client::Hand
   void process_response(Trace<web::rest::Response> const &, auto error_handler, auto success_handler);
 
  private:
-  [[maybe_unused]] OrderEntry::Handler &handler_;
+  [[maybe_unused]] Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
@@ -142,7 +154,7 @@ struct OrderEntryREST1 final : public OrderEntry, public web::rest::Client::Hand
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<State> download_;
+  core::Download2<State> download_;
   // buffers
   std::string encode_buffer_;
 };

@@ -19,8 +19,9 @@
 
 #include "roq/server.hpp"
 
+#include "roq/server/stream.hpp"
+
 #include "roq/htx_futures/gateway/account.hpp"
-#include "roq/htx_futures/gateway/order_entry.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/parser_5.hpp"
@@ -29,16 +30,32 @@ namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct OrderEntryWS5 final : public OrderEntry, public web::socket::Client::Handler, public protocol::json::Parser5::Handler {
-  OrderEntryWS5(OrderEntry::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+struct OrderEntryWS5 final : public Base<OrderEntryWS5>,
+                             public server::OrderActionStream,
+                             public web::socket::Client::Handler,
+                             public protocol::json::Parser5::Handler {
+  struct Handler {};
 
-  OrderEntryWS5(OrderEntryWS5 const &) = delete;
+  OrderEntryWS5(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+
+  // protected:
+  friend base_type;
+
+  // server::Stream
+
+  uint16_t stream_id() const override { return stream_id_; }
+
+  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
   void operator()(Event<Timer> const &) override;
 
   void operator()(metrics::Writer &) const override;
+
+  void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
+
+  // server::OrderActionStream
 
   uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
   uint16_t operator()(
@@ -67,18 +84,6 @@ struct OrderEntryWS5 final : public OrderEntry, public web::socket::Client::Hand
   void operator()(Trace<web::socket::Text> const &) override;
   void operator()(Trace<web::socket::Binary> const &) override;
 
-  // helpers
-
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
-  void operator()(ConnectionStatus, std::string_view const &reason = {});
-
-  void send_pong(std::chrono::milliseconds timestamp);
-
-  void send_login();
-
-  void parse(std::string_view const &message);
-
   // protocol::json::Parser3::Handler
 
   void operator()(Trace<protocol::json::Close2> const &) override;
@@ -93,8 +98,16 @@ struct OrderEntryWS5 final : public OrderEntry, public web::socket::Client::Hand
   void operator()(Trace<protocol::json::MatchOrders5> const &) override;
   void operator()(Trace<protocol::json::Orders5> const &) override;
 
+  // helpers
+
+  void send_pong(std::chrono::milliseconds timestamp);
+
+  void send_login();
+
+  void parse(std::string_view const &message);
+
  private:
-  [[maybe_unused]] OrderEntry::Handler &handler_;
+  [[maybe_unused]] Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;

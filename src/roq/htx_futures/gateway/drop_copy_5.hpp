@@ -17,8 +17,9 @@
 
 #include "roq/server.hpp"
 
+#include "roq/server/stream.hpp"
+
 #include "roq/htx_futures/gateway/account.hpp"
-#include "roq/htx_futures/gateway/drop_copy.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/parser_5.hpp"
@@ -27,14 +28,27 @@ namespace roq {
 namespace htx_futures {
 namespace gateway {
 
-struct DropCopy5 final : public DropCopy, public web::socket::Client::Handler, public protocol::json::Parser5::Handler {
-  DropCopy5(DropCopy::Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public web::socket::Client::Handler, public protocol::json::Parser5::Handler {
+  struct Handler {};
+
+  DropCopy5(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+
+  // protected:
+  friend base_type;
+
+  // server::Stream
+
+  uint16_t stream_id() const override { return stream_id_; }
+
+  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
   void operator()(Event<Timer> const &) override;
 
   void operator()(metrics::Writer &) const override;
+
+  void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
 
  protected:
   // web::socket::Client::Handler
@@ -46,22 +60,6 @@ struct DropCopy5 final : public DropCopy, public web::socket::Client::Handler, p
   void operator()(Trace<web::socket::Close> const &) override;
   void operator()(Trace<web::socket::Text> const &) override;
   void operator()(Trace<web::socket::Binary> const &) override;
-
-  // helpers
-
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
-  void operator()(ConnectionStatus, std::string_view const &reason = {});
-
-  void send_pong(std::chrono::milliseconds timestamp);
-
-  void send_login();
-
-  void subscribe();
-  void subscribe(std::string_view const &topic);
-  void subscribe(std::string_view const &topic, std::string_view const &contract_code);
-
-  void parse(std::string_view const &message);
 
   // protocol::json::Parser5::Handler
 
@@ -78,8 +76,20 @@ struct DropCopy5 final : public DropCopy, public web::socket::Client::Handler, p
   void operator()(Trace<protocol::json::MatchOrders5> const &) override;
   void operator()(Trace<protocol::json::Orders5> const &) override;
 
+  // helpers
+
+  void send_pong(std::chrono::milliseconds timestamp);
+
+  void send_login();
+
+  void subscribe();
+  void subscribe(std::string_view const &topic);
+  void subscribe(std::string_view const &topic, std::string_view const &contract_code);
+
+  void parse(std::string_view const &message);
+
  private:
-  [[maybe_unused]] DropCopy::Handler &handler_;
+  [[maybe_unused]] Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
