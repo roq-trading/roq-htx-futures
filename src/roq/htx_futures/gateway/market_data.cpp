@@ -111,7 +111,7 @@ void MarketData::operator()(Trace<Stop> const &) {
 }
 
 void MarketData::operator()(Trace<Timer> const &event) {
-  auto &[message_info, timer] = event;
+  auto &[trace_info, timer] = event;
   (*connection_).refresh(timer.now);
 }
 

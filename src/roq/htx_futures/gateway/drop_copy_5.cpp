@@ -107,7 +107,7 @@ void DropCopy5::operator()(Trace<Stop> const &) {
 }
 
 void DropCopy5::operator()(Trace<Timer> const &event) {
-  auto &[message_info, timer] = event;
+  auto &[trace_info, timer] = event;
   (*connection_).refresh(timer.now);
 }
 

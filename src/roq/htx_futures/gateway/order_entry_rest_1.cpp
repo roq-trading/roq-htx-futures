@@ -108,7 +108,7 @@ void OrderEntryREST1::operator()(Trace<Stop> const &) {
 }
 
 void OrderEntryREST1::operator()(Trace<Timer> const &event) {
-  auto &[message_info, timer] = event;
+  auto &[trace_info, timer] = event;
   (*connection_).refresh(timer.now);
 }
 
