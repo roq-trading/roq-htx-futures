@@ -99,15 +99,15 @@ OrderEntryREST1::OrderEntryREST1(Handler &handler, io::Context &context, uint16_
 
 // server::Stream
 
-void OrderEntryREST1::operator()(Event<Start> const &) {
+void OrderEntryREST1::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void OrderEntryREST1::operator()(Event<Stop> const &) {
+void OrderEntryREST1::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void OrderEntryREST1::operator()(Event<Timer> const &event) {
+void OrderEntryREST1::operator()(Trace<Timer> const &event) {
   auto &[message_info, timer] = event;
   (*connection_).refresh(timer.now);
 }

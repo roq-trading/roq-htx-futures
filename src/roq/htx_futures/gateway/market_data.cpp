@@ -102,15 +102,15 @@ MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_i
 
 // server::Stream
 
-void MarketData::operator()(Event<Start> const &) {
+void MarketData::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void MarketData::operator()(Event<Stop> const &) {
+void MarketData::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void MarketData::operator()(Event<Timer> const &event) {
+void MarketData::operator()(Trace<Timer> const &event) {
   auto &[message_info, timer] = event;
   (*connection_).refresh(timer.now);
 }

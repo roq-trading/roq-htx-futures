@@ -144,7 +144,7 @@ Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings,
 
 // server::Handler
 
-void Controller::operator()(Event<Start> const &event) {
+void Controller::operator()(Trace<Start> const &event) {
   log::info("Starting..."sv);
   assert(std::empty(market_data_));
   assert(std::empty(web_socket_));
@@ -152,29 +152,13 @@ void Controller::operator()(Event<Start> const &event) {
   dispatch(event);
 }
 
-void Controller::operator()(Event<Stop> const &event) {
+void Controller::operator()(Trace<Stop> const &event) {
   log::info("Stopping..."sv);
   dispatch(event);
 }
 
-void Controller::operator()(Event<Timer> const &event) {
+void Controller::operator()(Trace<Timer> const &event) {
   dispatch(event);
-}
-
-void Controller::operator()(Event<Control> const &event) {
-  auto &[message_info, control] = event;
-  switch (control.action) {
-    using enum Action;
-    case UNDEFINED:
-      assert(false);
-      break;
-    case ENABLE:
-      dispatcher_(State::ENABLED);
-      break;
-    case DISABLE:
-      dispatcher_(State::DISABLED);
-      break;
-  }
 }
 
 void Controller::operator()(Event<Connected> const &) {
@@ -197,6 +181,22 @@ void Controller::operator()(Event<Subscribe> const &event) {
       .symbols = symbols,
   };
   (*this)(symbols_update);
+}
+
+void Controller::operator()(Event<Control> const &event) {
+  auto &[message_info, control] = event;
+  switch (control.action) {
+    using enum Action;
+    case UNDEFINED:
+      assert(false);
+      break;
+    case ENABLE:
+      dispatcher_(State::ENABLED);
+      break;
+    case DISABLE:
+      dispatcher_(State::DISABLED);
+      break;
+  }
 }
 
 uint16_t Controller::operator()(
@@ -269,9 +269,9 @@ void Controller::ensure_symbol_slices(size_t size) {
     auto index = std::size(market_data_);
     log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
     auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
+    TraceInfo trace_info;  // XXX FIXME TODO
     Start start;
-    create_event_and_dispatch(*market_data, message_info, start);
+    create_trace_and_dispatch(*market_data, trace_info, start);
     market_data_.emplace_back(std::move(market_data));
   }
   // web socket #1
@@ -280,9 +280,9 @@ void Controller::ensure_symbol_slices(size_t size) {
     auto index = std::size(web_socket_);
     log::debug("Create WebSocket #1 (stream_id={}, index={})"sv, stream_id, index);
     auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
+    TraceInfo trace_info;  // XXX FIXME TODO
     Start start;
-    create_event_and_dispatch(*web_socket, message_info, start);
+    create_trace_and_dispatch(*web_socket, trace_info, start);
     web_socket_.emplace_back(std::move(web_socket));
   }
   // web socket #2
@@ -292,9 +292,9 @@ void Controller::ensure_symbol_slices(size_t size) {
     auto index = std::size(web_socket_2_);
     log::debug("Create WebSocket #2 (stream_id={}, index={})"sv, stream_id, index);
     auto web_socket_2 = std::make_unique<WebSocket2>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
+    TraceInfo trace_info; // XXX FIXME TODO
     Start start;
-    create_event_and_dispatch(*web_socket_2, message_info, start);
+    create_trace_and_dispatch(*web_socket_2, trace_info, start);
     web_socket_2_.emplace_back(std::move(web_socket_2));
   }
   */

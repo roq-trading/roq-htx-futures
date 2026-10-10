@@ -91,15 +91,15 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
 
 // server::Stream
 
-void Rest::operator()(Event<Start> const &) {
+void Rest::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void Rest::operator()(Event<Stop> const &) {
+void Rest::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void Rest::operator()(Event<Timer> const &event) {
+void Rest::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if ((*connection_).refresh(timer.now)) {
     if (ready() && next_refresh_.count() && next_refresh_ < timer.now && !download_.downloading()) {

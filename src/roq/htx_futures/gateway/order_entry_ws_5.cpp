@@ -106,15 +106,15 @@ OrderEntryWS5::OrderEntryWS5(Handler &handler, io::Context &context, uint16_t st
 
 // server::Stream
 
-void OrderEntryWS5::operator()(Event<Start> const &) {
+void OrderEntryWS5::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void OrderEntryWS5::operator()(Event<Stop> const &) {
+void OrderEntryWS5::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void OrderEntryWS5::operator()(Event<Timer> const &event) {
+void OrderEntryWS5::operator()(Trace<Timer> const &event) {
   auto &[message_info, timer] = event;
   (*connection_).refresh(timer.now);
 }

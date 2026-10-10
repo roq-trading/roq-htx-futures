@@ -98,15 +98,15 @@ DropCopy1::DropCopy1(Handler &handler, io::Context &context, uint16_t stream_id,
 
 // server::Stream
 
-void DropCopy1::operator()(Event<Start> const &) {
+void DropCopy1::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void DropCopy1::operator()(Event<Stop> const &) {
+void DropCopy1::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void DropCopy1::operator()(Event<Timer> const &event) {
+void DropCopy1::operator()(Trace<Timer> const &event) {
   auto &[message_info, timer] = event;
   (*connection_).refresh(timer.now);
 }
