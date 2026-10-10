@@ -249,11 +249,7 @@ void DropCopy5::operator()(Trace<protocol::json::Sub> const &event) {
 void DropCopy5::operator()(Trace<protocol::json::Response5> const &) {
   log::fatal("Unexpected"sv);
 }
-/*
-void DropCopy5::operator()(Trace<protocol::json::FundingRate> const &) {
-  log::fatal("Unexpected"sv);
-}
-*/
+
 void DropCopy5::operator()(Trace<protocol::json::Account5> const &event) {
   profile_.accounts([&]() {
     auto &[trace_info, account] = event;

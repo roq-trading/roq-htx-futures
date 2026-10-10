@@ -129,6 +129,28 @@ void OrderEntryREST5::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
+void OrderEntryREST5::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
+  connection_status_ = connection_status;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::HTTP,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+}
+
 // server::OrderActionStream
 
 uint16_t OrderEntryREST5::operator()(
@@ -160,28 +182,6 @@ uint16_t OrderEntryREST5::operator()(
 uint16_t OrderEntryREST5::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   cancel_all_orders(event, request_id);
   return stream_id_;
-}
-
-void OrderEntryREST5::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
-  auto &[trace_info, connection_status] = event;
-  connection_status_ = connection_status;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.name,
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::HTTP,
-      .encoding = {Encoding::JSON},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_).get_interface(),
-      .authority = (*connection_).get_current_authority(),
-      .path = (*connection_).get_current_path(),
-      .proxy = (*connection_).get_proxy(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
 // web::rest::client::Handler
