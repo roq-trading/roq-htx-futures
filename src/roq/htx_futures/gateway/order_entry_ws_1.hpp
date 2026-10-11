@@ -98,7 +98,7 @@ struct OrderEntryWS1 final : public Base<OrderEntryWS1>,
 
   void send_login();
 
-  void parse(std::string_view const &message);
+  void parse(TraceInfo const &, std::string_view const &message);
 
  private:
   [[maybe_unused]] Handler &handler_;

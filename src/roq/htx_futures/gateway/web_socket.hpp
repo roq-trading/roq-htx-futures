@@ -90,7 +90,7 @@ struct WebSocket final : public Base<WebSocket>, public server::MarketDataStream
 
   void send_pong(std::chrono::milliseconds timestamp);
 
-  void parse(std::string_view const &message);
+  void parse(TraceInfo const &, std::string_view const &message);
 
  private:
   [[maybe_unused]] Handler &handler_;

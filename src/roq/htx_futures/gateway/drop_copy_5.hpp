@@ -86,7 +86,7 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
   void subscribe(std::string_view const &topic);
   void subscribe(std::string_view const &topic, std::string_view const &contract_code);
 
-  void parse(std::string_view const &message);
+  void parse(TraceInfo const &, std::string_view const &message);
 
  private:
   [[maybe_unused]] Handler &handler_;

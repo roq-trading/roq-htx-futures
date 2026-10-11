@@ -615,7 +615,7 @@ void OrderEntryREST5::cancel_all_orders_ack(Trace<web::rest::Response> const &ev
           .user = {},
           .strategy_id = {},
       };
-      create_trace_and_dispatch(shared_.dispatcher, event, cancel_all_orders_ack);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
     };
     auto handle_error = [&](auto origin, auto status, auto error, auto text) {
       log::warn(R"(error={}, text="{}")"sv, error, text);

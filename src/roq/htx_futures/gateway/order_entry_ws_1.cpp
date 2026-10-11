@@ -250,7 +250,7 @@ void OrderEntryWS1::operator()(Trace<web::socket::Binary> const &event) {
   auto &[trace_info, binary] = event;
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
-        parse(message);
+        parse(trace_info, message);
       })) {
   } else {
     log::fatal("Failed to decode message"sv);
@@ -354,12 +354,11 @@ void OrderEntryWS1::send_login() {
   (*connection_).send_text(message);
 }
 
-void OrderEntryWS1::parse(std::string_view const &message) {
+void OrderEntryWS1::parse(TraceInfo const &trace_info, std::string_view const &message) {
   log::info<5>(R"(message="{}")"sv, message);
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
-      TraceInfo trace_info;
       if (!protocol::json::Parser3::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
