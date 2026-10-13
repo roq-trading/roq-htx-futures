@@ -96,7 +96,7 @@ struct OrderEntryWS1 final : public Base<OrderEntryWS1>,
 
   void send_pong(std::chrono::milliseconds timestamp);
 
-  void send_login();
+  void send_login(TraceInfo const &);
 
   void parse(TraceInfo const &, std::string_view const &message);
 

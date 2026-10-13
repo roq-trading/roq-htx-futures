@@ -176,7 +176,7 @@ void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
 
 void DropCopy5::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
-  send_login();
+  send_login(trace_info);
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
 }
 
@@ -451,9 +451,8 @@ void DropCopy5::send_pong(std::chrono::milliseconds timestamp) {
   (*connection_).send_text(message);
 }
 
-void DropCopy5::send_login() {
-  auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  auto message = account_.create_ws_auth(auth_path_, now_utc);
+void DropCopy5::send_login(TraceInfo const &trace_info) {
+  auto message = account_.create_ws_auth(trace_info, auth_path_);
   // log::warn("DEBUG {}"sv, message);
   // log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);

@@ -220,7 +220,7 @@ int32_t OrderEntryREST5::download(Trace<State> const &event) {
       break;
     case OPEN_ORDERS:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
-      open_orders();
+      open_orders(trace_info);
       return 1;
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
@@ -232,9 +232,8 @@ int32_t OrderEntryREST5::download(Trace<State> const &event) {
 
 // open-orders
 
-void OrderEntryREST5::open_orders() {
+void OrderEntryREST5::open_orders(TraceInfo const &trace_info) {
   profile_.open_orders([&]() {
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::GET;
     auto path = [&]() -> std::string_view {
       switch (account_.margin_mode) {
@@ -250,7 +249,7 @@ void OrderEntryREST5::open_orders() {
       }
       log::fatal("Unexpected"sv);
     }();
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(trace_info, method, path);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -351,7 +350,6 @@ void OrderEntryREST5::create_order(
       throw server::oms::NotReady{"not ready"sv};
     }
     auto &[message_info, create_order] = event;
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::POST;
     auto path = [&]() -> std::string_view {
       switch (account_.margin_mode) {
@@ -367,7 +365,7 @@ void OrderEntryREST5::create_order(
       }
       log::fatal("Unexpected"sv);
     }();
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(message_info, method, path);
     auto body =
         protocol::json::Encoder::create_order_v5(encode_buffer_, create_order, order, ref_data, request_id, shared_.api.order_management.default_margin_mode);
     auto request = web::rest::Request{
@@ -444,7 +442,6 @@ void OrderEntryREST5::cancel_order(
       throw server::oms::NotReady{"not ready"sv};
     }
     auto &[message_info, cancel_order] = event;
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::POST;
     auto path = [&]() -> std::string_view {
       switch (account_.margin_mode) {
@@ -460,7 +457,7 @@ void OrderEntryREST5::cancel_order(
       }
       log::fatal("Unexpected"sv);
     }();
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(message_info, method, path);
     auto body = protocol::json::Encoder::cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
     auto request = web::rest::Request{
         .method = method,
@@ -552,7 +549,6 @@ void OrderEntryREST5::cancel_all_orders(Event<CancelAllOrders> const &event, std
       create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
     };
     auto helper = [&](auto const &symbol) {
-      auto now_utc = clock::get_realtime<std::chrono::seconds>();
       auto method = web::http::Method::POST;
       auto path = [&]() -> std::string_view {
         switch (account_.margin_mode) {
@@ -568,7 +564,7 @@ void OrderEntryREST5::cancel_all_orders(Event<CancelAllOrders> const &event, std
         }
         log::fatal("Unexpected"sv);
       }();
-      auto query = account_.create_query(method, path, now_utc);
+      auto query = account_.create_query(message_info, method, path);
       auto body = protocol::json::Encoder::cancel_all_orders(encode_buffer_, cancel_all_orders, request_id, symbol);
       log::info<2>(R"(body="{}")"sv, body);
       auto request = web::rest::Request{

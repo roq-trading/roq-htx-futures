@@ -192,8 +192,7 @@ int32_t Rest::download(Trace<State> const &event) {
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
       auto period = shared_.settings.rest.download_refresh;
       if (period.count()) {
-        auto now = clock::get_system();
-        next_refresh_ = now + period;
+        next_refresh_ = trace_info.origin_create_time + period;
       }
       return {};
     }
