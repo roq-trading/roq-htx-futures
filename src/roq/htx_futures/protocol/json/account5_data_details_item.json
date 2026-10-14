@@ -61,6 +61,10 @@
     {
       "name": "isolated_profit_unreal",
       "type": "std/double"
+    },
+    {
+      "name": "isolated_available",
+      "type": "std/double"
     }
   ]
 }
