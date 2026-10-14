@@ -75,7 +75,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntryREST1::OrderEntryREST1(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+OrderEntryREST1::OrderEntryREST1(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.name)},
       connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -94,7 +94,7 @@ OrderEntryREST1::OrderEntryREST1(Handler &handler, io::Context &context, uint16_
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto &event) { return download(event); }} {
+      account_{account}, shared_{shared}, request_{request} {
 }
 
 // server::Stream
@@ -109,7 +109,11 @@ void OrderEntryREST1::operator()(Trace<Stop> const &) {
 
 void OrderEntryREST1::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
+      check_request_queue(trace_info);
+    }
+  }
 }
 
 void OrderEntryREST1::operator()(metrics::Writer &writer) const {
@@ -188,14 +192,13 @@ uint16_t OrderEntryREST1::operator()(Event<CancelAllOrders> const &event, std::s
 
 void OrderEntryREST1::operator()(Trace<web::rest::Connected> const &event) {
   auto &[trace_info, connected] = event;
-  download_.begin(trace_info);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
 }
 
 void OrderEntryREST1::operator()(Trace<web::rest::Disconnected> const &event) {
   auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
-  download_.reset();
 }
 
 void OrderEntryREST1::operator()(Trace<web::rest::Latency> const &event) {
@@ -207,27 +210,6 @@ void OrderEntryREST1::operator()(Trace<web::rest::Latency> const &event) {
   };
   create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
   latency_.ping.update(latency.sample);
-}
-
-// core::Download
-
-int32_t OrderEntryREST1::download(Trace<State> const &event) {
-  auto &[trace_info, state] = event;
-  switch (state) {
-    using enum State;
-    case UNDEFINED:
-      assert(false);
-      break;
-    case OPEN_ORDERS:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
-      open_orders(trace_info);
-      return 1;
-    case DONE:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
-      return 0;
-  }
-  assert(false);
-  return 0;
 }
 
 // open-orders
@@ -268,20 +250,17 @@ void OrderEntryREST1::open_orders(TraceInfo const &trace_info) {
 }
 
 void OrderEntryREST1::open_orders_ack(Trace<web::rest::Response> const &event) {
-  auto const STATE = State::OPEN_ORDERS;
   profile_.open_orders_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      if (download_.downloading()) {
-        download_.retry(STATE);
-      }
+      request_.open_orders.commit(trace_info);
     };
     auto handle_success = [&](auto &body) {
       protocol::json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
       if (open_orders_ack.status == protocol::json::Status::OK) {
         create_trace_and_dispatch_2(trace_info, open_orders_ack);
-        download_.check_relaxed(trace_info, STATE);
+        request_.open_orders.commit(trace_info);
       } else {
         // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(open_orders_ack.ret_code), open_orders_ack.ret_msg);
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error{}, ""sv);  // XXX FIXME TODO
@@ -638,6 +617,20 @@ void OrderEntryREST1::operator()(Trace<protocol::json::CancelAllOrdersAck> const
 }
 
 // helpers
+
+void OrderEntryREST1::check_request_queue(TraceInfo const &trace_info) {
+  auto callback = [&](auto &trace_info) {
+    log::info("Downloading open orders..."sv);
+    open_orders(trace_info);
+  };
+  if (request_.ready()) {
+    try {
+      request_.open_orders.check_pending(trace_info, callback);
+    } catch (NotConnected &) {
+      // note! will retry after reconnect
+    }
+  }
+}
 
 void OrderEntryREST1::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
   auto &[trace, response] = event;

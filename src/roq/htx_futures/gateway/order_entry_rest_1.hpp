@@ -10,8 +10,6 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/core/download_2.hpp"
-
 #include "roq/web/rest/client.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
@@ -21,6 +19,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/request.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/cancel_all_orders_ack.hpp"
@@ -35,7 +34,7 @@ namespace gateway {
 struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::OrderActionStream, public web::rest::Client::Handler {
   struct Handler {};
 
-  OrderEntryREST1(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  OrderEntryREST1(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
   // protected:
   friend base_type;
@@ -79,18 +78,6 @@ struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::Orde
   void operator()(Trace<web::rest::Disconnected> const &) override;
   void operator()(Trace<web::rest::Latency> const &) override;
 
-  // helpers
-
-  // core::Download
-
-  enum class State {
-    UNDEFINED = 0,
-    OPEN_ORDERS,
-    DONE,
-  };
-
-  int32_t download(Trace<State> const &);
-
   // open-orders
 
   void open_orders(TraceInfo const &);
@@ -122,6 +109,8 @@ struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::Orde
 
   // helpers
 
+  void check_request_queue(TraceInfo const &);
+
   void process_response(Trace<web::rest::Response> const &, auto error_handler, auto success_handler);
 
  private:
@@ -152,9 +141,10 @@ struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::Orde
   Account &account_;
   // shared
   Shared &shared_;
+  // request
+  Request &request_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download2<State> download_;
   // buffers
   std::string encode_buffer_;
 };

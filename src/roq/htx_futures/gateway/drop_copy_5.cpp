@@ -72,7 +72,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -93,7 +93,8 @@ DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id,
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared} {
+      account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared}, request_{request},
+      download_{shared.settings.rest.request_timeout, [this](auto &event) { return download(event); }} {
 }
 
 // server::Stream
@@ -108,7 +109,21 @@ void DropCopy5::operator()(Trace<Stop> const &) {
 
 void DropCopy5::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
+  if ((*connection_).refresh(timer.now)) {
+    switch (download_.state()) {
+      using enum State;
+      case UNDEFINED:
+        break;
+      case OPEN_ORDERS:
+        if (request_.open_orders.has_response()) {
+          log::info("Open-orders download has completed!"sv);
+          download_.check(trace_info, State::OPEN_ORDERS);
+        }
+        break;
+      case DONE:
+        break;
+    }
+  }
 }
 
 void DropCopy5::operator()(metrics::Writer &writer) const {
@@ -161,6 +176,7 @@ void DropCopy5::operator()(Trace<web::socket::Disconnected> const &event) {
   auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
+  download_.reset();
 }
 
 void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
@@ -195,6 +211,27 @@ void DropCopy5::operator()(Trace<web::socket::Binary> const &) {
   log::fatal("Unexpected"sv);
 }
 
+// core::Download
+
+int32_t DropCopy5::download(Trace<State> const &event) {
+  auto &[trace_info, state] = event;
+  switch (state) {
+    using enum State;
+    case UNDEFINED:
+      assert(false);
+      break;
+    case OPEN_ORDERS:
+      request_.open_orders.request(trace_info);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
+      return 1;
+    case DONE:
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      return 0;
+  }
+  assert(false);
+  return 0;
+}
+
 // protocol::json::Parser5::Handler
 
 void DropCopy5::operator()(Trace<protocol::json::Close2> const &) {
@@ -224,7 +261,8 @@ void DropCopy5::operator()(Trace<protocol::json::Auth> const &event) {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
       subscribe();
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      download_.begin(trace_info);  // XXX FIXME TODO wait for subscribe-ack
+                                    // create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
     } else {
       if (shared_.settings.experimental.retry_logon) {
         log::error("[{}] auth={}"sv, account_.name, auth);

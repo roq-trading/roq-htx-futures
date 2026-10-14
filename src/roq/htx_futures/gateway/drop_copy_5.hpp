@@ -13,6 +13,8 @@
 
 #include "roq/web/socket/client.hpp"
 
+#include "roq/core/download_2.hpp"
+
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
@@ -20,6 +22,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/request.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/parser_5.hpp"
@@ -31,7 +34,7 @@ namespace gateway {
 struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public web::socket::Client::Handler, public protocol::json::Parser5::Handler {
   struct Handler {};
 
-  DropCopy5(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  DropCopy5(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
   // protected:
   friend base_type;
@@ -60,6 +63,16 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
   void operator()(Trace<web::socket::Close> const &) override;
   void operator()(Trace<web::socket::Text> const &) override;
   void operator()(Trace<web::socket::Binary> const &) override;
+
+  // core::Download
+
+  enum class State {
+    UNDEFINED = 0,
+    OPEN_ORDERS,
+    DONE,
+  };
+
+  int32_t download(Trace<State> const &);
 
   // protocol::json::Parser5::Handler
 
@@ -112,8 +125,11 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
   std::string const auth_path_;
   // cache
   Shared &shared_;
+  // request
+  Request &request_;
   // state
   ConnectionStatus connection_status_ = {};
+  core::Download2<State> download_;
 };
 
 }  // namespace gateway

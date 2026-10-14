@@ -13,6 +13,8 @@
 
 #include "roq/web/socket/client.hpp"
 
+#include "roq/core/download_2.hpp"
+
 #include "roq/core/zlib/inflate.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
@@ -22,6 +24,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/request.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/parser_2.hpp"
@@ -33,7 +36,7 @@ namespace gateway {
 struct DropCopy1 final : Base<DropCopy1>, public server::Stream, public web::socket::Client::Handler, public protocol::json::Parser2::Handler {
   struct Handler {};
 
-  DropCopy1(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  DropCopy1(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
   // protected:
   friend base_type;
@@ -62,6 +65,16 @@ struct DropCopy1 final : Base<DropCopy1>, public server::Stream, public web::soc
   void operator()(Trace<web::socket::Close> const &) override;
   void operator()(Trace<web::socket::Text> const &) override;
   void operator()(Trace<web::socket::Binary> const &) override;
+
+  // core::Download
+
+  enum class State {
+    UNDEFINED = 0,
+    OPEN_ORDERS,
+    DONE,
+  };
+
+  int32_t download(Trace<State> const &);
 
   // protocol::json::Parser2::Handler
 
@@ -115,8 +128,11 @@ struct DropCopy1 final : Base<DropCopy1>, public server::Stream, public web::soc
   std::string const auth_path_;
   // cache
   Shared &shared_;
+  // request
+  Request &request_;
   // state
   ConnectionStatus connection_status_ = {};
+  core::Download2<State> download_;
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;

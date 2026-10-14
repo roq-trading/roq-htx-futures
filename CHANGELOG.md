@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Fixed
+
+* Synchronize WS with REST when downloading working orders (#650)
+
 ### Changed
 
 * Support the USDT-M v5 protocol (#640)

@@ -57,6 +57,16 @@ R create_accounts(auto &config, auto &settings, auto &api) {
 }
 
 template <typename R>
+R create_requests(auto &config) {
+  using result_type = std::remove_cvref_t<R>;
+  result_type result;
+  for (auto &[_, account] : config.accounts) {
+    result.try_emplace(static_cast<std::string_view>(account.name), Request{});
+  }
+  return result;
+}
+
+template <typename R>
 R create_rest(Controller &gateway, auto &context, auto &stream_id, auto &shared) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
@@ -65,15 +75,16 @@ R create_rest(Controller &gateway, auto &context, auto &stream_id, auto &shared)
 }
 
 template <typename R>
-R create_order_entry_rest(Controller &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
+R create_order_entry_rest(Controller &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests, auto has_real_accounts) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts) {
+      auto &request = requests[name];
       if (shared.api.order_management.v5) {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST5>(gateway, context, ++stream_id, *account, shared));
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST5>(gateway, context, ++stream_id, *account, shared, request));
       } else {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST1>(gateway, context, ++stream_id, *account, shared));
+        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST1>(gateway, context, ++stream_id, *account, shared, request));
       }
     }
   }
@@ -97,14 +108,15 @@ R create_order_entry_ws(Controller &gateway, auto &context, auto &stream_id, aut
 }
 
 template <typename R>
-R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
+R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[name, account] : accounts) {
+    auto &request = requests[name];
     if (shared.api.order_management.v5) {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy5>(gateway, context, ++stream_id, *account, shared));
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy5>(gateway, context, ++stream_id, *account, shared, request));
     } else {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy1>(gateway, context, ++stream_id, *account, shared));
+      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy1>(gateway, context, ++stream_id, *account, shared, request));
     }
   }
   return result;
@@ -133,10 +145,11 @@ uint8_t Controller::parse_api(Settings const &settings) {
 
 Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher, settings}, accounts_{create_accounts<decltype(accounts_)>(config, settings, shared_.api)},
-      rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
-      order_entry_rest_{create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
+      requests_{create_requests<decltype(requests_)>(config)}, rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
+      order_entry_rest_{
+          create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, requests_, !std::empty(config.accounts))},
       order_entry_ws_{create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
-      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
+      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_, requests_)} {
   if (settings.rest.cancel_on_disconnect) {
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
   }

@@ -16,6 +16,7 @@
 
 #include "roq/htx_futures/gateway/account.hpp"
 #include "roq/htx_futures/gateway/config.hpp"
+#include "roq/htx_futures/gateway/request.hpp"
 #include "roq/htx_futures/gateway/settings.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
@@ -115,6 +116,8 @@ struct Controller final : public Base<Controller>,
   Shared shared_;
   // accounts
   utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
+  // requests
+  utils::unordered_map<std::string, Request> requests_;
   // seed
   uint16_t stream_id_ = {};
   // streams
