@@ -1,0 +1,20 @@
+{
+  "name": "roq/htx_futures/flags/Request",
+  "type": "flags",
+  "prefix": "request_",
+  "values": [
+    {
+      "name": "limit",
+      "type": "std/uint32",
+      "default": "8",
+      "description": "Maximum number of requests per interval"
+    },
+    {
+      "name": "limit_interval",
+      "type": "std/nanoseconds",
+      "validator": "roq/flags/validators/TimePeriod",
+      "default": "5s",
+      "description": "Monitor interval"
+    }
+  ]
+}

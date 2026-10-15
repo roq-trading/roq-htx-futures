@@ -12,6 +12,7 @@
 
 #include "roq/htx_futures/flags/flags.hpp"
 #include "roq/htx_futures/flags/misc.hpp"
+#include "roq/htx_futures/flags/request.hpp"
 #include "roq/htx_futures/flags/rest.hpp"
 #include "roq/htx_futures/flags/ws.hpp"
 
@@ -29,6 +30,7 @@ struct ROQ_PUBLIC Settings : public server::flags::Settings {
   flags::Misc misc;
   flags::REST rest;
   flags::WS ws;
+  flags::Request request;
 
  private:
   Settings(args::Parser const &, flags::Flags const &);
@@ -52,6 +54,7 @@ struct fmt::formatter<roq::htx_futures::flags::Settings> {
         R"(misc={}, )"
         R"(rest={}, )"
         R"(ws={}, )"
+        R"(request={}, )"
         R"(server={})"
         R"(}})"sv,
         value.exchange,
@@ -60,6 +63,7 @@ struct fmt::formatter<roq::htx_futures::flags::Settings> {
         value.misc,
         value.rest,
         value.ws,
+        value.request,
         static_cast<roq::server::Settings const &>(value));
   }
 };

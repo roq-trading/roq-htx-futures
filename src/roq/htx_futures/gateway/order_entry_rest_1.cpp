@@ -111,7 +111,11 @@ void OrderEntryREST1::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if ((*connection_).refresh(timer.now)) {
     if (ready()) {
-      check_request_queue(trace_info);
+      try {
+        check_request_queue(trace_info);
+      } catch (NotConnected &) {
+        // note! ok
+      }
     }
   }
 }
@@ -254,19 +258,18 @@ void OrderEntryREST1::open_orders_ack(Trace<web::rest::Response> const &event) {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      request_.open_orders.commit(trace_info);
     };
     auto handle_success = [&](auto &body) {
       protocol::json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
       if (open_orders_ack.status == protocol::json::Status::OK) {
         create_trace_and_dispatch_2(trace_info, open_orders_ack);
-        request_.open_orders.commit(trace_info);
       } else {
         // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(open_orders_ack.ret_code), open_orders_ack.ret_msg);
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error{}, ""sv);  // XXX FIXME TODO
       }
     };
     process_response(event, handle_error, handle_success);
+    request_.open_orders.commit(trace_info);
   });
 }
 
@@ -619,17 +622,7 @@ void OrderEntryREST1::operator()(Trace<protocol::json::CancelAllOrdersAck> const
 // helpers
 
 void OrderEntryREST1::check_request_queue(TraceInfo const &trace_info) {
-  auto callback = [&](auto &trace_info) {
-    log::info("Downloading open orders..."sv);
-    open_orders(trace_info);
-  };
-  if (request_.ready()) {
-    try {
-      request_.open_orders.check_pending(trace_info, callback);
-    } catch (NotConnected &) {
-      // note! will retry after reconnect
-    }
-  }
+  request_.open_orders.check_pending(trace_info, [this](auto &trace_info) { open_orders(trace_info); });
 }
 
 void OrderEntryREST1::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {

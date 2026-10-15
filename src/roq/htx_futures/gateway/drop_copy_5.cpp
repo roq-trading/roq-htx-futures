@@ -116,7 +116,6 @@ void DropCopy5::operator()(Trace<Timer> const &event) {
         break;
       case OPEN_ORDERS:
         if (request_.open_orders.has_response()) {
-          log::info("Open-orders download has completed!"sv);
           download_.check(trace_info, State::OPEN_ORDERS);
         }
         break;
@@ -221,8 +220,8 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       assert(false);
       break;
     case OPEN_ORDERS:
-      request_.open_orders.request(trace_info);
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
+      request_.open_orders.request(trace_info);
       return 1;
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);

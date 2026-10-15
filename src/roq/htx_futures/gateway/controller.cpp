@@ -57,13 +57,22 @@ R create_accounts(auto &config, auto &settings, auto &api) {
 }
 
 template <typename R>
-R create_requests(auto &config) {
+R create_requests(auto &config, auto &shared) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
-    result.try_emplace(static_cast<std::string_view>(account.name), Request{});
+    auto request = std::make_unique<Request>(shared);
+    result.try_emplace(static_cast<std::string_view>(account.name), std::move(request));
   }
   return result;
+}
+
+Request &get_request(auto &requests, auto &account) {
+  auto iter = requests.find(account);
+  if (iter == std::end(requests)) {
+    log::fatal("Unexpected"sv);
+  }
+  return *(*iter).second;
 }
 
 template <typename R>
@@ -80,7 +89,7 @@ R create_order_entry_rest(Controller &gateway, auto &context, auto &stream_id, a
   result_type result;
   if (has_real_accounts) {
     for (auto &[name, account] : accounts) {
-      auto &request = requests[name];
+      auto &request = get_request(requests, name);
       if (shared.api.order_management.v5) {
         result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST5>(gateway, context, ++stream_id, *account, shared, request));
       } else {
@@ -112,7 +121,7 @@ R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[name, account] : accounts) {
-    auto &request = requests[name];
+    auto &request = get_request(requests, name);
     if (shared.api.order_management.v5) {
       result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy5>(gateway, context, ++stream_id, *account, shared, request));
     } else {
@@ -145,7 +154,7 @@ uint8_t Controller::parse_api(Settings const &settings) {
 
 Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher, settings}, accounts_{create_accounts<decltype(accounts_)>(config, settings, shared_.api)},
-      requests_{create_requests<decltype(requests_)>(config)}, rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
+      requests_{create_requests<decltype(requests_)>(config, shared_)}, rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
       order_entry_rest_{
           create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, requests_, !std::empty(config.accounts))},
       order_entry_ws_{create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},

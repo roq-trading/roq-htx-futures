@@ -116,8 +116,7 @@ struct Controller final : public Base<Controller>,
   Shared shared_;
   // accounts
   utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
-  // requests
-  utils::unordered_map<std::string, Request> requests_;
+  utils::unordered_map<std::string, std::unique_ptr<Request>> const requests_;
   // seed
   uint16_t stream_id_ = {};
   // streams

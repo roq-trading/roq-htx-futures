@@ -12,6 +12,7 @@ set(SOURCES
     order_entry_rest_5.cpp
     order_entry_ws_1.cpp
     order_entry_ws_5.cpp
+    request.cpp
     rest.cpp
     shared.cpp
     web_socket_2.cpp

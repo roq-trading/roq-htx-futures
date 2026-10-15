@@ -2,13 +2,16 @@
 roq-htx-futures-flags
 flags.rstinc
 misc.rstinc
+request.rstinc
 rest.rstinc
 ws.rstinc
 flags.hpp
 misc.hpp
+request.hpp
 rest.hpp
 ws.hpp
 flags.cpp
 misc.cpp
+request.cpp
 rest.cpp
 ws.cpp
