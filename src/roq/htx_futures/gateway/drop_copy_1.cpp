@@ -115,7 +115,7 @@ void DropCopy1::operator()(Trace<Timer> const &event) {
       case UNDEFINED:
         break;
       case OPEN_ORDERS:
-        if (request_.open_orders.has_response()) {
+        if (request_.orders.has_response()) {
           download_.check(trace_info, State::OPEN_ORDERS);
         }
         break;
@@ -227,7 +227,7 @@ int32_t DropCopy1::download(Trace<State> const &event) {
       break;
     case OPEN_ORDERS:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
-      request_.open_orders.request(trace_info);
+      request_.orders.request(trace_info);
       return 1;
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);

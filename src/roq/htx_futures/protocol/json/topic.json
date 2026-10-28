@@ -25,6 +25,18 @@
     },
     {
       "name": "index"
+    },
+    {
+      "name": "account"
+    },
+    {
+      "name": "positions"
+    },
+    {
+      "name": "match_orders"
+    },
+    {
+      "name": "orders"
     }
   ]
 }

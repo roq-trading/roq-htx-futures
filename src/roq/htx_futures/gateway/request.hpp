@@ -20,7 +20,7 @@ struct Request final : public core::limit::Request::Handler {
 
   // ...
 
-  core::limit::Request open_orders;
+  core::limit::Request orders;
 
  private:
   Shared &shared_;

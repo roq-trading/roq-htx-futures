@@ -166,7 +166,6 @@ uint16_t OrderEntryWS5::operator()(
     auto &[message_info, create_order] = event;
     auto message = protocol::json::Encoder::create_order_ws_v5(encode_buffer_, create_order, order, ref_data, request_id, account_.margin_mode);
     log::debug_info<2>(R"(message="{}")"sv, message);
-    log::warn(R"(DEBUG message="{}")"sv, message);
     (*connection_).send_text(message);
   });
   return stream_id_;
@@ -238,8 +237,7 @@ void OrderEntryWS5::operator()(Trace<web::socket::Latency> const &event) {
 void OrderEntryWS5::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
   send_login(trace_info);
-  // create_trace_and_dispatch_2(trace_info,ConnectionStatus::LOGIN_SENT);
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
 }
 
 void OrderEntryWS5::operator()(Trace<web::socket::Close> const &event) {
@@ -312,10 +310,8 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Sub> const &) {
 void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   auto &[trace_info, response] = event;
   log::info<2>("response={}"sv, response);
-  log::warn(R"(DEBUG response="{}")"sv, response);
   auto [request_type, request_id, version] = protocol::json::Encoder::split_cid(response.cid);
   log::info<4>(R"(request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
-  log::warn(R"(DEBUG request_type={}, request_id="{}", version={})"sv, request_type, request_id, version);
   auto request_status = response.code == 200 ? RequestStatus::ACCEPTED : RequestStatus::REJECTED;
   auto helper = [&](Error error, std::string_view const &text, std::string_view const &external_order_id, std::string_view const &client_order_id) {
     auto response_2 = server::oms::Response{
@@ -406,19 +402,18 @@ void OrderEntryWS5::send_pong(std::chrono::milliseconds timestamp) {
       R"("ts":{})"
       R"(}})"sv,
       timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
+  log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 
 void OrderEntryWS5::send_login(TraceInfo const &trace_info) {
   auto message = account_.create_ws_auth(trace_info, auth_path_);
-  // log::debug(R"(message="{}")"sv, message);
+  log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 
 void OrderEntryWS5::parse(TraceInfo const &trace_info, std::string_view const &message) {
   log::info<5>(R"(message="{}")"sv, message);
-  log::warn(R"(DEBUG message="{}")"sv, message);
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {

@@ -110,18 +110,7 @@ void DropCopy5::operator()(Trace<Stop> const &) {
 void DropCopy5::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if ((*connection_).refresh(timer.now)) {
-    switch (download_.state()) {
-      using enum State;
-      case UNDEFINED:
-        break;
-      case OPEN_ORDERS:
-        if (request_.open_orders.has_response()) {
-          download_.check(trace_info, State::OPEN_ORDERS);
-        }
-        break;
-      case DONE:
-        break;
-    }
+    check_request_queue(trace_info);
   }
 }
 
@@ -214,15 +203,66 @@ void DropCopy5::operator()(Trace<web::socket::Binary> const &) {
 
 int32_t DropCopy5::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
+  auto is_cross = [&]() {
+    switch (account_.margin_mode) {
+      using enum MarginMode;
+      case UNDEFINED:
+        break;
+      case ISOLATED:
+        log::fatal("Unexpected: UNTESTED"sv);
+        break;
+      case CROSS:
+        return true;
+      case PORTFOLIO:
+        break;
+    }
+    return false;
+  }();
   switch (state) {
     using enum State;
     case UNDEFINED:
       assert(false);
       break;
-    case OPEN_ORDERS:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
-      request_.open_orders.request(trace_info);
-      return 1;
+    case SUBSCRIBE_BALANCES:
+      if (is_cross) {
+        subscribe(shared_.api.order_management.topic_accounts);
+        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-balances"sv);
+        return 1;
+      } else {
+        return 0;
+      }
+    case SUBSCRIBE_POSITIONS:
+      if (is_cross) {
+        subscribe(shared_.api.order_management.topic_positions, "*"sv);
+        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-positions"sv);
+        return 1;
+      } else {
+        return 0;
+      }
+    case SUBSCRIBE_MATCH_ORDERS:
+      if (is_cross) {
+        subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
+        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-match-orders"sv);
+        return 1;
+      } else {
+        return 0;
+      }
+    case SUBSCRIBE_ORDERS:
+      if (is_cross) {
+        subscribe(shared_.api.order_management.topic_orders, "*"sv);
+        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-orders"sv);
+        return 1;
+      } else {
+        return 0;
+      }
+    case GET_ORDERS:
+      if (is_cross) {
+        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "get-orders"sv);
+        request_.orders.request(trace_info);
+        return 1;
+      } else {
+        return 0;
+      }
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
       return 0;
@@ -259,9 +299,7 @@ void DropCopy5::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
-      subscribe();
-      download_.begin(trace_info);  // XXX FIXME TODO wait for subscribe-ack
-                                    // create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      download_.begin(trace_info);
     } else {
       if (shared_.settings.experimental.retry_logon) {
         log::error("[{}] auth={}"sv, account_.name, auth);
@@ -279,6 +317,32 @@ void DropCopy5::operator()(Trace<protocol::json::Sub> const &event) {
     auto &[trace_info, sub] = event;
     if (sub.err_code != 0) {
       log::error(R"(Subscription failed: code={}, msg="{}")"sv, sub.err_code, sub.err_msg);
+    }
+    switch (sub.topic) {
+      using enum protocol::json::Topic::type_t;
+      case UNDEFINED_INTERNAL:
+      case UNKNOWN_INTERNAL:
+      case BBO:
+      case DEPTH:
+      case TRADE:
+      case DETAIL:
+      case ESTIMATED_RATE:
+      case PREMIUM_INDEX:
+      case BASIS:
+      case INDEX:
+        break;
+      case ACCOUNT:
+        download_.check(trace_info, State::SUBSCRIBE_BALANCES);
+        break;
+      case POSITIONS:
+        download_.check(trace_info, State::SUBSCRIBE_POSITIONS);
+        break;
+      case MATCH_ORDERS:
+        download_.check(trace_info, State::SUBSCRIBE_MATCH_ORDERS);
+        break;
+      case ORDERS:
+        download_.check(trace_info, State::SUBSCRIBE_ORDERS);
+        break;
     }
   });
 }
@@ -355,7 +419,6 @@ void DropCopy5::operator()(Trace<protocol::json::MatchOrders5> const &event) {
   profile_.match_orders([&]() {
     auto &[trace_info, match_orders] = event;
     log::info<2>("match_orders={}"sv, match_orders);
-    log::warn("DEBUG match_orders={}"sv, match_orders);
     for (auto &item : match_orders.data) {
       continue;  // note! DISABLED
       auto remaining_quantity = [&]() {
@@ -418,7 +481,6 @@ void DropCopy5::operator()(Trace<protocol::json::Orders5> const &event) {
   profile_.orders([&]() {
     auto &[trace_info, orders] = event;
     log::info<2>("orders={}"sv, orders);
-    log::warn("DEBUG orders={}"sv, orders);
     auto remaining_quantity = [&]() {
       if (utils::compare(orders.data.volume, 0.0) > 0) {
         return orders.data.volume - orders.data.trade_volume;  // note! can't modify order
@@ -484,34 +546,14 @@ void DropCopy5::send_pong(std::chrono::milliseconds timestamp) {
       R"("ts":{})"
       R"(}})"sv,
       timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
+  log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 
 void DropCopy5::send_login(TraceInfo const &trace_info) {
   auto message = account_.create_ws_auth(trace_info, auth_path_);
-  // log::warn("DEBUG {}"sv, message);
-  // log::debug(R"(message="{}")"sv, message);
+  log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
-}
-
-void DropCopy5::subscribe() {
-  switch (account_.margin_mode) {
-    using enum MarginMode;
-    case UNDEFINED:
-      break;
-    case ISOLATED:
-      log::fatal("Unexpected: UNTESTED"sv);
-      break;
-    case CROSS:
-      subscribe(shared_.api.order_management.topic_accounts);
-      subscribe(shared_.api.order_management.topic_positions, "*"sv);
-      subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
-      subscribe(shared_.api.order_management.topic_orders, "*"sv);
-      break;
-    case PORTFOLIO:
-      break;
-  }
 }
 
 void DropCopy5::subscribe(std::string_view const &topic) {
@@ -521,7 +563,7 @@ void DropCopy5::subscribe(std::string_view const &topic) {
       R"("topic":"{}")"
       R"(}})"sv,
       topic);
-  // log::debug(R"(message="{}")"sv, message);
+  log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }
 
@@ -534,14 +576,32 @@ void DropCopy5::subscribe(std::string_view const &topic, std::string_view const 
       R"(}})"sv,
       topic,
       contract_code);
-  // log::debug(R"(message="{}")"sv, message);
+  log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
+}
+
+void DropCopy5::check_request_queue(TraceInfo const &trace_info) {
+  switch (download_.state()) {
+    using enum State;
+    case UNDEFINED:
+    case SUBSCRIBE_BALANCES:
+    case SUBSCRIBE_POSITIONS:
+    case SUBSCRIBE_MATCH_ORDERS:
+    case SUBSCRIBE_ORDERS:
+      break;
+    case GET_ORDERS:
+      if (request_.orders.has_response()) {
+        download_.check(trace_info, State::GET_ORDERS);
+      }
+      break;
+    case DONE:
+      break;
+  }
 }
 
 void DropCopy5::parse(TraceInfo const &trace_info, std::string_view const &message) {
   profile_.parse([&]() {
     log::info<5>(R"(message="{}")"sv, message);
-    log::warn(R"(DEBUG message="{}")"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {

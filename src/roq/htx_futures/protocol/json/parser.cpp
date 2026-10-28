@@ -78,6 +78,12 @@ bool Parser::dispatch(
           case INDEX:
             dispatch_helper<Index>(handler, message, buffer_stack, trace_info);
             return true;
+            //
+          case ACCOUNT:
+          case POSITIONS:
+          case MATCH_ORDERS:
+          case ORDERS:
+            return false;
         }
         break;
       }

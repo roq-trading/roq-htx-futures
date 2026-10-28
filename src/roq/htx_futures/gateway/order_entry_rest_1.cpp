@@ -269,7 +269,7 @@ void OrderEntryREST1::open_orders_ack(Trace<web::rest::Response> const &event) {
       }
     };
     process_response(event, handle_error, handle_success);
-    request_.open_orders.commit(trace_info);
+    request_.orders.commit(trace_info);
   });
 }
 
@@ -622,7 +622,7 @@ void OrderEntryREST1::operator()(Trace<protocol::json::CancelAllOrdersAck> const
 // helpers
 
 void OrderEntryREST1::check_request_queue(TraceInfo const &trace_info) {
-  request_.open_orders.check_pending(trace_info, [this](auto &trace_info) { open_orders(trace_info); });
+  request_.orders.check_pending(trace_info, [this](auto &trace_info) { open_orders(trace_info); });
 }
 
 void OrderEntryREST1::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {

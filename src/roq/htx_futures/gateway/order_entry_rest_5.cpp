@@ -218,7 +218,7 @@ void OrderEntryREST5::operator()(Trace<web::rest::Latency> const &event) {
 
 // open-orders
 
-void OrderEntryREST5::open_orders(TraceInfo const &trace_info) {
+void OrderEntryREST5::get_open_orders(TraceInfo const &trace_info) {
   profile_.open_orders([&]() {
     auto method = web::http::Method::GET;
     auto path = [&]() -> std::string_view {
@@ -247,12 +247,12 @@ void OrderEntryREST5::open_orders(TraceInfo const &trace_info) {
         .quality_of_service = {},
     };
     log::debug_info<2>("request={}"sv, request);
-    auto callback = [this](auto &event, [[maybe_unused]] auto &request_id) { open_orders_ack(event); };
-    (*connection_)(request, callback, "orders"sv);
+    auto callback = [this](auto &event, [[maybe_unused]] auto &request_id) { get_open_orders_ack(event); };
+    (*connection_)(request, callback, "open_orders"sv);
   });
 }
 
-void OrderEntryREST5::open_orders_ack(Trace<web::rest::Response> const &event) {
+void OrderEntryREST5::get_open_orders_ack(Trace<web::rest::Response> const &event) {
   profile_.open_orders_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
@@ -267,7 +267,7 @@ void OrderEntryREST5::open_orders_ack(Trace<web::rest::Response> const &event) {
       }
     };
     process_response(event, handle_error, handle_success);
-    request_.open_orders.commit(trace_info);
+    request_.orders.commit(trace_info);
   });
 }
 
@@ -621,7 +621,7 @@ void OrderEntryREST5::operator()(Trace<protocol::json::CancelAllOrdersAck5> cons
 // helpers
 
 void OrderEntryREST5::check_request_queue(TraceInfo const &trace_info) {
-  request_.open_orders.check_pending(trace_info, [this](auto &trace_info) { open_orders(trace_info); });
+  request_.orders.check_pending(trace_info, [this](auto &trace_info) { get_open_orders(trace_info); });
 }
 
 void OrderEntryREST5::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {

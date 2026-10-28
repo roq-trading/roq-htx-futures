@@ -68,7 +68,11 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
 
   enum class State {
     UNDEFINED = 0,
-    OPEN_ORDERS,
+    SUBSCRIBE_BALANCES,
+    SUBSCRIBE_POSITIONS,
+    SUBSCRIBE_MATCH_ORDERS,
+    SUBSCRIBE_ORDERS,
+    GET_ORDERS,
     DONE,
   };
 
@@ -95,9 +99,10 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
 
   void send_login(TraceInfo const &);
 
-  void subscribe();
   void subscribe(std::string_view const &topic);
   void subscribe(std::string_view const &topic, std::string_view const &contract_code);
+
+  void check_request_queue(TraceInfo const &);
 
   void parse(TraceInfo const &, std::string_view const &message);
 

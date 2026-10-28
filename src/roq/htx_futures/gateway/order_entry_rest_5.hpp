@@ -80,8 +80,8 @@ struct OrderEntryREST5 final : public Base<OrderEntryREST5>, public server::Orde
 
   // open-orders
 
-  void open_orders(TraceInfo const &);
-  void open_orders_ack(Trace<web::rest::Response> const &);
+  void get_open_orders(TraceInfo const &);
+  void get_open_orders_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::OpenOrdersAck5> const &);
 
   // create-order

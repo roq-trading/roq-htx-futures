@@ -8,7 +8,7 @@
     },
     {
       "name": "topic",
-      "type": "std/string_view"
+      "type": "roq/htx_futures/protocol/json/Topic"
     },
     {
       "name": "ts",
