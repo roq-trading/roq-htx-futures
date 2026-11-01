@@ -36,6 +36,7 @@ auto const API_USDT_M_FUTURES = API{
         // cross (mode: 1)
         .account_info_cross = "/v5/account/balance"sv,  // XXX FIXME TODO unused
         .open_orders_cross = "/v5/trade/order/opens"sv,
+        .order_info_cross = "/v5/trade/order"sv,
         .place_order_cross = "/v5/trade/order"sv,
         .cancel_order_cross = "/v5/trade/cancel_order"sv,
         .cancel_all_orders_cross = "/v5/trade/cancel_all_orders"sv,
@@ -98,6 +99,7 @@ auto const API_COIN_M_PERPETUAL = API{
         // cross (duplicate)
         .account_info_cross = "/swap-api/v1/swap_account_info"sv,
         .open_orders_cross = "/swap-api/v1/swap_openorders"sv,
+        .order_info_cross = "XXX"sv,
         .place_order_cross = "/swap-api/v1/swap_order"sv,
         .cancel_order_cross = "/swap-api/v1/swap_cancel"sv,
         .cancel_all_orders_cross = "/swap-api/v1/swap_cancelall"sv,

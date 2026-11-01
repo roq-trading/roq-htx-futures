@@ -32,7 +32,11 @@ std::string_view Account::create_ws_auth(TraceInfo const &trace_info, std::strin
 }
 
 std::string_view Account::create_query(TraceInfo const &trace_info, web::http::Method method, std::string_view const &path) {
-  return crypto_.create_query(method, path, utils::safe_cast(trace_info.origin_create_time_utc));
+  return crypto_.create_query(method, path, utils::safe_cast(trace_info.origin_create_time_utc), {});
+}
+
+std::string_view Account::create_query(TraceInfo const &trace_info, web::http::Method method, std::string_view const &path, std::string_view const &query) {
+  return crypto_.create_query(method, path, utils::safe_cast(trace_info.origin_create_time_utc), query);
 }
 
 }  // namespace gateway

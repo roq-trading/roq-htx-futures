@@ -100,7 +100,7 @@ std::string_view Crypto::create_ws_auth(std::string_view const &path, std::chron
   return encode_buffer_;
 }
 
-std::string_view Crypto::create_query(web::http::Method method, std::string_view const &path, std::chrono::seconds now_utc) {
+std::string_view Crypto::create_query(web::http::Method method, std::string_view const &path, std::chrono::seconds now_utc, std::string_view const &query) {
   assert(!std::empty(path));
   encode_buffer_.clear();
   std::chrono::sys_days days{std::chrono::duration_cast<std::chrono::days>(now_utc)};
@@ -115,14 +115,16 @@ std::string_view Crypto::create_query(web::http::Method method, std::string_view
       "?AccessKeyId={}&"
       "SignatureMethod=Ed25519&"
       "SignatureVersion=2&"
-      "Timestamp={:04}-{:02}-{:02}T{:02}%3A{:02}%3A{:02}"sv,
+      "Timestamp={:04}-{:02}-{:02}T{:02}%3A{:02}%3A{:02}"
+      "{}"sv,
       key,
       static_cast<int>(ymd.year()),
       static_cast<unsigned>(ymd.month()),
       static_cast<unsigned>(ymd.day()),
       hms.hours().count(),
       hms.minutes().count(),
-      hms.seconds().count());
+      hms.seconds().count(),
+      query);
   auto tmp4 = std::string_view{encode_buffer_}.substr(1);
   digest_.clear();
   context_.reset();
@@ -137,14 +139,16 @@ std::string_view Crypto::create_query(web::http::Method method, std::string_view
       "?AccessKeyId={}&"
       "SignatureMethod=HmacSHA256&"
       "SignatureVersion=2&"
-      "Timestamp={:04}-{:02}-{:02}T{:02}%3A{:02}%3A{:02}"sv,
+      "Timestamp={:04}-{:02}-{:02}T{:02}%3A{:02}%3A{:02}"
+      "{}"sv,
       key,
       static_cast<int>(ymd.year()),
       static_cast<unsigned>(ymd.month()),
       static_cast<unsigned>(ymd.day()),
       hms.hours().count(),
       hms.minutes().count(),
-      hms.seconds().count());
+      hms.seconds().count(),
+      query);
   auto tmp4 = std::string_view{encode_buffer_}.substr(1);
   mac_.clear();
   mac_.update(magic_enum::enum_name(method));

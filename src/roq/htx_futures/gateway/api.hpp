@@ -31,6 +31,7 @@ struct API final {
     // cross
     std::string_view account_info_cross = {};
     std::string_view open_orders_cross = {};
+    std::string_view order_info_cross = {};
     std::string_view place_order_cross = {};
     std::string_view cancel_order_cross = {};
     std::string_view cancel_all_orders_cross = {};

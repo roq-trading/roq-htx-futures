@@ -51,7 +51,8 @@ R create_accounts(auto &config, auto &settings, auto &api) {
       case PORTFOLIO:
         log::fatal("Unexpected: exchange does not support margin_mode={}"sv, margin_mode);
     }
-    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, margin_mode, settings.ws.order_uri));
+    auto obj = std::make_unique<Account>(config, account.name, margin_mode, settings.ws.order_uri);
+    result.try_emplace(account.name, std::move(obj));
   }
   return result;
 }
@@ -61,8 +62,8 @@ R create_requests(auto &config, auto &shared) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
-    auto request = std::make_unique<Request>(shared);
-    result.try_emplace(static_cast<std::string_view>(account.name), std::move(request));
+    auto obj = std::make_unique<Request>(shared);
+    result.try_emplace(account.name, std::move(obj));
   }
   return result;
 }
@@ -88,12 +89,15 @@ R create_order_entry_rest(Controller &gateway, auto &context, auto &stream_id, a
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   if (has_real_accounts) {
-    for (auto &[name, account] : accounts) {
-      auto &request = get_request(requests, name);
+    for (auto &[_, item] : accounts) {
+      auto &account = *item;
+      auto &request = get_request(requests, account.name);
       if (shared.api.order_management.v5) {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST5>(gateway, context, ++stream_id, *account, shared, request));
+        auto obj = std::make_unique<OrderEntryREST5>(gateway, context, ++stream_id, account, shared, request);
+        result.try_emplace(account.name, std::move(obj));
       } else {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryREST1>(gateway, context, ++stream_id, *account, shared, request));
+        auto obj = std::make_unique<OrderEntryREST1>(gateway, context, ++stream_id, account, shared, request);
+        result.try_emplace(account.name, std::move(obj));
       }
     }
   }
@@ -101,15 +105,19 @@ R create_order_entry_rest(Controller &gateway, auto &context, auto &stream_id, a
 }
 
 template <typename R>
-R create_order_entry_ws(Controller &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto has_real_accounts) {
+R create_order_entry_ws(Controller &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests, auto has_real_accounts) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   if (shared.settings.ws_api && has_real_accounts) {
-    for (auto &[name, account] : accounts) {
+    for (auto &[_, item] : accounts) {
+      auto &account = *item;
       if (shared.api.order_management.v5) {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS5>(gateway, context, ++stream_id, *account, shared));
+        auto &request = get_request(requests, account.name);
+        auto obj = std::make_unique<OrderEntryWS5>(gateway, context, ++stream_id, account, shared, request);
+        result.try_emplace(account.name, std::move(obj));
       } else {
-        result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntryWS1>(gateway, context, ++stream_id, *account, shared));
+        auto obj = std::make_unique<OrderEntryWS1>(gateway, context, ++stream_id, account, shared);
+        result.try_emplace(account.name, std::move(obj));
       }
     }
   }
@@ -120,12 +128,15 @@ template <typename R>
 R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
-  for (auto &[name, account] : accounts) {
-    auto &request = get_request(requests, name);
+  for (auto &[_, item] : accounts) {
+    auto &account = *item;
+    auto &request = get_request(requests, account.name);
     if (shared.api.order_management.v5) {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy5>(gateway, context, ++stream_id, *account, shared, request));
+      auto obj = std::make_unique<DropCopy5>(gateway, context, ++stream_id, account, shared, request);
+      result.try_emplace(account.name, std::move(obj));
     } else {
-      result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy1>(gateway, context, ++stream_id, *account, shared, request));
+      auto obj = std::make_unique<DropCopy1>(gateway, context, ++stream_id, account, shared, request);
+      result.try_emplace(account.name, std::move(obj));
     }
   }
   return result;
@@ -157,7 +168,8 @@ Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings,
       requests_{create_requests<decltype(requests_)>(config, shared_)}, rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
       order_entry_rest_{
           create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, requests_, !std::empty(config.accounts))},
-      order_entry_ws_{create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, !std::empty(config.accounts))},
+      order_entry_ws_{
+          create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, requests_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_, requests_)} {
   if (settings.rest.cancel_on_disconnect) {
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);

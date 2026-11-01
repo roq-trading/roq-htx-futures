@@ -22,6 +22,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/htx_futures/gateway/account.hpp"
+#include "roq/htx_futures/gateway/request.hpp"
 #include "roq/htx_futures/gateway/shared.hpp"
 
 #include "roq/htx_futures/protocol/json/parser_5.hpp"
@@ -36,7 +37,7 @@ struct OrderEntryWS5 final : public Base<OrderEntryWS5>,
                              public protocol::json::Parser5::Handler {
   struct Handler {};
 
-  OrderEntryWS5(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  OrderEntryWS5(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
   // protected:
   friend base_type;
@@ -132,6 +133,7 @@ struct OrderEntryWS5 final : public Base<OrderEntryWS5>,
   std::string const auth_path_;
   // cache
   Shared &shared_;
+  Request &request_;
   // state
   ConnectionStatus connection_status_ = {};
   // buffers

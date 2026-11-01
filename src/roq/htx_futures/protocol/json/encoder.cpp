@@ -34,6 +34,29 @@ constexpr auto const OP_CANCEL_ALL_ORDERS = "X"sv;
 
 // REST
 
+std::string_view Encoder::create_order_info_query(
+    std::string &buffer,
+    std::string_view const &client_order_id,
+    std::string_view const &external_order_id,
+    std::string_view const &symbol,
+    roq::MarginMode margin_mode) {
+  buffer.clear();
+  if (std::empty(external_order_id)) {
+    fmt::format_to(std::back_inserter(buffer), "&client_order_id={}"sv, client_order_id);
+  }
+  auto margin_mode_2 = map(margin_mode).template get<json::MarginMode>().as_raw_text();
+  fmt::format_to(
+      std::back_inserter(buffer),
+      "&contract_code={}"
+      "&margin_mode={}"sv,
+      symbol,
+      margin_mode_2);
+  if (!std::empty(external_order_id)) {
+    fmt::format_to(std::back_inserter(buffer), "&order_id={}"sv, external_order_id);
+  }
+  return buffer;
+}
+
 // lever_rate
 // self_match_prevent
 // stop-loss ??? => sl_

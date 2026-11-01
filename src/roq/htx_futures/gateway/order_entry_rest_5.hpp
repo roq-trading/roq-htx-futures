@@ -25,6 +25,7 @@
 #include "roq/htx_futures/protocol/json/cancel_all_orders_ack5.hpp"
 #include "roq/htx_futures/protocol/json/cancel_order_ack5.hpp"
 #include "roq/htx_futures/protocol/json/open_orders_ack5.hpp"
+#include "roq/htx_futures/protocol/json/order_info_ack5.hpp"
 #include "roq/htx_futures/protocol/json/place_order_ack5.hpp"
 
 namespace roq {
@@ -84,6 +85,13 @@ struct OrderEntryREST5 final : public Base<OrderEntryREST5>, public server::Orde
   void get_open_orders_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::OpenOrdersAck5> const &);
 
+  // order-info
+
+  void get_order_info(
+      TraceInfo const &, std::string_view const &client_order_id, std::string_view const &external_order_id, std::string_view const &symbol, MarginMode);
+  void get_order_info_ack(Trace<web::rest::Response> const &, std::string_view const &client_order_id);
+  void operator()(Trace<protocol::json::OrderInfoAck5> const &, std::string_view const &client_order_id);
+
   // create-order
 
   void create_order(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id);
@@ -130,6 +138,7 @@ struct OrderEntryREST5 final : public Base<OrderEntryREST5>, public server::Orde
     utils::metrics::Profile  //
         open_orders,
         open_orders_ack,                 //
+        order_info, order_info_ack,      //
         create_order, create_order_ack,  //
         cancel_order, cancel_order_ack,  //
         cancel_all_orders, cancel_all_orders_ack;
@@ -147,6 +156,8 @@ struct OrderEntryREST5 final : public Base<OrderEntryREST5>, public server::Orde
   ConnectionStatus connection_status_ = {};
   // buffers
   std::string encode_buffer_;
+  //
+  size_t download_lost_orders_counter_ = {};
 };
 
 }  // namespace gateway

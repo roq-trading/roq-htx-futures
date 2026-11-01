@@ -27,6 +27,8 @@ auto const SUPPORTS = Mask{
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 2;
+
+auto const CHECK_STALE_ORDERS_FREQ = 10s;
 }  // namespace
 
 // === HELPERS ===
@@ -111,6 +113,9 @@ void DropCopy5::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if ((*connection_).refresh(timer.now)) {
     check_request_queue(trace_info);
+    if (ready()) {
+      check_stale_orders(trace_info);
+    }
   }
 }
 
@@ -180,8 +185,8 @@ void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
 
 void DropCopy5::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
-  send_login(trace_info);
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
+  send_login(trace_info);
 }
 
 void DropCopy5::operator()(Trace<web::socket::Close> const &event) {
@@ -203,6 +208,7 @@ void DropCopy5::operator()(Trace<web::socket::Binary> const &) {
 
 int32_t DropCopy5::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
+  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   auto is_cross = [&]() {
     switch (account_.margin_mode) {
       using enum MarginMode;
@@ -225,41 +231,53 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       break;
     case SUBSCRIBE_BALANCES:
       if (is_cross) {
+        publish_downloading();
         subscribe(shared_.api.order_management.topic_accounts);
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-balances"sv);
         return 1;
       } else {
         return 0;
       }
     case SUBSCRIBE_POSITIONS:
       if (is_cross) {
+        publish_downloading();
         subscribe(shared_.api.order_management.topic_positions, "*"sv);
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-positions"sv);
         return 1;
       } else {
         return 0;
       }
     case SUBSCRIBE_MATCH_ORDERS:
       if (is_cross) {
+        publish_downloading();
         subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-match-orders"sv);
         return 1;
       } else {
         return 0;
       }
     case SUBSCRIBE_ORDERS:
       if (is_cross) {
+        publish_downloading();
         subscribe(shared_.api.order_management.topic_orders, "*"sv);
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe-orders"sv);
         return 1;
       } else {
         return 0;
       }
-    case GET_ORDERS:
+    case GET_OPEN_ORDERS:
       if (is_cross) {
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "get-orders"sv);
-        request_.orders.request(trace_info);
+        publish_downloading();
+        request_.open_orders.request(trace_info);
         return 1;
+      } else {
+        return 0;
+      }
+    case GET_LOST_ORDERS:
+      if (is_cross) {
+        if (std::empty(request_.details_lost_orders)) {
+          return 0;
+        } else {
+          publish_downloading();
+          request_.lost_orders.request(trace_info);
+          return 1;
+        }
       } else {
         return 0;
       }
@@ -581,7 +599,8 @@ void DropCopy5::subscribe(std::string_view const &topic, std::string_view const 
 }
 
 void DropCopy5::check_request_queue(TraceInfo const &trace_info) {
-  switch (download_.state()) {
+  auto state = download_.state();
+  switch (state) {
     using enum State;
     case UNDEFINED:
     case SUBSCRIBE_BALANCES:
@@ -589,13 +608,57 @@ void DropCopy5::check_request_queue(TraceInfo const &trace_info) {
     case SUBSCRIBE_MATCH_ORDERS:
     case SUBSCRIBE_ORDERS:
       break;
-    case GET_ORDERS:
-      if (request_.orders.has_response()) {
-        download_.check(trace_info, State::GET_ORDERS);
+    case GET_OPEN_ORDERS:
+      if (request_.open_orders.has_response()) {
+        check_stale_orders();  // note! *before* updating download
+        download_.check(trace_info, State::GET_OPEN_ORDERS);
+      }
+      break;
+    case GET_LOST_ORDERS:
+      if (request_.lost_orders.has_response()) {
+        if (!std::empty(request_.details_lost_orders)) {
+          log::fatal("Unexpected"sv);
+        }
+        download_.check(trace_info, state);
       }
       break;
     case DONE:
       break;
+  }
+}
+
+bool DropCopy5::check_stale_orders() {
+  size_t counter = 0;
+  auto helper = [&](auto &order) {
+    auto key = std::make_pair(order.user_id, order.order_id);
+    auto res = request_.details_lost_orders.insert(key);
+    if (res.second) {
+      log::warn(
+          R"(DEBUG stale order: )"
+          R"(order_id={}, client_order_id="{}", external_order_id="{}")"sv,
+          order.order_id,
+          order.client_order_id,
+          order.external_order_id);
+      ++counter;
+    }
+  };
+  if (shared_.dispatcher.get_all_stale_orders(helper, account_.name)) {
+  } else {
+  }
+  if (counter) {
+    log::info("Found {} new lost order(s)"sv, counter);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void DropCopy5::check_stale_orders(TraceInfo const &trace_info) {
+  if (next_check_stale_orders_ < trace_info.origin_create_time) {
+    next_check_stale_orders_ = trace_info.origin_create_time + CHECK_STALE_ORDERS_FREQ;
+    if (check_stale_orders()) {
+      request_.lost_orders.request(trace_info);
+    }
   }
 }
 

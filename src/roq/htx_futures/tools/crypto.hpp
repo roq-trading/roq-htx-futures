@@ -31,7 +31,7 @@ struct Crypto final {
 
   std::string_view create_ws_auth(std::string_view const &path, std::chrono::seconds now_utc);
 
-  std::string_view create_query(web::http::Method, std::string_view const &path, std::chrono::seconds now_utc);
+  std::string_view create_query(web::http::Method, std::string_view const &path, std::chrono::seconds now_utc, std::string_view const &query);
 
   std::string const key;
 

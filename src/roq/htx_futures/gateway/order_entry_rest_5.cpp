@@ -84,6 +84,8 @@ OrderEntryREST5::OrderEntryREST5(Handler &handler, io::Context &context, uint16_
       profile_{
           .open_orders = create_metrics(shared.settings, name_, "open_orders"sv),
           .open_orders_ack = create_metrics(shared.settings, name_, "open_orders_ack"sv),
+          .order_info = create_metrics(shared.settings, name_, "order_info"sv),
+          .order_info_ack = create_metrics(shared.settings, name_, "order_info_ack"sv),
           .create_order = create_metrics(shared.settings, name_, "create_order"sv),
           .create_order_ack = create_metrics(shared.settings, name_, "create_order_ack"sv),
           .cancel_order = create_metrics(shared.settings, name_, "cancel_order"sv),
@@ -127,6 +129,8 @@ void OrderEntryREST5::operator()(metrics::Writer &writer) const {
       // profile
       .write(profile_.open_orders, metrics::Type::PROFILE)
       .write(profile_.open_orders_ack, metrics::Type::PROFILE)
+      .write(profile_.order_info, metrics::Type::PROFILE)
+      .write(profile_.order_info_ack, metrics::Type::PROFILE)
       .write(profile_.create_order, metrics::Type::PROFILE)
       .write(profile_.create_order_ack, metrics::Type::PROFILE)
       .write(profile_.cancel_order, metrics::Type::PROFILE)
@@ -267,7 +271,7 @@ void OrderEntryREST5::get_open_orders_ack(Trace<web::rest::Response> const &even
       }
     };
     process_response(event, handle_error, handle_success);
-    request_.orders.commit(trace_info);
+    request_.open_orders.commit(trace_info);
   });
 }
 
@@ -318,6 +322,178 @@ void OrderEntryREST5::operator()(Trace<protocol::json::OpenOrdersAck5> const &ev
         .max_accepted_version = {},
         .update_type = UpdateType::SNAPSHOT,
         .sending_time_utc = open_orders_ack.ts,
+    };
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
+  }
+}
+
+// order-info
+
+void OrderEntryREST5::get_order_info(
+    TraceInfo const &trace_info,
+    std::string_view const &client_order_id,
+    std::string_view const &external_order_id,
+    std::string_view const &symbol,
+    MarginMode margin_mode) {
+  profile_.order_info([&]() {
+    auto method = web::http::Method::GET;
+    auto path = [&]() -> std::string_view {
+      switch (account_.margin_mode) {
+        using enum MarginMode;
+        case UNDEFINED:
+          break;
+        case ISOLATED:
+          log::fatal("NOT IMPLEMENTED"sv);
+        case CROSS:
+          return shared_.api.order_management.order_info_cross;
+        case PORTFOLIO:
+          break;
+      }
+      log::fatal("Unexpected"sv);
+    }();
+    auto margin_mode_2 = [&]() {
+      if (margin_mode == MarginMode{}) {
+        if (account_.margin_mode == MarginMode{}) {
+          return MarginMode::CROSS;  // XXX FIXME TODO this is a HACK
+        }
+        return account_.margin_mode;
+      }
+      return margin_mode;
+    }();
+    auto query = protocol::json::Encoder::create_order_info_query(encode_buffer_, client_order_id, external_order_id, symbol, margin_mode_2);
+    log::warn("DEBUG query={}"sv, query);
+    auto query_2 = account_.create_query(trace_info, method, path, query);
+    auto request = web::rest::Request{
+        .method = method,
+        .path = path,
+        .query = query_2,
+        .accept = web::http::Accept::APPLICATION_JSON,
+        .content_type = web::http::ContentType::APPLICATION_JSON,
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+    };
+    log::debug_info<2>("request={}"sv, request);
+    log::warn("DEBUG request={}"sv, request);
+    auto callback = [this, client_order_id = std::string{client_order_id}](auto &event, [[maybe_unused]] auto &request_id) {
+      get_order_info_ack(event, client_order_id);
+    };
+    (*connection_)(request, callback, "order_info"sv);
+  });
+}
+
+void OrderEntryREST5::get_order_info_ack(Trace<web::rest::Response> const &event, std::string_view const &client_order_id) {
+  profile_.order_info_ack([&]() {
+    auto &[trace_info, response] = event;
+    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+    };
+    auto handle_success = [&](auto &body) {
+      log::warn("DEBUG {}"sv, body);
+      protocol::json::OrderInfoAck5 order_info_ack{body, decode_buffer_};
+      create_trace_and_dispatch_2(trace_info, order_info_ack, client_order_id);
+    };
+    process_response(event, handle_error, handle_success);
+    //
+    if (download_lost_orders_counter_) {
+      --download_lost_orders_counter_;
+    } else {
+      log::fatal("Unexpected"sv);
+    }
+    log::warn("DEBUG remaining orders: {}"sv, download_lost_orders_counter_);
+    if (download_lost_orders_counter_ == 0) {
+      request_.lost_orders.commit(trace_info);
+    }
+  });
+}
+
+void OrderEntryREST5::operator()(Trace<protocol::json::OrderInfoAck5> const &event, std::string_view const &client_order_id) {
+  auto &[trace_info, order_info_ack] = event;
+  log::info<2>("order_info_ack={}"sv, order_info_ack);
+  log::info("order_info_ack={}"sv, order_info_ack);
+  if (order_info_ack.code == 1061) {  // does not exist
+    auto order_update = server::oms::OrderUpdate{
+        .account = account_.name,
+        .exchange = {},
+        .symbol = {},
+        .side = {},
+        .position_effect = {},
+        .margin_mode = {},
+        .max_show_quantity = NaN,
+        .order_type = {},
+        .time_in_force = {},
+        .execution_instructions = {},
+        .execution_destination = {},
+        .create_time_utc = {},
+        .update_time_utc = {},
+        .external_account = {},
+        .external_order_id = {},
+        .client_order_id = client_order_id,
+        .order_status = OrderStatus::REJECTED,
+        .error = {},
+        .text = order_info_ack.message,
+        .quantity = NaN,
+        .price = NaN,
+        .stop_price = NaN,
+        .leverage = NaN,
+        .remaining_quantity = NaN,
+        .traded_quantity = NaN,
+        .average_traded_price = NaN,
+        .last_traded_quantity = NaN,
+        .last_traded_price = NaN,
+        .last_liquidity = {},
+        .routing_id = {},
+        .max_request_version = {},
+        .max_response_version = {},
+        .max_accepted_version = {},
+        .update_type = UpdateType::SNAPSHOT,
+        .sending_time_utc = order_info_ack.ts,
+    };
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
+  } else {
+    auto &item = order_info_ack.data;
+    auto remaining_quantity = [&]() {
+      if (utils::compare(item.volume, 0.0) > 0) {
+        return item.volume - item.trade_volume;  // note! can't modify order
+      }
+      return NaN;
+    }();
+    auto order_update = server::oms::OrderUpdate{
+        .account = account_.name,
+        .exchange = shared_.settings.exchange,
+        .symbol = item.contract_code,
+        .side = map(item.side),
+        .position_effect = map(item.position_side, item.side),
+        .margin_mode = {},
+        .max_show_quantity = NaN,
+        .order_type = map(item.type),
+        .time_in_force = {},
+        .execution_instructions = {},
+        .execution_destination = {},
+        .create_time_utc = item.created_time,
+        .update_time_utc = item.updated_time,
+        .external_account = {},
+        .external_order_id = item.order_id,
+        .client_order_id = item.client_order_id,
+        .order_status = map(item.state),
+        .error = {},
+        .text = {},
+        .quantity = item.volume,
+        .price = item.price,
+        .stop_price = NaN,
+        .leverage = item.lever_rate,
+        .remaining_quantity = remaining_quantity,
+        .traded_quantity = item.trade_volume,
+        .average_traded_price = NaN,
+        .last_traded_quantity = NaN,
+        .last_traded_price = NaN,
+        .last_liquidity = {},
+        .routing_id = {},
+        .max_request_version = {},
+        .max_response_version = {},
+        .max_accepted_version = {},
+        .update_type = UpdateType::SNAPSHOT,
+        .sending_time_utc = order_info_ack.ts,
     };
     create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
   }
@@ -406,6 +582,8 @@ void OrderEntryREST5::operator()(
     [[maybe_unused]] uint8_t user_id,
     [[maybe_unused]] uint64_t order_id,
     [[maybe_unused]] uint32_t version) {
+  (*connection_).close();
+  return;
   auto &[trace_info, create_order_ack] = event;
   log::info<2>("create_order_ack={}"sv, create_order_ack);
   // note! we only get order_id, no detailed information about order status => drop
@@ -621,7 +799,19 @@ void OrderEntryREST5::operator()(Trace<protocol::json::CancelAllOrdersAck5> cons
 // helpers
 
 void OrderEntryREST5::check_request_queue(TraceInfo const &trace_info) {
-  request_.orders.check_pending(trace_info, [this](auto &trace_info) { get_open_orders(trace_info); });
+  request_.open_orders.check_pending(trace_info, [this](auto &trace_info) { get_open_orders(trace_info); });
+  request_.lost_orders.check_pending(trace_info, [this](auto &trace_info) {
+    // XXX FIXME TODO throttle requests
+    auto helper = [&](auto &order) { get_order_info(trace_info, order.client_order_id, order.external_order_id, order.symbol, order.margin_mode); };
+    for (auto &[user_id, order_id] : request_.details_lost_orders) {
+      if (shared_.dispatcher.find_order(user_id, order_id, helper)) {
+        ++download_lost_orders_counter_;
+      } else {
+        log::warn("Unexpected: user_id={}, order_id={}"sv, user_id, order_id);
+      }
+    }
+    request_.details_lost_orders.clear();
+  });
 }
 
 void OrderEntryREST5::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {

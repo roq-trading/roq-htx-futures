@@ -27,6 +27,7 @@ struct Account final {
   std::string_view create_ws_auth(TraceInfo const &, std::string_view const &path);
 
   std::string_view create_query(TraceInfo const &, web::http::Method, std::string_view const &path);
+  std::string_view create_query(TraceInfo const &, web::http::Method, std::string_view const &path, std::string_view const &query);
 
   std::string const name;
   MarginMode const margin_mode;

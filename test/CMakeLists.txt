@@ -32,15 +32,16 @@ set(SOURCES
     json_trade.cpp
     json_utils.cpp
     #
-    json_response_5.cpp
+    json_account_5.cpp
     json_cancel_all_orders_ack_5.cpp
     json_cancel_order_ack_5.cpp
-    json_orders_5.cpp
     json_match_orders_5.cpp
-    json_account_5.cpp
-    json_positions_5.cpp
     json_open_orders_ack_5.cpp
+    json_order_info_5.cpp
+    json_orders_5.cpp
     json_place_order_ack_5.cpp
+    json_positions_5.cpp
+    json_response_5.cpp
     #
     main.cpp)
 

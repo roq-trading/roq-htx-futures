@@ -12,36 +12,38 @@ set(SOURCES
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    cancel_all_orders_ack5.json
-    cancel_all_orders_ack5_data_item.json
-    response5.json
-    response5_single.json
-    response5_multiple.json
-    response5_multiple_item.json
-    event5.json
-    cancel_order_ack5.json
-    cancel_order_ack5_data.json
-    side.json
-    order_type.json
-    position_side.json
-    time_in_force.json
-    state.json
-    positions5.json
-    positions5_data_item.json
     account5.json
     account5_data.json
     account5_data_details_item.json
-    open_orders_ack5.json
-    open_orders_ack5_data_item.json
-    place_order_ack5.json
-    place_order_ack5_data.json
+    cancel_all_orders_ack5.json
+    cancel_all_orders_ack5_data_item.json
+    cancel_order_ack5.json
+    cancel_order_ack5_data.json
+    contract_type.json
+    event5.json
     match_orders5.json
     match_orders5_data_item.json
-    contract_type.json
+    open_orders_ack5.json
+    open_orders_ack5_data_item.json
+    order_info_ack5.json
+    order_info_ack5_data.json
     order_state.json
-    self_match_prevent.json
+    order_type.json
     orders5.json
     orders5_data.json
+    place_order_ack5.json
+    place_order_ack5_data.json
+    position_side.json
+    positions5.json
+    positions5_data_item.json
+    response5.json
+    response5_multiple.json
+    response5_multiple_item.json
+    response5_single.json
+    self_match_prevent.json
+    side.json
+    state.json
+    time_in_force.json
     #
     account_info_ack_data_item_contract_detail_item.json
     account_info_ack_data_item_futures_contract_detail_item.json

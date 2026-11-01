@@ -24,6 +24,9 @@ struct Encoder final {
   // --- v1 ---
 
   // REST
+  static std::string_view create_order_info_query(
+      std::string &buffer, std::string_view const &client_order_id, std::string_view const &external_order_id, std::string_view const &symbol, roq::MarginMode);
+
   static std::string_view create_order(
       std::string &buffer, CreateOrder const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id);
 

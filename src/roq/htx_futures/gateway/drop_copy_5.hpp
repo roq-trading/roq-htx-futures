@@ -72,7 +72,8 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
     SUBSCRIBE_POSITIONS,
     SUBSCRIBE_MATCH_ORDERS,
     SUBSCRIBE_ORDERS,
-    GET_ORDERS,
+    GET_OPEN_ORDERS,
+    GET_LOST_ORDERS,
     DONE,
   };
 
@@ -103,6 +104,9 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
   void subscribe(std::string_view const &topic, std::string_view const &contract_code);
 
   void check_request_queue(TraceInfo const &);
+
+  bool check_stale_orders();
+  void check_stale_orders(TraceInfo const &);
 
   void parse(TraceInfo const &, std::string_view const &message);
 
@@ -135,6 +139,8 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
   // state
   ConnectionStatus connection_status_ = {};
   core::Download2<State> download_;
+  //
+  std::chrono::nanoseconds next_check_stale_orders_ = {};
 };
 
 }  // namespace gateway
