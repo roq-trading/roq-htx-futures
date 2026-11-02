@@ -24,6 +24,8 @@ auto const NAME = "dc"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::FUNDS,
+    SupportType::POSITION,
+    SupportType::ORDER,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 2;
@@ -269,13 +271,13 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       } else {
         return 0;
       }
-    case GET_LOST_ORDERS:
+    case GET_STALE_ORDERS:
       if (is_cross) {
-        if (std::empty(request_.details_lost_orders)) {
+        if (std::empty(request_.details_stale_orders)) {
           return 0;
         } else {
           publish_downloading();
-          request_.lost_orders.request(trace_info);
+          request_.stale_orders.request(trace_info);
           return 1;
         }
       } else {
@@ -614,9 +616,9 @@ void DropCopy5::check_request_queue(TraceInfo const &trace_info) {
         download_.check(trace_info, State::GET_OPEN_ORDERS);
       }
       break;
-    case GET_LOST_ORDERS:
-      if (request_.lost_orders.has_response()) {
-        if (!std::empty(request_.details_lost_orders)) {
+    case GET_STALE_ORDERS:
+      if (request_.stale_orders.has_response()) {
+        if (!std::empty(request_.details_stale_orders)) {
           log::fatal("Unexpected"sv);
         }
         download_.check(trace_info, state);
@@ -631,7 +633,7 @@ bool DropCopy5::check_stale_orders() {
   size_t counter = 0;
   auto helper = [&](auto &order) {
     auto key = std::make_pair(order.user_id, order.order_id);
-    auto res = request_.details_lost_orders.insert(key);
+    auto res = request_.details_stale_orders.insert(key);
     if (res.second) {
       log::warn(
           R"(DEBUG stale order: )"
@@ -657,7 +659,7 @@ void DropCopy5::check_stale_orders(TraceInfo const &trace_info) {
   if (next_check_stale_orders_ < trace_info.origin_create_time) {
     next_check_stale_orders_ = trace_info.origin_create_time + CHECK_STALE_ORDERS_FREQ;
     if (check_stale_orders()) {
-      request_.lost_orders.request(trace_info);
+      request_.stale_orders.request(trace_info);
     }
   }
 }

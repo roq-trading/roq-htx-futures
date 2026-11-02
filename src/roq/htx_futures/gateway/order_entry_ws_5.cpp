@@ -30,7 +30,9 @@ namespace gateway {
 namespace {
 auto const NAME = "om"sv;
 
-auto const SUPPORTS = Mask{
+auto const SUPPORTS = Mask<SupportType>{};
+
+auto const SUPPORTS_WSAPI = Mask{
     SupportType::CREATE_ORDER,
     SupportType::CANCEL_ORDER,
     SupportType::ORDER_ACK,
@@ -142,7 +144,7 @@ void OrderEntryWS5::operator()(Trace<ConnectionStatus> const &event, std::string
   auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = account_.name,
-      .supports = SUPPORTS,
+      .supports = shared_.settings.ws_api ? SUPPORTS_WSAPI : SUPPORTS,
       .transport = Transport::TCP,
       .protocol = Protocol::WS,
       .encoding = {Encoding::JSON},

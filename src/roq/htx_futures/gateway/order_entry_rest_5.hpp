@@ -157,7 +157,7 @@ struct OrderEntryREST5 final : public Base<OrderEntryREST5>, public server::Orde
   // buffers
   std::string encode_buffer_;
   //
-  size_t download_lost_orders_counter_ = {};
+  size_t download_stale_orders_counter_ = {};
 };
 
 }  // namespace gateway

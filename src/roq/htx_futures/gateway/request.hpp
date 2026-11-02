@@ -23,9 +23,9 @@ struct Request final : public core::limit::Request::Handler {
   // ...
 
   core::limit::Request open_orders;
-  core::limit::Request lost_orders;
+  core::limit::Request stale_orders;
 
-  utils::unordered_set<std::pair<uint8_t, uint64_t>> details_lost_orders;
+  utils::unordered_set<std::pair<uint8_t, uint64_t>> details_stale_orders;
 
  private:
   Shared &shared_;

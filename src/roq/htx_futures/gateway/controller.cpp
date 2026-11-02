@@ -165,7 +165,7 @@ uint8_t Controller::parse_api(Settings const &settings) {
 
 Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher, settings}, accounts_{create_accounts<decltype(accounts_)>(config, settings, shared_.api)},
-      requests_{create_requests<decltype(requests_)>(config, shared_)}, rest_{create_rest<decltype(rest_)>(*this, context_, ++stream_id_, shared_)},
+      requests_{create_requests<decltype(requests_)>(config, shared_)}, rest_{create_rest<decltype(rest_)>(*this, context_, stream_id_, shared_)},
       order_entry_rest_{
           create_order_entry_rest<decltype(order_entry_rest_)>(*this, context_, stream_id_, accounts_, shared_, requests_, !std::empty(config.accounts))},
       order_entry_ws_{

@@ -73,7 +73,7 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
     SUBSCRIBE_MATCH_ORDERS,
     SUBSCRIBE_ORDERS,
     GET_OPEN_ORDERS,
-    GET_LOST_ORDERS,
+    GET_STALE_ORDERS,
     DONE,
   };
 
