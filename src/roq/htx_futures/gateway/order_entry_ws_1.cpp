@@ -111,7 +111,10 @@ void OrderEntryWS1::operator()(Trace<Stop> const &) {
 
 void OrderEntryWS1::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
+  if ((*connection_).refresh(trace_info)) {
+    if (ready()) {
+    }
+  }
 }
 
 void OrderEntryWS1::operator()(metrics::Writer &writer) const {

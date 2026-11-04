@@ -113,7 +113,7 @@ void DropCopy5::operator()(Trace<Stop> const &) {
 
 void DropCopy5::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(timer.now)) {
+  if ((*connection_).refresh(trace_info)) {
     check_request_queue(trace_info);
     if (ready()) {
       check_stale_orders(trace_info);

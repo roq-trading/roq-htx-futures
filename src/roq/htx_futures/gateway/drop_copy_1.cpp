@@ -109,7 +109,7 @@ void DropCopy1::operator()(Trace<Stop> const &) {
 
 void DropCopy1::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(timer.now)) {
+  if ((*connection_).refresh(trace_info)) {
     switch (download_.state()) {
       using enum State;
       case UNDEFINED:

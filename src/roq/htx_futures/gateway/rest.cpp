@@ -101,7 +101,7 @@ void Rest::operator()(Trace<Stop> const &) {
 
 void Rest::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(timer.now)) {
+  if ((*connection_).refresh(trace_info)) {
     if (ready() && next_refresh_.count() && next_refresh_ < timer.now && !download_.downloading()) {
       next_refresh_ = {};
       download_.reset();
