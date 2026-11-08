@@ -16,12 +16,6 @@
       "description": "API (:code:`USDT-M-FUTURES`, :code:`COIN-M-DELIVERY`, :code:`COIN-M-PERPETUAL`)"
     },
     {
-      "name": "ws_api",
-      "type": "std/bool",
-      "default": false,
-      "description": "Use WebSocket API?"
-    },
-    {
       "name": "margin_mode",
       "type": "std/string",
       "description": "Margin-mode to use when account margin-mode has not been configured"

@@ -21,6 +21,12 @@
       "type": "std/bool",
       "default": false,
       "description": "Allow price inversion?"
+    },
+    {
+      "name": "disable_ws_api",
+      "type": "std/bool",
+      "default": false,
+      "description": "Disable WebSocket API?"
     }
   ]
 }

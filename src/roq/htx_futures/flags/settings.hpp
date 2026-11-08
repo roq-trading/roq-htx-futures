@@ -24,7 +24,6 @@ struct ROQ_PUBLIC Settings : public server::flags::Settings {
   explicit Settings(args::Parser const &);
 
   std::string_view exchange;
-  bool ws_api = {};
   roq::MarginMode margin_mode;
 
   flags::Misc misc;
@@ -49,7 +48,6 @@ struct fmt::formatter<roq::htx_futures::flags::Settings> {
         context.out(),
         R"({{)"
         R"(exchange="{}", )"
-        R"(ws_api={}, )"
         R"(margin_mode={}, )"
         R"(misc={}, )"
         R"(rest={}, )"
@@ -58,7 +56,6 @@ struct fmt::formatter<roq::htx_futures::flags::Settings> {
         R"(server={})"
         R"(}})"sv,
         value.exchange,
-        value.ws_api,
         value.margin_mode,
         value.misc,
         value.rest,

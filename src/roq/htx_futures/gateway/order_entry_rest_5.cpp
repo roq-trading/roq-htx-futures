@@ -142,7 +142,7 @@ void OrderEntryREST5::operator()(Trace<ConnectionStatus> const &event, std::stri
   auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = account_.name,
-      .supports = shared_.settings.ws_api ? SUPPORTS_WSAPI : SUPPORTS,
+      .supports = shared_.settings.misc.disable_ws_api ? SUPPORTS : SUPPORTS_WSAPI,
       .transport = Transport::TCP,
       .protocol = Protocol::HTTP,
       .encoding = {Encoding::JSON},

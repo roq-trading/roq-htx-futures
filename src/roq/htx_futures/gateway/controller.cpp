@@ -108,7 +108,7 @@ template <typename R>
 R create_order_entry_ws(Controller &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests, auto has_real_accounts) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
-  if (shared.settings.ws_api && has_real_accounts) {
+  if (!shared.settings.misc.disable_ws_api && has_real_accounts) {
     for (auto &[_, item] : accounts) {
       auto &account = *item;
       if (shared.api.order_management.v5) {
@@ -368,14 +368,14 @@ void Controller::dispatch_helper(auto &self, Args &&...args) {
 }
 
 server::OrderActionStream &Controller::get_order_entry(std::string_view const &account) {
-  if (shared_.settings.ws_api) {
-    auto iter = order_entry_ws_.find(account);
-    if (iter != std::end(order_entry_ws_)) {
+  if (shared_.settings.misc.disable_ws_api) {
+    auto iter = order_entry_rest_.find(account);
+    if (iter != std::end(order_entry_rest_)) {
       return *(*iter).second;
     }
   } else {
-    auto iter = order_entry_rest_.find(account);
-    if (iter != std::end(order_entry_rest_)) {
+    auto iter = order_entry_ws_.find(account);
+    if (iter != std::end(order_entry_ws_)) {
       return *(*iter).second;
     }
   }
