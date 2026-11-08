@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Changed
+
+* Drop `--ws_api` (#658)
+
 ## 1.1.9 &ndash; 2026-10-18
 
 ### Fixed
