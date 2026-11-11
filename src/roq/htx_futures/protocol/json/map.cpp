@@ -2,6 +2,8 @@
 
 #include "roq/htx_futures/protocol/json/map.hpp"
 
+#include "roq/logging.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -12,6 +14,32 @@ using Helper = detail::MapHelper<Args...>;
 }
 
 // htx_futures ==> roq
+
+// int32_t ==> roq::Error
+
+template <>
+template <>
+constexpr Helper<int32_t>::operator std::optional<roq::Error>() const {
+  auto value = std::get<0>(args_);
+  switch (value) {
+    case 200:
+      return Error::UNDEFINED;
+    case 1071:  // Repeated cancellation. Your order has been canceled.
+      return Error::TOO_LATE_TO_MODIFY_OR_CANCEL;
+    case 1041:  // The amount has exceeded the limit (580000 Cont), please modify and place order again.
+      return Error::INSUFFICIENT_FUNDS;
+  }
+  log::warn("DEBUG unable to map error_code={}"sv, value);
+  return Error::UNKNOWN;
+}
+
+static_assert(Helper{int32_t{200}} == roq::Error::UNDEFINED);
+
+template <>
+template <>
+std::optional<roq::Error> Map<int32_t>::helper() const {
+  return Helper{args_};
+}
 
 // htx_futures::protocol::json::Direction ==> roq::Side
 

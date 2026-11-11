@@ -33,6 +33,10 @@ namespace roq {
 
 template <>
 template <>
+std::optional<Error> Map<int32_t>::helper() const;
+
+template <>
+template <>
 std::optional<Side> Map<htx_futures::protocol::json::Direction>::helper() const;
 
 template <>

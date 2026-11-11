@@ -262,7 +262,8 @@ void OrderEntryREST5::get_open_orders_ack(Trace<web::rest::Response> const &even
       if (open_orders_ack.code == 200) {
         create_trace_and_dispatch_2(trace_info, open_orders_ack);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(open_orders_ack.code), open_orders_ack.message);
+        auto error = map(open_orders_ack.code).template get<Error>();
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, open_orders_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -565,7 +566,8 @@ void OrderEntryREST5::create_order_ack(Trace<web::rest::Response> const &event, 
       if (create_order_ack.code == 200) {
         create_trace_and_dispatch_2(trace_info, create_order_ack, user_id, order_id, version);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(create_order_ack.code), create_order_ack.message);
+        auto error = map(create_order_ack.code).template get<Error>();
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, create_order_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -656,7 +658,8 @@ void OrderEntryREST5::cancel_order_ack(Trace<web::rest::Response> const &event, 
       if (cancel_order_ack.code == 200) {
         create_trace_and_dispatch_2(trace_info, cancel_order_ack, user_id, order_id, version);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(cancel_order_ack.code), cancel_order_ack.message);
+        auto error = map(cancel_order_ack.code).template get<Error>();
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_order_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -778,7 +781,8 @@ void OrderEntryREST5::cancel_all_orders_ack(Trace<web::rest::Response> const &ev
       if (cancel_all_orders_ack.code == 200) {
         create_trace_and_dispatch_2(trace_info, cancel_all_orders_ack);
       } else {
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error_v5(cancel_all_orders_ack.code), cancel_all_orders_ack.message);
+        auto error = map(cancel_all_orders_ack.code).template get<Error>();
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_all_orders_ack.message);
       }
     };
     process_response(event, handle_error, handle_success);

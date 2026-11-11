@@ -337,9 +337,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
   switch (request_type) {
     using enum RequestType;
     case UNDEFINED: {  // note! cancel-all-orders
-      auto error = protocol::json::guess_error_v5(response.code);
       protocol::json::Response5Multiple data{response.data, decode_buffer_};
-
       auto cancel_all_orders_ack = CancelAllOrdersAck{
           .stream_id = stream_id_,
           .account = account_.name,
@@ -349,7 +347,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
           .side = {},
           .origin = Origin::EXCHANGE,
           .request_status = request_status,
-          .error = error,
+          .error = map(response.code),
           .text = response.message,
           .request_id = request_id,
           .external_account = {},
@@ -371,11 +369,11 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
     case CANCEL_ORDER:
       if (response.code != 200) {
         if (std::empty(response.data)) {
-          auto error = protocol::json::guess_error_v5(response.code);
+          auto error = map(response.code).template get<Error>();
           helper(error, response.message, {}, {});
         } else {
           protocol::json::Response5Single data{response.data};
-          auto error = protocol::json::guess_error_v5(response.code);
+          auto error = map(response.code).template get<Error>();
           helper(error, response.message, data.order_id, data.client_order_id);
         }
       }
