@@ -371,7 +371,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
         auto error = map(response.code).template get<Error>();
         if (std::empty(response.data)) {
           helper(error, response.message, {}, {});
-        } else if (shared_.settings.oms.unsafe_order_ack) {
+        } else if (shared_.settings.oms.allow_unsafe_order_ack) {
           protocol::json::Response5Single data{response.data};
           helper(error, response.message, data.order_id, data.client_order_id);
         }

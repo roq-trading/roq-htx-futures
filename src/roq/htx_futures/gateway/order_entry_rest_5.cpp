@@ -567,7 +567,7 @@ void OrderEntryREST5::create_order_ack(Trace<web::rest::Response> const &event, 
       if (place_order_ack.code != 200) {
         auto error = map(place_order_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, place_order_ack.message);
-      } else if (shared_.settings.oms.unsafe_order_ack) {
+      } else if (shared_.settings.oms.allow_unsafe_order_ack) {
         create_trace_and_dispatch_2(trace_info, place_order_ack, user_id, order_id, version);
       }
     };
@@ -659,7 +659,7 @@ void OrderEntryREST5::cancel_order_ack(Trace<web::rest::Response> const &event, 
       if (cancel_order_ack.code != 200) {
         auto error = map(cancel_order_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_order_ack.message);
-      } else if (shared_.settings.oms.unsafe_order_ack) {
+      } else if (shared_.settings.oms.allow_unsafe_order_ack) {
         create_trace_and_dispatch_2(trace_info, cancel_order_ack, user_id, order_id, version);
       }
     };
