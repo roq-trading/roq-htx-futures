@@ -368,12 +368,11 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
     case MODIFY_ORDER:
     case CANCEL_ORDER:
       if (response.code != 200) {
+        auto error = map(response.code).template get<Error>();
         if (std::empty(response.data)) {
-          auto error = map(response.code).template get<Error>();
           helper(error, response.message, {}, {});
-        } else {
+        } else if (shared_.settings.oms.unsafe_order_ack) {
           protocol::json::Response5Single data{response.data};
-          auto error = map(response.code).template get<Error>();
           helper(error, response.message, data.order_id, data.client_order_id);
         }
       }

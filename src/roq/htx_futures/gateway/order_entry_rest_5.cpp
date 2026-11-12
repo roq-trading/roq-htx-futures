@@ -562,12 +562,13 @@ void OrderEntryREST5::create_order_ack(Trace<web::rest::Response> const &event, 
       create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      protocol::json::PlaceOrderAck5 create_order_ack{body, decode_buffer_};
-      if (create_order_ack.code == 200) {
-        create_trace_and_dispatch_2(trace_info, create_order_ack, user_id, order_id, version);
-      } else {
-        auto error = map(create_order_ack.code).template get<Error>();
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, create_order_ack.message);
+      protocol::json::PlaceOrderAck5 place_order_ack{body, decode_buffer_};
+      log::info<2>("place_order_ack={}"sv, place_order_ack);
+      if (place_order_ack.code != 200) {
+        auto error = map(place_order_ack.code).template get<Error>();
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, place_order_ack.message);
+      } else if (shared_.settings.oms.unsafe_order_ack) {
+        create_trace_and_dispatch_2(trace_info, place_order_ack, user_id, order_id, version);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -581,8 +582,7 @@ void OrderEntryREST5::operator()(
     [[maybe_unused]] uint32_t version) {
   (*connection_).close();
   return;
-  auto &[trace_info, create_order_ack] = event;
-  log::info<2>("create_order_ack={}"sv, create_order_ack);
+  [[maybe_unused]] auto &[trace_info, place_order_ack] = event;
   // note! we only get order_id, no detailed information about order status => drop
 }
 
@@ -655,11 +655,12 @@ void OrderEntryREST5::cancel_order_ack(Trace<web::rest::Response> const &event, 
     };
     auto handle_success = [&](auto &body) {
       protocol::json::CancelOrderAck5 cancel_order_ack{body, decode_buffer_};
-      if (cancel_order_ack.code == 200) {
-        create_trace_and_dispatch_2(trace_info, cancel_order_ack, user_id, order_id, version);
-      } else {
+      log::info<2>("cancel_order_ack={}"sv, cancel_order_ack);
+      if (cancel_order_ack.code != 200) {
         auto error = map(cancel_order_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_order_ack.message);
+      } else if (shared_.settings.oms.unsafe_order_ack) {
+        create_trace_and_dispatch_2(trace_info, cancel_order_ack, user_id, order_id, version);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -671,8 +672,7 @@ void OrderEntryREST5::operator()(
     [[maybe_unused]] uint8_t user_id,
     [[maybe_unused]] uint64_t order_id,
     [[maybe_unused]] uint32_t version) {
-  auto &[trace_info, cancel_order_ack] = event;
-  log::info<2>("cancel_order_ack={}"sv, cancel_order_ack);
+  [[maybe_unused]] auto &[trace_info, cancel_order_ack] = event;
   // note! we don't get much info ==> drop
 }
 
