@@ -143,9 +143,10 @@ void WebSocket::operator()(Trace<ConnectionStatus> const &event, std::string_vie
       .connection_status = connection_status_,
       .reason = reason,
       .interface = (*connection_).get_interface(),
+      .proxy = (*connection_).get_proxy(),
+      .peer = (*connection_).get_current_peer(),
       .authority = (*connection_).get_current_authority(),
       .path = (*connection_).get_current_path(),
-      .proxy = (*connection_).get_proxy(),
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
