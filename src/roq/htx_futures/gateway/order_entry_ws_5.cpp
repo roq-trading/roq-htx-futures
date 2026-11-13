@@ -328,6 +328,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
         .text = text,
         .version = version,
         .request_id = request_id,
+        .external_trace_id = {},
         .external_order_id = external_order_id,
         .client_order_id = client_order_id,
         .quantity = NaN,

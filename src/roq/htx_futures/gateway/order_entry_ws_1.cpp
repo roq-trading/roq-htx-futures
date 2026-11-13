@@ -330,6 +330,7 @@ void OrderEntryWS1::operator()(Trace<protocol::json::Response> const &event) {
       .text = text,
       .version = version,
       .request_id = request_id,
+      .external_trace_id = {},
       .external_order_id = response.data.order_id_str,
       .client_order_id = {},
       .quantity = NaN,
