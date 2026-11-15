@@ -30,10 +30,12 @@ constexpr Helper<int32_t>::operator std::optional<roq::Error>() const {
       return Error::UNDEFINED;
     case 200:
       return Error::UNDEFINED;
-    case 1071:  // Repeated cancellation. Your order has been canceled.
-      return Error::TOO_LATE_TO_MODIFY_OR_CANCEL;
     case 1041:  // The amount has exceeded the limit (580000 Cont), please modify and place order again.
       return Error::INSUFFICIENT_FUNDS;
+    case 1047:  // "Insufficient margin available.
+      return Error::INSUFFICIENT_FUNDS;
+    case 1071:  // Repeated cancellation. Your order has been canceled.
+      return Error::TOO_LATE_TO_MODIFY_OR_CANCEL;
   }
   LOG_ONCE("error_code"sv, value);
   return Error::UNKNOWN;
@@ -41,6 +43,9 @@ constexpr Helper<int32_t>::operator std::optional<roq::Error>() const {
 
 static_assert(Helper{int32_t{0}} == roq::Error::UNDEFINED);
 static_assert(Helper{int32_t{200}} == roq::Error::UNDEFINED);
+static_assert(Helper{int32_t{1041}} == roq::Error::INSUFFICIENT_FUNDS);
+static_assert(Helper{int32_t{1047}} == roq::Error::INSUFFICIENT_FUNDS);
+static_assert(Helper{int32_t{1071}} == roq::Error::TOO_LATE_TO_MODIFY_OR_CANCEL);
 
 template <>
 template <>
