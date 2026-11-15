@@ -296,6 +296,7 @@ void OrderEntryREST1::operator()(Trace<protocol::json::OpenOrdersAck> const &eve
         .execution_destination = {},
         .create_time_utc = item.created_at,
         .update_time_utc = item.created_at,
+        .external_trace_id = {},
         .external_account = {},
         .external_order_id = item.order_id_str,
         .client_order_id = client_order_id,
