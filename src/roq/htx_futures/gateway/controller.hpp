@@ -67,28 +67,32 @@ struct Controller final : public Base<Controller>,
   void operator()(Event<Connected> const &) override;
   void operator()(Event<Disconnected> const &) override;
 
-  void operator()(Event<Subscribe> const &) override;
-  void operator()(Event<Control> const &) override;
+  void operator()(Trace<Subscribe> const &) override;
+  void operator()(Trace<Control> const &) override;
 
-  uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
+  void operator()(Trace<server::oms::OrderActionBatchBegin> const &) override;
+  void operator()(Trace<server::oms::OrderActionBatchCommit> const &) override;
+  void operator()(Trace<server::oms::OrderActionBatchRollback> const &) override;
+
+  uint16_t operator()(Trace<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
   uint16_t operator()(
-      Event<ModifyOrder> const &,
+      Trace<ModifyOrder> const &,
       server::oms::Order const &,
       server::oms::RefData const &,
       std::string_view const &request_id,
       std::string_view const &previous_request_id) override;
   uint16_t operator()(
-      Event<CancelOrder> const &,
+      Trace<CancelOrder> const &,
       server::oms::Order const &,
       server::oms::RefData const &,
       std::string_view const &request_id,
       std::string_view const &previous_request_id) override;
 
-  uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id) override;
+  uint16_t operator()(Trace<CancelAllOrders> const &, std::string_view const &request_id) override;
 
-  uint16_t operator()(Event<MassQuote> const &) override;
+  uint16_t operator()(Trace<MassQuote> const &) override;
 
-  uint16_t operator()(Event<CancelQuotes> const &) override;
+  uint16_t operator()(Trace<CancelQuotes> const &) override;
 
   void operator()(metrics::Writer &) const override;
 
@@ -106,7 +110,8 @@ struct Controller final : public Base<Controller>,
   template <typename... Args>
   static void dispatch_helper(auto &self, Args &&...);
 
-  server::OrderActionStream &get_order_entry(std::string_view const &account);
+  template <typename Res, typename T, typename... Args>
+  Res dispatch_order_action(Trace<T> const &, Args &&...);
 
  private:
   server::Dispatcher &dispatcher_;

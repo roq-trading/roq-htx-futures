@@ -161,14 +161,26 @@ void OrderEntryREST5::operator()(Trace<ConnectionStatus> const &event, std::stri
 
 // server::OrderActionStream
 
+void OrderEntryREST5::operator()(Trace<server::oms::OrderActionBatchBegin> const &) {
+  throw server::oms::NotSupported{"not supported"sv};
+}
+
+void OrderEntryREST5::operator()(Trace<server::oms::OrderActionBatchCommit> const &) {
+  throw server::oms::NotSupported{"not supported"sv};
+}
+
+void OrderEntryREST5::operator()(Trace<server::oms::OrderActionBatchRollback> const &) {
+  throw server::oms::NotSupported{"not supported"sv};
+}
+
 uint16_t OrderEntryREST5::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
+    Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   create_order(event, order, ref_data, request_id);
   return stream_id_;
 }
 
 uint16_t OrderEntryREST5::operator()(
-    Event<ModifyOrder> const &,
+    Trace<ModifyOrder> const &,
     server::oms::Order const &,
     server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
@@ -178,7 +190,7 @@ uint16_t OrderEntryREST5::operator()(
 }
 
 uint16_t OrderEntryREST5::operator()(
-    Event<CancelOrder> const &event,
+    Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
@@ -187,7 +199,7 @@ uint16_t OrderEntryREST5::operator()(
   return stream_id_;
 }
 
-uint16_t OrderEntryREST5::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+uint16_t OrderEntryREST5::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   cancel_all_orders(event, request_id);
   return stream_id_;
 }
@@ -502,12 +514,12 @@ void OrderEntryREST5::operator()(Trace<protocol::json::OrderInfoAck5> const &eve
 // create-order
 
 void OrderEntryREST5::create_order(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
+    Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &[message_info, create_order] = event;
+    auto &[trace_info, create_order] = event;
     auto method = web::http::Method::POST;
     auto path = [&]() -> std::string_view {
       switch (account_.margin_mode) {
@@ -523,7 +535,7 @@ void OrderEntryREST5::create_order(
       }
       log::fatal("Unexpected"sv);
     }();
-    auto query = account_.create_query(message_info, method, path);
+    auto query = account_.create_query(trace_info, method, path);
     auto body =
         protocol::json::Encoder::create_order_v5(encode_buffer_, create_order, order, ref_data, request_id, shared_.api.order_management.default_margin_mode);
     auto request = web::rest::Request{
@@ -537,7 +549,7 @@ void OrderEntryREST5::create_order(
         .quality_of_service = {},
     };
     log::debug_info<2>("request={}"sv, request);
-    auto callback = [this, user_id = message_info.source, order_id = create_order.order_id](auto &event, [[maybe_unused]] auto &request_id) {
+    auto callback = [this, user_id = order.user_id, order_id = order.order_id](auto &event, [[maybe_unused]] auto &request_id) {
       uint32_t version = 1;
       create_order_ack(event, user_id, order_id, version);
     };
@@ -594,7 +606,7 @@ void OrderEntryREST5::operator()(
 // cancel_order
 
 void OrderEntryREST5::cancel_order(
-    Event<CancelOrder> const &event,
+    Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
@@ -603,7 +615,7 @@ void OrderEntryREST5::cancel_order(
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &[message_info, cancel_order] = event;
+    auto &[trace_info, cancel_order] = event;
     auto method = web::http::Method::POST;
     auto path = [&]() -> std::string_view {
       switch (account_.margin_mode) {
@@ -619,7 +631,7 @@ void OrderEntryREST5::cancel_order(
       }
       log::fatal("Unexpected"sv);
     }();
-    auto query = account_.create_query(message_info, method, path);
+    auto query = account_.create_query(trace_info, method, path);
     auto body = protocol::json::Encoder::cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
     auto request = web::rest::Request{
         .method = method,
@@ -632,8 +644,9 @@ void OrderEntryREST5::cancel_order(
         .quality_of_service = {},
     };
     log::debug_info<2>("request={}"sv, request);
-    auto callback = [this, user_id = message_info.source, order_id = cancel_order.order_id, version = cancel_order.version](
-                        auto &event, [[maybe_unused]] auto &request_id) { cancel_order_ack(event, user_id, order_id, version); };
+    auto callback = [this, user_id = order.user_id, order_id = order.order_id, version = cancel_order.version](auto &event, [[maybe_unused]] auto &request_id) {
+      cancel_order_ack(event, user_id, order_id, version);
+    };
     (*connection_)(request, callback, request_id);
   });
 }
@@ -684,12 +697,12 @@ void OrderEntryREST5::operator()(
 
 // cancel-all-orders
 
-void OrderEntryREST5::cancel_all_orders(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+void OrderEntryREST5::cancel_all_orders(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   profile_.cancel_all_orders([&]() {
     if (!ready()) [[unlikely]] {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &[message_info, cancel_all_orders] = event;
+    auto &[trace_info, cancel_all_orders] = event;
     auto send_ack = [&]() {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
           .stream_id = stream_id_,
@@ -709,7 +722,6 @@ void OrderEntryREST5::cancel_all_orders(Event<CancelAllOrders> const &event, std
           .user = {},
           .strategy_id = cancel_all_orders.strategy_id,
       };
-      TraceInfo trace_info{event};
       create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
     };
     auto helper = [&](auto const &symbol) {
@@ -728,7 +740,7 @@ void OrderEntryREST5::cancel_all_orders(Event<CancelAllOrders> const &event, std
         }
         log::fatal("Unexpected"sv);
       }();
-      auto query = account_.create_query(message_info, method, path);
+      auto query = account_.create_query(trace_info, method, path);
       auto body = protocol::json::Encoder::cancel_all_orders(encode_buffer_, cancel_all_orders, request_id, symbol);
       log::info<2>(R"(body="{}")"sv, body);
       auto request = web::rest::Request{
