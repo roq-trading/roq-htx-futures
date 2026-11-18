@@ -171,9 +171,6 @@ Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings,
       order_entry_ws_{
           create_order_entry_ws<decltype(order_entry_ws_)>(*this, context_, stream_id_, accounts_, shared_, requests_, !std::empty(config.accounts))},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_, requests_)} {
-  if (settings.rest.cancel_on_disconnect) {
-    log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
-  }
 }
 
 // server::Handler

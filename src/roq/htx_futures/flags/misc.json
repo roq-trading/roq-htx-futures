@@ -17,12 +17,6 @@
       "description": "Decode buffer size"
     },
     {
-      "name": "mbp_allow_price_inversion",
-      "type": "std/bool",
-      "default": false,
-      "description": "Allow price inversion?"
-    },
-    {
       "name": "disable_ws_api",
       "type": "std/bool",
       "default": false,

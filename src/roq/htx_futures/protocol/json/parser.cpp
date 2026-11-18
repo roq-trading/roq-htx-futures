@@ -38,7 +38,7 @@ bool Parser::dispatch(
     std::string_view const &message,
     core::json::BufferStack &buffer_stack,
     TraceInfo const &trace_info,
-    bool allow_unknown_event_types) {
+    bool disable_strict_parsing) {
   Frame frame{message, buffer_stack};
   if (!frame.ping.count()) {
     switch (frame.status) {
@@ -50,7 +50,7 @@ bool Parser::dispatch(
           case UNDEFINED_INTERNAL:
             break;
           case UNKNOWN_INTERNAL:
-            if (allow_unknown_event_types) {
+            if (disable_strict_parsing) {
               return false;
             }
             break;
@@ -88,7 +88,7 @@ bool Parser::dispatch(
         break;
       }
       case UNKNOWN_INTERNAL:
-        if (allow_unknown_event_types) {
+        if (disable_strict_parsing) {
           return false;
         }
         break;

@@ -37,26 +37,6 @@
       "description": "Request timeout"
     },
     {
-      "name": "listen_key_refresh",
-      "type": "std/nanoseconds",
-      "validator": "roq/flags/validators/TimePeriod",
-      "default": "1800s",
-      "description": "Listen key refresh period"
-    },
-    {
-      "name": "order_recv_window",
-      "type": "std/nanoseconds",
-      "validator": "roq/flags/validators/TimePeriod",
-      "default": "5000ms",
-      "description": "Receive window, please refer to Binance documentation!"
-    },
-    {
-      "name": "cancel_on_disconnect",
-      "type": "std/bool",
-      "default": false,
-      "description": "Cancel orders on disconnect?"
-    },
-    {
       "name": "download_refresh",
       "type": "std/nanoseconds",
       "validator": "roq/flags/validators/TimePeriod",

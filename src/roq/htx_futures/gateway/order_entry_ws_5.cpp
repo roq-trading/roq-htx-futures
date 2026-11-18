@@ -307,7 +307,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Auth> const &event) {
     if (auth.err_code == 0) {
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
     } else {
-      if (shared_.settings.experimental.retry_logon) {
+      if (shared_.settings.app.disable_strict_logon) {
         log::error("auth={}"sv, auth);
         log::warn("Disconneting..."sv);
         (*connection_).close();
@@ -434,7 +434,7 @@ void OrderEntryWS5::parse(TraceInfo const &trace_info, std::string_view const &m
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
-      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser5::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.app.disable_strict_parsing)) {
         log_message();
       }
     } catch (...) {

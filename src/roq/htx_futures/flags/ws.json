@@ -40,25 +40,6 @@
       "required": true,
       "default": 32,
       "description": "Maximum number of symbols per connection"
-    },
-    {
-      "name": "subscribe_depth_levels",
-      "type": "std/uint32",
-      "default": 0,
-      "description": "Depth levels"
-    },
-    {
-      "name": "subscribe_depth_freq",
-      "type": "std/nanoseconds",
-      "validator": "roq/flags/validators/TimePeriod",
-      "default": "100ms",
-      "description": "Depth update frequency"
-    },
-    {
-      "name": "subscribe_trade_details",
-      "type": "std/bool",
-      "default": false,
-      "description": "Report individual matches for trade summary? (bool)"
     }
   ]
 }
