@@ -238,7 +238,7 @@ void OrderEntryWS1::operator()(Trace<web::socket::Disconnected> const &event) {
 void OrderEntryWS1::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
   send_login(trace_info);
-  // create_trace_and_dispatch_2(trace_info,ConnectionStatus::LOGIN_SENT);
+  // create_trace_and_dispatch_2(trace_info,ConnectionStatus::AUTHENTICATING);
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
 }
 
