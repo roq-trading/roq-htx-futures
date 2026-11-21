@@ -86,7 +86,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 OrderEntryWS5::OrderEntryWS5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
-      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+      auth_path_{create_auth_path(shared.settings)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -103,7 +103,7 @@ OrderEntryWS5::OrderEntryWS5(Handler &handler, io::Context &context, uint16_t st
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, auth_path_{create_auth_path(shared.settings)}, shared_{shared}, request_{request}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
+      account_{account}, shared_{shared}, request_{request}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER} {
 }
 
 // server::Stream

@@ -119,14 +119,12 @@ struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::Orde
 
  private:
   [[maybe_unused]] Handler &handler_;
-  // config
+  //
   uint16_t const stream_id_;
   std::string const name_;
-  // connection
   std::unique_ptr<web::rest::Client> const connection_;
-  // buffers
+  //
   core::json::BufferStack decode_buffer_;
-  // metrics
   struct {
     utils::metrics::Counter disconnect;
   } counter_;
@@ -141,15 +139,10 @@ struct OrderEntryREST1 final : public Base<OrderEntryREST1>, public server::Orde
   struct {
     utils::metrics::Latency ping;
   } latency_;
-  // account
   Account &account_;
-  // shared
   Shared &shared_;
-  // request
   Request &request_;
-  // state
   ConnectionStatus connection_status_ = {};
-  // buffers
   std::string encode_buffer_;
 };
 

@@ -94,31 +94,27 @@ struct WebSocket final : public Base<WebSocket>, public server::MarketDataStream
 
  private:
   [[maybe_unused]] Handler &handler_;
-  // config
+  //
   uint16_t const stream_id_;
   std::string const name_;
   size_t const index_;
-  // web socket
   std::unique_ptr<web::socket::Client> const connection_;
-  // buffers
+  //
   core::json::BufferStack decode_buffer_;
-  // session
   uint64_t request_id_ = {};
-  // metrics
   struct {
     utils::metrics::Counter disconnect, total_bytes_received;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, error, subbed, estimated_rate, premium_index, basis, index;
+    utils::metrics::Profile parse,  //
+        ping, error, subbed,        //
+        estimated_rate, premium_index, basis, index;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;
   } latency_;
-  // cache
   Shared &shared_;
-  // state
   ConnectionStatus connection_status_ = {};
-  // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
 };

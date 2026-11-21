@@ -106,34 +106,29 @@ struct DropCopy1 final : Base<DropCopy1>, public server::Stream, public web::soc
 
  private:
   [[maybe_unused]] Handler &handler_;
-  // config
+  //
   uint16_t const stream_id_;
   std::string const name_;
-  // web socket
   std::unique_ptr<web::socket::Client> const connection_;
-  // buffers
+  //
   core::json::BufferStack decode_buffer_;
-  // metrics
   struct {
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, close, error, ping, auth, sub, accounts, positions, match_orders, orders;
+    utils::metrics::Profile parse,      //
+        close, error, ping, auth, sub,  //
+        accounts, positions, match_orders, orders;
   } profile_;
   struct {
     utils::metrics::Latency ping;
   } latency_;
-  // account
   Account &account_;
   std::string const auth_path_;
-  // cache
   Shared &shared_;
-  // request
   Request &request_;
-  // state
   ConnectionStatus connection_status_ = {};
   core::Download2<State> download_;
-  // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
 };
