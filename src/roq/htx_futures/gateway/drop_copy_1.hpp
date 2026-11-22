@@ -38,7 +38,7 @@ struct DropCopy1 final : Base<DropCopy1>, public server::Stream, public web::soc
 
   DropCopy1(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
-  // protected:
+ protected:
   friend base_type;
 
   // server::Stream
@@ -55,7 +55,6 @@ struct DropCopy1 final : Base<DropCopy1>, public server::Stream, public web::soc
 
   void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
 
- protected:
   // web::socket::Client::Handler
 
   void operator()(Trace<web::socket::Connected> const &) override;

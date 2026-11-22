@@ -115,16 +115,14 @@ struct Controller final : public Base<Controller>,
 
  private:
   server::Dispatcher &dispatcher_;
-  // io
+  //
   io::Context &context_;
-  // shared
   Shared shared_;
-  // accounts
+  uint16_t stream_id_ = {};
+  //
   utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
   utils::unordered_map<std::string, std::unique_ptr<Request>> const requests_;
-  // seed
-  uint16_t stream_id_ = {};
-  // streams
+  //
   std::unique_ptr<server::Stream> rest_;
   utils::unordered_map<std::string, std::unique_ptr<server::OrderActionStream>> order_entry_rest_;
   utils::unordered_map<std::string, std::unique_ptr<server::OrderActionStream>> order_entry_ws_;

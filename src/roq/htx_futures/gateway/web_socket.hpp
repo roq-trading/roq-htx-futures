@@ -34,7 +34,7 @@ struct WebSocket final : public Base<WebSocket>, public server::MarketDataStream
 
   WebSocket(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  // protected:
+ protected:
   friend base_type;
 
   // server::Stream
@@ -55,7 +55,6 @@ struct WebSocket final : public Base<WebSocket>, public server::MarketDataStream
 
   void subscribe(size_t start_from = 0) override;
 
- protected:
   // web::socket::Client::Handler
 
   void operator()(Trace<web::socket::Connected> const &) override;

@@ -36,7 +36,7 @@ struct Rest final : public Base<Rest>, public server::Stream, public web::rest::
 
   Rest(Handler &, io::Context &context, uint16_t stream_id, Shared &);
 
-  // protected:
+ protected:
   friend base_type;
 
   // server::Stream
@@ -53,7 +53,6 @@ struct Rest final : public Base<Rest>, public server::Stream, public web::rest::
 
   void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
 
- protected:
   // web::rest::Client::Handler
 
   void operator()(Trace<web::rest::Connected> const &) override;

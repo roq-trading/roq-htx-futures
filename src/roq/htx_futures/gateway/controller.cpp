@@ -306,20 +306,20 @@ void Controller::ensure_symbol_slices(TraceInfo const &trace_info, size_t size) 
     auto stream_id = ++stream_id_;
     auto index = std::size(market_data_);
     log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
+    auto obj = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
     Start start;
-    create_trace_and_dispatch(*market_data, trace_info, start);
-    market_data_.emplace_back(std::move(market_data));
+    create_trace_and_dispatch(dynamic_cast<server::Stream &>(*obj), trace_info, start);
+    market_data_.emplace_back(std::move(obj));
   }
   // web socket #1
   while (std::size(web_socket_) < size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(web_socket_);
     log::debug("Create WebSocket #1 (stream_id={}, index={})"sv, stream_id, index);
-    auto web_socket = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
+    auto obj = std::make_unique<WebSocket>(*this, context_, stream_id, shared_, index);
     Start start;
-    create_trace_and_dispatch(*web_socket, trace_info, start);
-    web_socket_.emplace_back(std::move(web_socket));
+    create_trace_and_dispatch(dynamic_cast<server::Stream &>(*obj), trace_info, start);
+    web_socket_.emplace_back(std::move(obj));
   }
   // web socket #2
   /*
@@ -342,7 +342,13 @@ void Controller::dispatch(Args &&...args) {
 
 template <typename... Args>
 void Controller::dispatch_helper(auto &self, Args &&...args) {
-  auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
+  auto helper = [&](auto &target) {
+    if constexpr (std::is_const_v<decltype(self)>) {
+      dynamic_cast<server::Stream const &>(target)(std::forward<Args>(args)...);
+    } else {
+      dynamic_cast<server::Stream &>(target)(std::forward<Args>(args)...);
+    }
+  };
   helper(*self.rest_);
   for (auto &[_, item] : self.order_entry_rest_) {
     helper(*item);
