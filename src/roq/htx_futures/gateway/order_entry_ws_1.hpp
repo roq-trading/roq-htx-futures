@@ -43,10 +43,6 @@ struct OrderEntryWS1 final : public Base<OrderEntryWS1>,
 
   // server::Stream
 
-  uint16_t stream_id() const override { return stream_id_; }
-
-  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Trace<Start> const &) override;
   void operator()(Trace<Stop> const &) override;
   void operator()(Trace<Timer> const &) override;
@@ -107,7 +103,6 @@ struct OrderEntryWS1 final : public Base<OrderEntryWS1>,
  private:
   [[maybe_unused]] Handler &handler_;
   //
-  uint16_t const stream_id_;
   std::string const name_;
   std::unique_ptr<web::socket::Client> const connection_;
   //
@@ -126,7 +121,6 @@ struct OrderEntryWS1 final : public Base<OrderEntryWS1>,
   Account &account_;
   std::string const auth_path_;
   Shared &shared_;
-  ConnectionStatus connection_status_ = {};
   std::string encode_buffer_;
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;

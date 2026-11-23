@@ -75,7 +75,7 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
+    : server::Stream{stream_id}, handler_{handler}, name_{create_name(stream_id)}, connection_{create_connection(*this, shared.settings, context, shared)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -140,25 +140,26 @@ void DropCopy5::operator()(metrics::Writer &writer) const {
 
 void DropCopy5::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
   auto &[trace_info, connection_status] = event;
-  connection_status_ = connection_status;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.name,
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::WS,
-      .encoding = {Encoding::JSON},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_).get_interface(),
-      .proxy = (*connection_).get_proxy(),
-      .peer = (*connection_).get_current_peer(),
-      .authority = (*connection_).get_current_authority(),
-      .path = (*connection_).get_current_path(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+  if (update(connection_status, reason)) {
+    auto stream_status = StreamStatus{
+        .stream_id = stream_id(),
+        .account = account_.name,
+        .supports = SUPPORTS,
+        .transport = Transport::TCP,
+        .protocol = Protocol::WS,
+        .encoding = {Encoding::JSON},
+        .priority = Priority::PRIMARY,
+        .connection_status = connection_status,
+        .reason = reason,
+        .interface = (*connection_).get_interface(),
+        .proxy = (*connection_).get_proxy(),
+        .peer = (*connection_).get_current_peer(),
+        .authority = (*connection_).get_current_authority(),
+        .path = (*connection_).get_current_path(),
+    };
+    log::info("stream_status={}"sv, stream_status);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+  }
 }
 
 // web::socket::Client::Handler
@@ -169,14 +170,14 @@ void DropCopy5::operator()(Trace<web::socket::Connected> const &) {
 void DropCopy5::operator()(Trace<web::socket::Disconnected> const &event) {
   auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
+  publish(trace_info, ConnectionStatus::DISCONNECTED);
   download_.reset();
 }
 
 void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id_,
+      .stream_id = stream_id(),
       .account = account_.name,
       .latency = latency.sample,
   };
@@ -186,7 +187,7 @@ void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
 
 void DropCopy5::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::AUTHENTICATING);
+  publish(trace_info, ConnectionStatus::AUTHENTICATING);
   send_login(trace_info);
 }
 
@@ -209,7 +210,6 @@ void DropCopy5::operator()(Trace<web::socket::Binary> const &) {
 
 int32_t DropCopy5::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
-  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   auto is_cross = [&]() {
     switch (account_.margin_mode) {
       using enum MarginMode;
@@ -232,7 +232,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       break;
     case SUBSCRIBE_BALANCES:
       if (is_cross) {
-        publish_downloading();
+        publish(trace_info, ConnectionStatus::DOWNLOADING, state);
         subscribe(shared_.api.order_management.topic_accounts);
         return 1;
       } else {
@@ -240,7 +240,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       }
     case SUBSCRIBE_POSITIONS:
       if (is_cross) {
-        publish_downloading();
+        publish(trace_info, ConnectionStatus::DOWNLOADING, state);
         subscribe(shared_.api.order_management.topic_positions, "*"sv);
         return 1;
       } else {
@@ -248,7 +248,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       }
     case SUBSCRIBE_MATCH_ORDERS:
       if (is_cross) {
-        publish_downloading();
+        publish(trace_info, ConnectionStatus::DOWNLOADING, state);
         subscribe(shared_.api.order_management.topic_match_orders, "*"sv);
         return 1;
       } else {
@@ -256,7 +256,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       }
     case SUBSCRIBE_ORDERS:
       if (is_cross) {
-        publish_downloading();
+        publish(trace_info, ConnectionStatus::DOWNLOADING, state);
         subscribe(shared_.api.order_management.topic_orders, "*"sv);
         return 1;
       } else {
@@ -264,7 +264,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
       }
     case GET_OPEN_ORDERS:
       if (is_cross) {
-        publish_downloading();
+        publish(trace_info, ConnectionStatus::DOWNLOADING, state);
         request_.open_orders.request(trace_info);
         return 1;
       } else {
@@ -275,7 +275,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
         if (std::empty(request_.details_stale_orders)) {
           return 0;
         } else {
-          publish_downloading();
+          publish(trace_info, ConnectionStatus::DOWNLOADING, state);
           request_.stale_orders.request(trace_info);
           return 1;
         }
@@ -283,7 +283,7 @@ int32_t DropCopy5::download(Trace<State> const &event) {
         return 0;
       }
     case DONE:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      publish(trace_info, ConnectionStatus::READY);
       return 0;
   }
   assert(false);
@@ -377,7 +377,7 @@ void DropCopy5::operator()(Trace<protocol::json::Account5> const &event) {
     auto update_type = map(account.event).template get<UpdateType>();
     for (auto &item : account.data.details) {
       auto funds_update = FundsUpdate{
-          .stream_id = stream_id_,
+          .stream_id = stream_id(),
           .account = account_.name,
           .currency = item.currency,
           .margin_mode = {},
@@ -414,7 +414,7 @@ void DropCopy5::operator()(Trace<protocol::json::Positions5> const &event) {
         return NaN;
       }();
       auto position_update = PositionUpdate{
-          .stream_id = stream_id_,
+          .stream_id = stream_id(),
           .account = account_.name,
           .exchange = shared_.settings.exchange,
           .symbol = item.contract_code,
@@ -492,7 +492,7 @@ void DropCopy5::operator()(Trace<protocol::json::MatchOrders5> const &event) {
         order_id = order.order_id;
         strategy_id = order.strategy_id;
       };
-      create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
     }
   });
 }
@@ -553,7 +553,7 @@ void DropCopy5::operator()(Trace<protocol::json::Orders5> const &event) {
       order_id = order.order_id;
       strategy_id = order.strategy_id;
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
     // XXX FIXME TODO trades
   });
 }

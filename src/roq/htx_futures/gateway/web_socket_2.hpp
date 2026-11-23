@@ -42,10 +42,6 @@ struct WebSocket2 final : public Base<WebSocket2>,
 
   // server::Stream
 
-  uint16_t stream_id() const override { return stream_id_; }
-
-  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Trace<Start> const &) override;
   void operator()(Trace<Stop> const &) override;
   void operator()(Trace<Timer> const &) override;
@@ -97,7 +93,6 @@ struct WebSocket2 final : public Base<WebSocket2>,
  private:
   [[maybe_unused]] Handler &handler_;
   // config
-  uint16_t const stream_id_;
   std::string const name_;
   size_t const index_;
   // web socket
@@ -117,7 +112,6 @@ struct WebSocket2 final : public Base<WebSocket2>,
   // cache
   Shared &shared_;
   // state
-  ConnectionStatus connection_status_ = {};
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;

@@ -85,8 +85,9 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 OrderEntryWS5::OrderEntryWS5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, shared)},
-      auth_path_{create_auth_path(shared.settings)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+    : server::OrderActionStream{stream_id}, handler_{handler}, name_{create_name(stream_id)},
+      connection_{create_connection(*this, shared.settings, context, shared)}, auth_path_{create_auth_path(shared.settings)},
+      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -143,25 +144,26 @@ void OrderEntryWS5::operator()(metrics::Writer &writer) const {
 
 void OrderEntryWS5::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
   auto &[trace_info, connection_status] = event;
-  connection_status_ = connection_status;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.name,
-      .supports = shared_.settings.misc.disable_ws_api ? SUPPORTS : SUPPORTS_WSAPI,
-      .transport = Transport::TCP,
-      .protocol = Protocol::WS,
-      .encoding = {Encoding::JSON},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_).get_interface(),
-      .proxy = (*connection_).get_proxy(),
-      .peer = (*connection_).get_current_peer(),
-      .authority = (*connection_).get_current_authority(),
-      .path = (*connection_).get_current_path(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+  if (update(connection_status, reason)) {
+    auto stream_status = StreamStatus{
+        .stream_id = stream_id(),
+        .account = account_.name,
+        .supports = shared_.settings.misc.disable_ws_api ? SUPPORTS : SUPPORTS_WSAPI,
+        .transport = Transport::TCP,
+        .protocol = Protocol::WS,
+        .encoding = {Encoding::JSON},
+        .priority = Priority::PRIMARY,
+        .connection_status = connection_status,
+        .reason = reason,
+        .interface = (*connection_).get_interface(),
+        .proxy = (*connection_).get_proxy(),
+        .peer = (*connection_).get_current_peer(),
+        .authority = (*connection_).get_current_authority(),
+        .path = (*connection_).get_current_path(),
+    };
+    log::info("stream_status={}"sv, stream_status);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
+  }
 }
 
 // server::OrderActionStream
@@ -186,7 +188,7 @@ uint16_t OrderEntryWS5::operator()(
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
-  return stream_id_;
+  return stream_id();
 }
 
 uint16_t OrderEntryWS5::operator()(
@@ -196,7 +198,7 @@ uint16_t OrderEntryWS5::operator()(
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   throw server::oms::NotSupported{"not supported"sv};
-  return stream_id_;
+  return stream_id();
 }
 
 uint16_t OrderEntryWS5::operator()(
@@ -211,7 +213,7 @@ uint16_t OrderEntryWS5::operator()(
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
-  return stream_id_;
+  return stream_id();
 }
 
 uint16_t OrderEntryWS5::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
@@ -227,7 +229,7 @@ uint16_t OrderEntryWS5::operator()(Trace<CancelAllOrders> const &event, std::str
       log::warn("*** NOT POSSIBLE TO CANCEL ALL OPEN ORDERS (NO SYMBOLS) ***"sv);
     }
   });
-  return stream_id_;
+  return stream_id();
 }
 
 // web::socket::Client::Handler
@@ -238,13 +240,13 @@ void OrderEntryWS5::operator()(Trace<web::socket::Connected> const &) {
 void OrderEntryWS5::operator()(Trace<web::socket::Disconnected> const &event) {
   auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
+  publish(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
 void OrderEntryWS5::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id_,
+      .stream_id = stream_id(),
       .account = account_.name,
       .latency = latency.sample,
   };
@@ -255,7 +257,7 @@ void OrderEntryWS5::operator()(Trace<web::socket::Latency> const &event) {
 void OrderEntryWS5::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
   send_login(trace_info);
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::AUTHENTICATING);
+  publish(trace_info, ConnectionStatus::AUTHENTICATING);
 }
 
 void OrderEntryWS5::operator()(Trace<web::socket::Close> const &event) {
@@ -305,7 +307,7 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Auth> const &event) {
   profile_.auth([&]() {
     auto &[trace_info, auth] = event;
     if (auth.err_code == 0) {
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      publish(trace_info, ConnectionStatus::READY);
     } else {
       if (shared_.settings.app.disable_strict_logon) {
         log::error("auth={}"sv, auth);
@@ -346,14 +348,14 @@ void OrderEntryWS5::operator()(Trace<protocol::json::Response5> const &event) {
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id_);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id());
   };
   switch (request_type) {
     using enum RequestType;
     case UNDEFINED: {  // note! cancel-all-orders
       protocol::json::Response5Multiple data{response.data, decode_buffer_};
       auto cancel_all_orders_ack = CancelAllOrdersAck{
-          .stream_id = stream_id_,
+          .stream_id = stream_id(),
           .account = account_.name,
           .order_id = {},
           .exchange = shared_.settings.exchange,

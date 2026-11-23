@@ -41,10 +41,6 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
 
   // server::Stream
 
-  uint16_t stream_id() const override { return stream_id_; }
-
-  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Trace<Start> const &) override;
   void operator()(Trace<Stop> const &) override;
   void operator()(Trace<Timer> const &) override;
@@ -112,7 +108,6 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
  private:
   [[maybe_unused]] Handler &handler_;
   //
-  uint16_t const stream_id_;
   std::string const name_;
   std::unique_ptr<web::socket::Client> const connection_;
   //
@@ -132,7 +127,6 @@ struct DropCopy5 final : public Base<DropCopy5>, public server::Stream, public w
   std::string const auth_path_;
   Shared &shared_;
   Request &request_;
-  ConnectionStatus connection_status_ = {};
   core::Download2<State> download_;
   std::chrono::nanoseconds next_check_stale_orders_ = {};
 };
