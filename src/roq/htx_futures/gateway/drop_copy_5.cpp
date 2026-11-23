@@ -101,17 +101,17 @@ DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id,
 
 // server::Stream
 
-void DropCopy5::operator()(Trace<Start> const &) {
-  (*connection_).start();
+void DropCopy5::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
 }
 
-void DropCopy5::operator()(Trace<Stop> const &) {
-  (*connection_).stop();
+void DropCopy5::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
 }
 
 void DropCopy5::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(trace_info)) {
+  if ((*connection_)(event)) {
     check_request_queue(trace_info);
     if (ready()) {
       check_stale_orders(trace_info);

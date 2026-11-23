@@ -100,17 +100,17 @@ OrderEntryREST5::OrderEntryREST5(Handler &handler, io::Context &context, uint16_
 
 // server::Stream
 
-void OrderEntryREST5::operator()(Trace<Start> const &) {
-  (*connection_).start();
+void OrderEntryREST5::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
 }
 
-void OrderEntryREST5::operator()(Trace<Stop> const &) {
-  (*connection_).stop();
+void OrderEntryREST5::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
 }
 
 void OrderEntryREST5::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(trace_info)) {
+  if ((*connection_)(event)) {
     if (ready()) {
       check_request_queue(trace_info);
     }
@@ -174,35 +174,31 @@ void OrderEntryREST5::operator()(Trace<server::oms::OrderActionBatchRollback> co
   throw server::oms::NotSupported{"not supported"sv};
 }
 
-uint16_t OrderEntryREST5::operator()(
+void OrderEntryREST5::operator()(
     Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   create_order(event, order, ref_data, request_id);
-  return stream_id();
 }
 
-uint16_t OrderEntryREST5::operator()(
+void OrderEntryREST5::operator()(
     Trace<ModifyOrder> const &,
     server::oms::Order const &,
     server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   throw server::oms::NotSupported{"not supported"sv};
-  return stream_id();
 }
 
-uint16_t OrderEntryREST5::operator()(
+void OrderEntryREST5::operator()(
     Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     std::string_view const &previous_request_id) {
   cancel_order(event, order, ref_data, request_id, previous_request_id);
-  return stream_id();
 }
 
-uint16_t OrderEntryREST5::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
+void OrderEntryREST5::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   cancel_all_orders(event, request_id);
-  return stream_id();
 }
 
 // web::rest::client::Handler

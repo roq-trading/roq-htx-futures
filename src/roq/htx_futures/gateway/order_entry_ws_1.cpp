@@ -101,17 +101,16 @@ OrderEntryWS1::OrderEntryWS1(Handler &handler, io::Context &context, uint16_t st
 
 // server::Stream
 
-void OrderEntryWS1::operator()(Trace<Start> const &) {
-  (*connection_).start();
+void OrderEntryWS1::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
 }
 
-void OrderEntryWS1::operator()(Trace<Stop> const &) {
-  (*connection_).stop();
+void OrderEntryWS1::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
 }
 
 void OrderEntryWS1::operator()(Trace<Timer> const &event) {
-  auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(trace_info)) {
+  if ((*connection_)(event)) {
     if (ready()) {
     }
   }
@@ -172,7 +171,7 @@ void OrderEntryWS1::operator()(Trace<server::oms::OrderActionBatchRollback> cons
   throw server::oms::NotSupported{"not supported"sv};
 }
 
-uint16_t OrderEntryWS1::operator()(
+void OrderEntryWS1::operator()(
     Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     auto &[trace_info, create_order] = event;
@@ -180,20 +179,18 @@ uint16_t OrderEntryWS1::operator()(
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
-  return stream_id();
 }
 
-uint16_t OrderEntryWS1::operator()(
+void OrderEntryWS1::operator()(
     Trace<ModifyOrder> const &,
     server::oms::Order const &,
     server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   throw server::oms::NotSupported{"not supported"sv};
-  return stream_id();
 }
 
-uint16_t OrderEntryWS1::operator()(
+void OrderEntryWS1::operator()(
     Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
@@ -206,10 +203,9 @@ uint16_t OrderEntryWS1::operator()(
     log::debug_info<2>(R"(message="{}")"sv, message);
     (*connection_).send_text(message);
   });
-  return stream_id();
 }
 
-uint16_t OrderEntryWS1::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
+void OrderEntryWS1::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   profile_.cancel_all_orders([&]() {
     auto &[trace_info, cancel_all_orders] = event;
     auto helper = [&](auto &symbol) {
@@ -222,7 +218,6 @@ uint16_t OrderEntryWS1::operator()(Trace<CancelAllOrders> const &event, std::str
       log::warn("*** NOT POSSIBLE TO CANCEL ALL OPEN ORDERS (NO SYMBOLS) ***"sv);
     }
   });
-  return stream_id();
 }
 
 // web::socket::Client::Handler

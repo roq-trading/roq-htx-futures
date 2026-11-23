@@ -96,17 +96,16 @@ WebSocket::WebSocket(Handler &handler, io::Context &context, uint16_t stream_id,
 
 // server::Stream
 
-void WebSocket::operator()(Trace<Start> const &) {
-  (*connection_).start();
+void WebSocket::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
 }
 
-void WebSocket::operator()(Trace<Stop> const &) {
-  (*connection_).stop();
+void WebSocket::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
 }
 
 void WebSocket::operator()(Trace<Timer> const &event) {
-  auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(trace_info)) {
+  if ((*connection_)(event)) {
     if (ready()) {
     }
   }

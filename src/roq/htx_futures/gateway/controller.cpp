@@ -231,20 +231,20 @@ void Controller::operator()(Trace<Control> const &event) {
 }
 
 void Controller::operator()(Trace<server::oms::OrderActionBatchBegin> const &event) {
-  dispatch_order_action<void>(event);
+  dispatch_order_action(event);
 }
 
 void Controller::operator()(Trace<server::oms::OrderActionBatchCommit> const &event) {
-  dispatch_order_action<void>(event);
+  dispatch_order_action(event);
 }
 
 void Controller::operator()(Trace<server::oms::OrderActionBatchRollback> const &event) {
-  dispatch_order_action<void>(event);
+  dispatch_order_action(event);
 }
 
 uint16_t Controller::operator()(
     Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
-  return dispatch_order_action<uint16_t>(event, order, ref_data, request_id);
+  return dispatch_order_action(event, order, ref_data, request_id);
 }
 
 uint16_t Controller::operator()(
@@ -253,7 +253,7 @@ uint16_t Controller::operator()(
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     std::string_view const &previous_request_id) {
-  return dispatch_order_action<uint16_t>(event, order, ref_data, request_id, previous_request_id);
+  return dispatch_order_action(event, order, ref_data, request_id, previous_request_id);
 }
 
 uint16_t Controller::operator()(
@@ -262,11 +262,11 @@ uint16_t Controller::operator()(
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     std::string_view const &previous_request_id) {
-  return dispatch_order_action<uint16_t>(event, order, ref_data, request_id, previous_request_id);
+  return dispatch_order_action(event, order, ref_data, request_id, previous_request_id);
 }
 
 uint16_t Controller::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
-  return dispatch_order_action<uint16_t>(event, request_id);
+  return dispatch_order_action(event, request_id);
 }
 
 uint16_t Controller::operator()(Trace<MassQuote> const &) {
@@ -372,21 +372,25 @@ void Controller::dispatch_helper(auto &self, Args &&...args) {
   }
 }
 
-template <typename Res, typename T, typename... Args>
-Res Controller::dispatch_order_action(Trace<T> const &event, Args &&...args) {
+template <typename T, typename... Args>
+uint16_t Controller::dispatch_order_action(Trace<T> const &event, Args &&...args) {
   auto &[trace_info, value] = event;
   if (shared_.settings.misc.disable_ws_api) {
     auto iter = order_entry_rest_.find(value.account);
     if (iter == std::end(order_entry_rest_)) [[unlikely]] {
       throw RuntimeError{R"(Unknown account="{}")"sv, value.account};
     }
-    return (*(*iter).second)(event, args...);
+    auto &stream = *(*iter).second;
+    stream(event, args...);
+    return stream.stream_id();
   } else {
     auto iter = order_entry_ws_.find(value.account);
     if (iter == std::end(order_entry_ws_)) [[unlikely]] {
       throw RuntimeError{R"(Unknown account="{}")"sv, value.account};
     }
-    return (*(*iter).second)(event, args...);
+    auto &stream = *(*iter).second;
+    stream(event, args...);
+    return stream.stream_id();
   }
 }
 
