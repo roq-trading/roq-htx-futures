@@ -78,7 +78,7 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 OrderEntryWS1::OrderEntryWS1(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
-    : server::OrderActionStream{stream_id}, handler_{handler}, name_{create_name(stream_id)},
+    : server::OrderActionStream{stream_id, account.name, SUPPORTS}, handler_{handler}, name_{create_name(stream_id)},
       connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -137,9 +137,9 @@ void OrderEntryWS1::operator()(Trace<ConnectionStatus> const &event, std::string
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = account_.name,
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,
         .encoding = {Encoding::JSON},
@@ -241,7 +241,7 @@ void OrderEntryWS1::operator()(Trace<web::socket::Ready> const &event) {
 void OrderEntryWS1::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = account_.name,
       .latency = latency.sample,
   };
@@ -344,7 +344,7 @@ void OrderEntryWS1::operator()(Trace<protocol::json::Response> const &event) {
       .quantity = NaN,
       .price = NaN,
   };
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id());
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, response_2, stream_id);
 }
 
 // helpers

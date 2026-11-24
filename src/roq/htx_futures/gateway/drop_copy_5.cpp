@@ -75,8 +75,8 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 DropCopy5::DropCopy5(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
-    : server::Stream{stream_id}, handler_{handler}, name_{create_name(stream_id)}, connection_{create_connection(*this, shared.settings, context, shared)},
-      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+    : server::Stream{stream_id, account.name, SUPPORTS}, handler_{handler}, name_{create_name(stream_id)},
+      connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -142,9 +142,9 @@ void DropCopy5::operator()(Trace<ConnectionStatus> const &event, std::string_vie
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = account_.name,
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,
         .encoding = {Encoding::JSON},
@@ -177,7 +177,7 @@ void DropCopy5::operator()(Trace<web::socket::Disconnected> const &event) {
 void DropCopy5::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = account_.name,
       .latency = latency.sample,
   };
@@ -377,7 +377,7 @@ void DropCopy5::operator()(Trace<protocol::json::Account5> const &event) {
     auto update_type = map(account.event).template get<UpdateType>();
     for (auto &item : account.data.details) {
       auto funds_update = FundsUpdate{
-          .stream_id = stream_id(),
+          .stream_id = stream_id,
           .account = account_.name,
           .currency = item.currency,
           .margin_mode = {},
@@ -414,7 +414,7 @@ void DropCopy5::operator()(Trace<protocol::json::Positions5> const &event) {
         return NaN;
       }();
       auto position_update = PositionUpdate{
-          .stream_id = stream_id(),
+          .stream_id = stream_id,
           .account = account_.name,
           .exchange = shared_.settings.exchange,
           .symbol = item.contract_code,
@@ -492,7 +492,7 @@ void DropCopy5::operator()(Trace<protocol::json::MatchOrders5> const &event) {
         order_id = order.order_id;
         strategy_id = order.strategy_id;
       };
-      create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
     }
   });
 }
@@ -553,7 +553,7 @@ void DropCopy5::operator()(Trace<protocol::json::Orders5> const &event) {
       order_id = order.order_id;
       strategy_id = order.strategy_id;
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
     // XXX FIXME TODO trades
   });
 }

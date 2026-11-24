@@ -382,7 +382,7 @@ uint16_t Controller::dispatch_order_action(Trace<T> const &event, Args &&...args
     }
     auto &stream = *(*iter).second;
     stream(event, args...);
-    return stream.stream_id();
+    return stream.stream_id;
   } else {
     auto iter = order_entry_ws_.find(value.account);
     if (iter == std::end(order_entry_ws_)) [[unlikely]] {
@@ -390,7 +390,7 @@ uint16_t Controller::dispatch_order_action(Trace<T> const &event, Args &&...args
     }
     auto &stream = *(*iter).second;
     stream(event, args...);
-    return stream.stream_id();
+    return stream.stream_id;
   }
 }
 

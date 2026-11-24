@@ -73,8 +73,8 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 DropCopy1::DropCopy1(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
-    : server::Stream{stream_id}, handler_{handler}, name_{create_name(stream_id)}, connection_{create_connection(*this, shared.settings, context, shared)},
-      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+    : server::Stream{stream_id, account.name, SUPPORTS}, handler_{handler}, name_{create_name(stream_id)},
+      connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -148,9 +148,9 @@ void DropCopy1::operator()(Trace<ConnectionStatus> const &event, std::string_vie
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = account_.name,
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,
         .encoding = {Encoding::JSON},
@@ -183,7 +183,7 @@ void DropCopy1::operator()(Trace<web::socket::Disconnected> const &event) {
 void DropCopy1::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = account_.name,
       .latency = latency.sample,
   };
@@ -302,7 +302,7 @@ void DropCopy1::operator()(Trace<protocol::json::Accounts> const &event) {
     auto update_type = map(accounts.event).template get<UpdateType>();
     for (auto &item : accounts.data) {
       auto funds_update = FundsUpdate{
-          .stream_id = stream_id(),
+          .stream_id = stream_id,
           .account = account_.name,
           .currency = item.symbol,
           .margin_mode = {},
@@ -339,7 +339,7 @@ void DropCopy1::operator()(Trace<protocol::json::Positions> const &event) {
         return NaN;
       }();
       auto position_update = PositionUpdate{
-          .stream_id = stream_id(),
+          .stream_id = stream_id,
           .account = account_.name,
           .exchange = shared_.settings.exchange,
           .symbol = item.contract_code,
@@ -413,7 +413,7 @@ void DropCopy1::operator()(Trace<protocol::json::MatchOrders> const &event) {
       order_id = order.order_id;
       strategy_id = order.strategy_id;
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
     if (std::empty(match_orders.trade)) {
       return;
     }
@@ -478,7 +478,7 @@ void DropCopy1::operator()(Trace<protocol::json::Orders> const &event) {
       order_id = order.order_id;
       strategy_id = order.strategy_id;
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
     if (std::empty(orders.trade)) {
       return;
     }
@@ -494,7 +494,7 @@ void DropCopy1::operator()(Trace<protocol::json::AccountsCross> const &event) {
     for (auto &item : accounts.data) {
       for (auto &item_2 : item.contract_detail) {
         auto funds_update = FundsUpdate{
-            .stream_id = stream_id(),
+            .stream_id = stream_id,
             .account = account_.name,
             .currency = item_2.symbol,
             .margin_mode = {},  // XXX FIXME TODO
@@ -532,7 +532,7 @@ void DropCopy1::operator()(Trace<protocol::json::PositionsCross> const &event) {
         return NaN;
       }();
       auto position_update = PositionUpdate{
-          .stream_id = stream_id(),
+          .stream_id = stream_id,
           .account = account_.name,
           .exchange = shared_.settings.exchange,
           .symbol = item.contract_code,
@@ -606,7 +606,7 @@ void DropCopy1::operator()(Trace<protocol::json::MatchOrdersCross> const &event)
       order_id = order.order_id;
       strategy_id = order.strategy_id;
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
     /*
     if (std::empty(match_orders.trade)) {
       return;
@@ -673,7 +673,7 @@ void DropCopy1::operator()(Trace<protocol::json::OrdersCross> const &event) {
       order_id = order.order_id;
       strategy_id = order.strategy_id;
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
     /*
     if (std::empty(orders.trade)) {
       return;
