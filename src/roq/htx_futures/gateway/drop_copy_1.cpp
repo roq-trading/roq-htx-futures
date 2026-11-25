@@ -99,6 +99,25 @@ DropCopy1::DropCopy1(Handler &handler, io::Context &context, uint16_t stream_id,
 
 // server::Stream
 
+void DropCopy1::operator()(metrics::Writer &writer) const {
+  writer
+      // counter
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      // profile
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.close, metrics::Type::PROFILE)
+      .write(profile_.error, metrics::Type::PROFILE)
+      .write(profile_.ping, metrics::Type::PROFILE)
+      .write(profile_.auth, metrics::Type::PROFILE)
+      .write(profile_.sub, metrics::Type::PROFILE)
+      .write(profile_.accounts, metrics::Type::PROFILE)
+      .write(profile_.positions, metrics::Type::PROFILE)
+      .write(profile_.match_orders, metrics::Type::PROFILE)
+      .write(profile_.orders, metrics::Type::PROFILE)
+      // latency
+      .write(latency_.ping, metrics::Type::LATENCY);
+}
+
 void DropCopy1::operator()(Trace<Start> const &event) {
   (*connection_)(event);
 }
@@ -123,25 +142,6 @@ void DropCopy1::operator()(Trace<Timer> const &event) {
         break;
     }
   }
-}
-
-void DropCopy1::operator()(metrics::Writer &writer) const {
-  writer
-      // counter
-      .write(counter_.disconnect, metrics::Type::COUNTER)
-      // profile
-      .write(profile_.parse, metrics::Type::PROFILE)
-      .write(profile_.close, metrics::Type::PROFILE)
-      .write(profile_.error, metrics::Type::PROFILE)
-      .write(profile_.ping, metrics::Type::PROFILE)
-      .write(profile_.auth, metrics::Type::PROFILE)
-      .write(profile_.sub, metrics::Type::PROFILE)
-      .write(profile_.accounts, metrics::Type::PROFILE)
-      .write(profile_.positions, metrics::Type::PROFILE)
-      .write(profile_.match_orders, metrics::Type::PROFILE)
-      .write(profile_.orders, metrics::Type::PROFILE)
-      // latency
-      .write(latency_.ping, metrics::Type::LATENCY);
 }
 
 void DropCopy1::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
